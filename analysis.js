@@ -5,13 +5,13 @@ function runAnalysis() {
   const rows = [...document.querySelectorAll("#recordTable tbody tr")];
   const history = [];
 
-  rows.forEach((tr, w) => {
-    [...tr.querySelectorAll("td")].slice(1).forEach((td, d) => {
-      if (td.innerText.trim()) {
+  rows.forEach((tr, week) => {
+    [...tr.querySelectorAll("td")].slice(1).forEach((td, day) => {
+      const val = td.innerText.trim();
+      if (val) {
         history.push({
-          week: w,
-          day: d,
-          jodi: td.innerText.trim(),
+          jodi: val,
+          week,
           cell: td
         });
       }
@@ -21,44 +21,36 @@ function runAnalysis() {
   const lastSeen = {};
   history.forEach(h => lastSeen[h.jodi] = h.week);
 
-  const niche = Object.keys(lastSeen)
-    .filter(j => (rows.length - 1 - lastSeen[j]) >= 6);
+  const currentWeek = rows.length - 1;
 
-  niche.forEach(base => {
-    const template = history.filter(h => h.jodi === base);
-    searchPattern(template, history);
-  });
-}
+  // 🔵 NICHE JODI (6–7 week gap)
+  const nicheJodi = Object.keys(lastSeen).filter(j =>
+    currentWeek - lastSeen[j] >= 6
+  );
 
-function searchPattern(template, history) {
-  history.forEach(h => {
-    template.forEach(t => {
-      if (isFamily(h.jodi, t.jodi)) {
-        markCell(h.cell, h.jodi === t.jodi);
-        drawCheckLine(t.jodi, h.jodi, h.week);
+  nicheJodi.forEach(jodi => {
+    history.forEach(h => {
+      if (h.jodi === jodi) {
+        markNiche(h.cell);
       }
     });
+    addCheckLine(`NICHE BASE JODI FOUND: ${jodi}`);
   });
 }
 
-function isFamily(a, b) {
-  return a === b || a.split("").reverse().join("") === b;
+function markNiche(cell) {
+  cell.classList.add("niche");
 }
 
-function markCell(cell, exact) {
-  cell.classList.add("circle");
-  if (!exact) cell.classList.add("family");
-}
-
-function drawCheckLine(base, found, week) {
+function addCheckLine(text) {
   const div = document.createElement("div");
   div.className = "check-line";
-  div.innerText = `Base Jodi ${base} → Match ${found} at Week ${week+1}`;
+  div.innerText = text;
   document.getElementById("checkLines").appendChild(div);
 }
 
 function clearMarks() {
-  document.querySelectorAll(".circle").forEach(c => {
-    c.classList.remove("circle", "family");
-  });
+  document.querySelectorAll(".niche").forEach(c =>
+    c.classList.remove("niche")
+  );
 }
