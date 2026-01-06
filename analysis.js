@@ -47,8 +47,11 @@ function runAnalysis(){
         if (!td) { valid=false; break; }
 
         const val = td.innerText.trim();
-        if (!familyOf(val) || !baseFamilies[i].includes(val)){
-          valid=false; break;
+      const fam = familyOf(val);
+if (!fam || fam !== baseFamilies[i]) {
+  valid = false;
+  break;
+}
         }
 
         cells.push(td);
