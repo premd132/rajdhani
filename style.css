@@ -58,3 +58,9 @@ td.editable {
   color: #555;
   margin-top: 15px;
 }
+.niche {
+  border: 3px solid #007bff;
+  border-radius: 50%;
+  font-weight: bold;
+  color: #003366;
+}
