@@ -1,6 +1,10 @@
 const tbody = document.querySelector("#recordTable tbody");
-
 document.getElementById("csvFile").addEventListener("change", loadCSV);
+
+function smartSplit(line) {
+  // comma | semicolon | tab | multiple spaces
+  return line.split(/[,;\t ]+/).map(v => v.trim()).filter(v => v !== "");
+}
 
 function loadCSV(e) {
   const file = e.target.files[0];
@@ -8,20 +12,27 @@ function loadCSV(e) {
 
   const reader = new FileReader();
   reader.onload = () => {
-    const lines = reader.result.trim().split(/\r?\n/);
+    const text = reader.result;
+    const lines = text.split(/\r?\n/);
 
     tbody.innerHTML = "";
 
-    // 🔥 Header skip + Week column handle
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",");
+    for (let i = 1; i < lines.length; i++) { // header skip
+      if (!lines[i].trim()) continue;
 
-      // cols[0] = Week (ignore)
-      const data = cols.slice(1, 7).map(v => v.trim());
+      const cols = smartSplit(lines[i]);
 
-      if (data.length === 6) {
-        addRow(data, i);
+      // Expect: Week + 6 values OR only 6 values
+      let data;
+      if (cols.length >= 7) {
+        data = cols.slice(1, 7);
+      } else if (cols.length === 6) {
+        data = cols;
+      } else {
+        continue;
       }
+
+      addRow(data, i);
     }
   };
   reader.readAsText(file);
@@ -57,7 +68,7 @@ function saveData() {
 }
 
 // LOAD SAVED
-(function loadSaved() {
+(function () {
   const saved = JSON.parse(localStorage.getItem("recordData"));
   if (!saved) return;
 
