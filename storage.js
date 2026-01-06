@@ -1,40 +1,26 @@
-const TOTAL_WEEKS = 300;
 const tbody = document.querySelector("#recordTable tbody");
+const TOTAL_WEEKS = 300;
 
-/* 🔒 CSV ONLY MODE
-   - Page load par koi purana data nahi
-   - localStorage completely ignored
-*/
+document.getElementById("csvFile").addEventListener("change", loadCSV);
 
-// force remove any old saved data
-localStorage.removeItem("recordData");
+function loadCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-function loadData() {
-  tbody.innerHTML = "";
-  for (let i = 0; i < TOTAL_WEEKS; i++) {
-    addRow(["", "", "", "", "", ""], i + 1);
-  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const lines = reader.result.trim().split(/\r?\n/);
+    tbody.innerHTML = "";
+
+    lines.forEach((line, i) => {
+      const cols = line.split(",");
+      addRow(cols, i + 1);
+    });
+  };
+  reader.readAsText(file);
 }
 
 function addRow(values, week) {
   const tr = document.createElement("tr");
   tr.innerHTML =
-    `<td>W${week}</td>` +
-    values.map(v => `<td contenteditable="false">${v}</td>`).join("");
-  tbody.appendChild(tr);
-}
-
-function enableEdit() {
-  tbody.querySelectorAll("td").forEach((td, i) => {
-    if (i % 7 !== 0) {
-      td.contentEditable = true;
-      td.classList.add("editable");
-    }
-  });
-}
-
-function saveData() {
-  alert("CSV mode active. Local save disabled.");
-}
-
-loadData();
+    `<td>W${week}</td
