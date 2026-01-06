@@ -1,12 +1,12 @@
 const TOTAL_WEEKS = 300;
 const tbody = document.querySelector("#recordTable tbody");
 
-/* 🔴 IMPORTANT:
-   Page load par purana data use nahi hoga
-   Sirf CSV upload se hi table bharegi
+/* 🔒 CSV ONLY MODE
+   - Page load par koi purana data nahi
+   - localStorage completely ignored
 */
 
-// 🔥 FORCE CLEAR OLD DATA
+// force remove any old saved data
 localStorage.removeItem("recordData");
 
 function loadData() {
@@ -37,5 +37,4 @@ function saveData() {
   alert("CSV mode active. Local save disabled.");
 }
 
-// Page load
 loadData();
