@@ -1,96 +1,116 @@
-/* ===== CSV UPLOAD (ROBUST – MIXED FORMAT SUPPORT) ===== */
-function uploadCSV() {
-  const input = document.getElementById("csvFile");
-  const file = input.files[0];
-  if (!file) return;
+// ===== FIXED FAMILY SET =====
+function getFamily(jodi) {
+  const FAMILIES = [
+    ["11","16","61","66"],
+    ["22","27","72","77"],
+    ["33","38","83","88"],
+    ["44","49","94","99"],
+    ["55","00","05","50"]
+  ];
 
-  const reader = new FileReader();
-  reader.onload = function () {
-    let text = reader.result || "";
-
-    // clean text
-    text = text
-      .replace(/^\uFEFF/, "")
-      .replace(/\r/g, "")
-      .trim();
-
-    if (!text) {
-      alert("CSV empty hai");
-      return;
+  for (let fam of FAMILIES) {
+    if (fam.includes(jodi)) {
+      return fam;
     }
-
-    let lines = text.split("\n");
-
-    // remove header if present
-    if (lines[0].toLowerCase().includes("mon")) {
-      lines.shift();
-    }
-
-    const rows = document.querySelectorAll("#recordTable tbody tr");
-
-    // clear table
-    rows.forEach(tr => {
-      tr.querySelectorAll("td").forEach((td, i) => {
-        if (i > 0) td.innerText = "";
-      });
-    });
-
-    // fill data
-    lines.forEach((line, i) => {
-      if (!rows[i]) return;
-
-      let values = line
-        .replace(/\*\*/g, "")      // remove **
-        .trim()
-        .split(/[\s,]+/)           // comma OR space
-        .map(v => v.padStart(2, "0"));
-
-      const cells = rows[i].querySelectorAll("td");
-      for (let d = 0; d < 6; d++) {
-        cells[d + 1].innerText = values[d] || "";
-      }
-    });
-
-    alert("CSV load ho gayi. Ab Save dabao.");
-  };
-
-  reader.readAsText(file);
+  }
+  return [jodi];
 }
 
-/* ===== ANALYSIS (SAME LOGIC AS BEFORE) ===== */
+// ===== ANALYSIS WITH FAMILY + SAME DAY + 6-7 WEEK FILTER =====
+let patternMap = {};
+
 function runAnalysis() {
-  document.querySelectorAll(".circle").forEach(c =>
-    c.classList.remove("circle")
-  );
-  document.getElementById("checkLines").innerHTML = "";
+  clearVisuals();
+  patternMap = {};
 
   const rows = [...document.querySelectorAll("#recordTable tbody tr")];
   const history = [];
 
   rows.forEach((tr, week) => {
-    [...tr.querySelectorAll("td")].slice(1).forEach(td => {
-      const v = td.innerText.trim();
-      if (v) history.push({ jodi: v, week, cell: td });
+    [...tr.querySelectorAll("td")].slice(1).forEach((td, day) => {
+      const val = td.innerText.trim();
+      if (val) history.push({ jodi: val, week, day, cell: td });
     });
   });
 
-  const lastSeen = {};
-  history.forEach(h => lastSeen[h.jodi] = h.week);
-  const currentWeek = rows.length - 1;
+  const lastWeek = rows.length - 1;
+  let pid = 0;
 
-  Object.keys(lastSeen)
-    .filter(j => currentWeek - lastSeen[j] >= 6)
-    .forEach(j => {
-      history
-        .filter(h => h.jodi === j)
-        .forEach(h => h.cell.classList.add("circle"));
-      addCheckLine("PATTERN FOUND: " + j);
-    });
+  history.forEach(base => {
+    if (lastWeek - base.week > 7) return;
+
+    const family = getFamily(base.jodi);
+    const matches = history.filter(h =>
+      family.includes(h.jodi) &&
+      h.day === base.day &&
+      lastWeek - h.week >= 6
+    );
+
+    if (matches.length >= 2) {
+      const id = "P" + (++pid);
+      patternMap[id] = matches.map(m => m.cell);
+      addCheckLine(id, `FAMILY PATTERN: ${base.jodi}`);
+    }
+  });
 }
 
-function addCheckLine(text) {
+// ===== CLICKABLE CHECK LINE =====
+function addCheckLine(id, text) {
   const div = document.createElement("div");
   div.className = "check-line";
   div.innerText = text;
+  div.onclick = () => highlightPattern(id);
   document.getElementById("checkLines").appendChild(div);
+}
+
+// ===== HIGHLIGHT + LINE =====
+function highlightPattern(id) {
+  clearVisuals();
+  const cells = patternMap[id];
+  if (!cells) return;
+
+  cells.forEach(c => c.classList.add("circle"));
+
+  for (let i = 1; i < cells.length; i++) {
+    drawLine(cells[i - 1], cells[i]);
+  }
+}
+
+// ===== DRAW LINE =====
+function drawLine(c1, c2) {
+  let svg = document.getElementById("lineLayer");
+  if (!svg) {
+    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.id = "lineLayer";
+    svg.style.position = "absolute";
+    svg.style.top = 0;
+    svg.style.left = 0;
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.pointerEvents = "none";
+    document.body.appendChild(svg);
+  }
+
+  const r1 = c1.getBoundingClientRect();
+  const r2 = c2.getBoundingClientRect();
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", r1.left + r1.width / 2);
+  line.setAttribute("y1", r1.top + r1.height / 2);
+  line.setAttribute("x2", r2.left + r2.width / 2);
+  line.setAttribute("y2", r2.top + r2.height / 2);
+  line.setAttribute("stroke", "red");
+  line.setAttribute("stroke-width", "2");
+
+  svg.appendChild(line);
+}
+
+// ===== CLEAR =====
+function clearVisuals() {
+  document.querySelectorAll(".circle").forEach(c =>
+    c.classList.remove("circle")
+  );
+  document.getElementById("checkLines").innerHTML = "";
+  const svg = document.getElementById("lineLayer");
+  if (svg) svg.innerHTML = "";
 }
