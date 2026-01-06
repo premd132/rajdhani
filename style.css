@@ -3,36 +3,39 @@ body {
   padding: 10px;
 }
 
+h2 {
+  text-align: center;
+}
+
+.controls {
+  margin: 10px 0;
+  text-align: center;
+}
+
+button {
+  padding: 6px 12px;
+  margin: 4px;
+}
+
 table {
-  border-collapse: collapse;
   width: 100%;
+  border-collapse: collapse;
   margin-top: 10px;
 }
 
 th, td {
   border: 1px solid #ccc;
-  padding: 4px;
+  padding: 6px;
   text-align: center;
-  position: relative;
 }
 
-td.editable {
+.editable {
   background: #eef;
 }
 
-.circle {
-  outline: 3px solid red;
-  border-radius: 50%;
-}
-
-.controls {
-  margin: 8px 0;
-}
-
 .check-line {
-  background: #e8ffe8;
-  border-left: 6px solid green;
+  background: #eaffea;
+  border-left: 5px solid green;
   padding: 6px;
-  margin: 4px 0;
-  cursor: pointer;
+  margin: 6px 0;
 }
