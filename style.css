@@ -3,24 +3,9 @@ body {
   padding: 10px;
 }
 
-h2 {
-  text-align: center;
-}
-
-.controls {
-  margin: 10px 0;
-  text-align: center;
-}
-
-button {
-  padding: 6px 12px;
-  margin: 4px;
-}
-
 table {
-  width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  width: 100%;
 }
 
 th, td {
@@ -29,37 +14,17 @@ th, td {
   text-align: center;
 }
 
+.controls {
+  margin: 10px 0;
+}
+
 .editable {
   background: #eef;
 }
 
 .check-line {
   background: #eaffea;
-  border-left: 5px solid green;
-  padding: 6px;
   margin: 6px 0;
-}
-.circle {
-  border: 3px solid red;
-  border-radius: 50%;
-}
-
-.line {
-  position: fixed;
-  height: 3px;
-  background: red;
-  transform-origin: 0 0;
-  z-index: 9999;
-}
-.circle {
-  border: 3px solid red;
-  border-radius: 50%;
-}
-
-.line {
-  position: fixed;
-  height: 3px;
-  background: red;
-  transform-origin: 0 0;
-  z-index: 9999;
+  padding: 6px;
+  border-left: 5px solid green;
 }
