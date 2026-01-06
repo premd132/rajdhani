@@ -63,4 +63,14 @@ td.editable {
   border-radius: 50%;
   font-weight: bold;
   color: #003366;
+  .paste-box {
+  margin: 10px 0;
+  text-align: center;
+}
+
+#pasteArea {
+  width: 100%;
+  max-width: 500px;
+  padding: 8px;
+  font-size: 14px;
 }
