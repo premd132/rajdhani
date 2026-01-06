@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Record Pattern Analysis</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<title>Mon–Sat Record Pattern Analysis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -14,12 +14,13 @@
   <button onclick="enableEdit()">Edit</button>
   <button onclick="saveData()">Save</button>
   <button onclick="runAnalysis()">Run Analysis</button>
-  <div class="paste-box">
+</div>
+
+<div class="paste-box">
   <textarea id="pasteArea"
-    placeholder="Yahan Mon–Sat record paste karo (har line = 1 week)"
+    placeholder="Yahan poora record paste karo (har line = 1 week, Mon–Sat)"
     rows="6"></textarea>
   <button onclick="pasteRecord()">Paste Record</button>
-  </div>
 </div>
 
 <table id="recordTable">
@@ -33,12 +34,11 @@
   <tbody></tbody>
 </table>
 
-<h3>✔ Check Lines (Matched Patterns)</h3>
+<h3>✔ Check Lines</h3>
 <div id="checkLines"></div>
 
 <p class="note">
-This tool shows historical pattern visualization only.  
-No prediction or betting advice.
+This tool visualizes historical records only. No prediction.
 </p>
 
 <script src="storage.js"></script>
