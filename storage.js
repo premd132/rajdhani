@@ -1,50 +1,44 @@
-// ==============================
-// STORAGE + CSV HANDLER SCRIPT
-// ==============================
-
-// 🔹 Table body selector
 const tbody = document.querySelector("#recordTable tbody");
 
-// 🔹 Utility function — smart split for CSV lines
+/* ---------- CSV PARSER ---------- */
 function smartSplit(line) {
-  // comma | semicolon | tab | multiple spaces
-  return line.split(/[,;\t ]+/).map(v => v.trim()).filter(v => v !== "");
+  return line
+    .split(/[,;\t ]+/)
+    .map(v => v.trim())
+    .filter(v => v !== "");
 }
 
-// 🔹 Load CSV file
+/* ---------- LOAD CSV ---------- */
 function loadCSV(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = () => {
-    const text = reader.result.trim();
-    const lines = text.split(/\r?\n/);
+    const lines = reader.result.split(/\r?\n/);
 
-    // Clear previous data
     tbody.innerHTML = "";
 
-    // 🔥 Skip header (first line)
-    for (let i = 1; i < lines.length; i++) {
+    let week = 1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+
       const cols = smartSplit(lines[i]);
-      if (cols.length < 6) continue;
 
-      // Handle Week label + data
+      // Allow: with or without week column
       let data;
-      if (cols.length === 7) {
-        data = cols.slice(1, 7); // if Week is already present
-      } else {
-        data = cols; // if no Week in CSV
-      }
+      if (cols.length >= 7) data = cols.slice(1, 7);
+      else if (cols.length === 6) data = cols;
+      else continue;
 
-      addRow(data, i);
+      addRow(data, week++);
     }
   };
-
   reader.readAsText(file);
 }
 
-// 🔹 Add one row to table
+/* ---------- ADD ROW ---------- */
 function addRow(values, week) {
   const tr = document.createElement("tr");
   tr.innerHTML =
@@ -53,17 +47,17 @@ function addRow(values, week) {
   tbody.appendChild(tr);
 }
 
-// 🔹 Enable editing
+/* ---------- EDIT MODE ---------- */
 function enableEdit() {
-  document.querySelectorAll("#recordTable td").forEach((td, i) => {
-    if (i % 7 !== 0) { // skip Week column
+  document.querySelectorAll("#recordTable tbody td").forEach((td, i) => {
+    if (i % 7 !== 0) {
       td.contentEditable = true;
       td.classList.add("editable");
     }
   });
 }
 
-// 🔹 Save table to LocalStorage
+/* ---------- SAVE DATA ---------- */
 function saveData() {
   const data = [];
   document.querySelectorAll("#recordTable tbody tr").forEach(tr => {
@@ -71,21 +65,20 @@ function saveData() {
     data.push(row);
   });
   localStorage.setItem("recordData", JSON.stringify(data));
-  alert("✅ Data Saved Successfully!");
+  alert("Data Saved");
 }
 
-// 🔹 Load saved data on page load
-(function loadSaved() {
+/* ---------- LOAD SAVED ---------- */
+(function () {
   const saved = JSON.parse(localStorage.getItem("recordData"));
   if (!saved) return;
+
   tbody.innerHTML = "";
-  saved.forEach((r, i) => addRow(r, i + 1));
+  saved.forEach((row, i) => addRow(row, i + 1));
 })();
 
-// 🔹 CSV Upload Event Bind (VERY IMPORTANT)
+/* ---------- EVENT BIND ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   const csvInput = document.getElementById("csvFile");
-  if (csvInput) {
-    csvInput.addEventListener("change", loadCSV);
-  }
+  csvInput.addEventListener("change", loadCSV);
 });
