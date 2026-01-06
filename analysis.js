@@ -39,6 +39,10 @@ function runAnalysis() {
       for (let i = 0; i < 10; i++) {
         const cell = rows[start + i].children[col];
         const val = cell.innerText.trim();
+        if (!/^\d{1,2}$/.test(val)) {
+  match = false;
+  break;
+        }
         if (!basePattern[i].includes(val)) {
           match = false;
           break;
