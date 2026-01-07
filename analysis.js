@@ -1,18 +1,22 @@
-// ================= SAFE HELPERS =================
+/* ================= HELPERS ================= */
+
+// **, blank, empty handle + single digit => 01
 function normalize(v) {
-  if (v === "**" || v === "" || v == null) return null;
-  v = v.toString().trim();
-  if (v.length === 1) v = "0" + v;
-  return v;
+  if (!v) return null;
+  v = v.trim();
+  if (v === "**") return null;
+  if (!/^\d+$/.test(v)) return null;
+  return v.length === 1 ? "0" + v : v;
 }
 
+// safe td access
 function safeCell(row, col) {
   if (!row || !row.children[col]) return null;
   return row.children[col];
 }
 
+// family logic
 function familyOf(v) {
-  if (!v) return null;
   const f = {
     "0": ["00","05","50","55"],
     "1": ["11","16","61","66"],
@@ -23,7 +27,8 @@ function familyOf(v) {
   return f[v[0]] || [v];
 }
 
-// ================= MAIN ANALYSIS =================
+/* ================= MAIN ANALYSIS ================= */
+
 function runAnalysis() {
   const tbody = document.querySelector("#recordTable tbody");
   const rows = [...tbody.querySelectorAll("tr")];
@@ -36,12 +41,12 @@ function runAnalysis() {
   }
 
   const last10 = rows.slice(-10);
+  let matches = [];
 
-  let patterns = [];
-
-  // -------- COLUMN PATTERN --------
+  /* -------- COLUMN PATTERN -------- */
   for (let col = 1; col <= 6; col++) {
     let seq = [];
+
     last10.forEach(r => {
       const td = safeCell(r, col);
       seq.push(td ? normalize(td.innerText) : null);
@@ -49,89 +54,94 @@ function runAnalysis() {
 
     const base = seq.find(v => v);
     if (!base) continue;
+
     const fam = familyOf(base);
 
-    patterns.push({
-      type: "column",
-      col,
-      family: fam,
-      seq
+    rows.forEach((r, ri) => {
+      const td = safeCell(r, col);
+      const v = td ? normalize(td.innerText) : null;
+      if (v && fam.includes(v)) {
+        matches.push({ r: ri, c: col });
+      }
     });
+
+    addCheckLine(`Pattern (Column ${col})`, matches);
   }
 
-  // -------- DIAGONAL PATTERN --------
+  /* -------- DIAGONAL PATTERN -------- */
   for (let col = 1; col <= 4; col++) {
     let seq = [];
+
     for (let i = 0; i < 6; i++) {
       const td = safeCell(last10[i], col + i);
       seq.push(td ? normalize(td.innerText) : null);
     }
+
     const base = seq.find(v => v);
     if (!base) continue;
 
-    patterns.push({
-      type: "diagonal",
-      col,
-      family: familyOf(base),
-      seq
-    });
-  }
-
-  // ================= MATCH FIND =================
-  let index = 1;
-  patterns.forEach(p => {
-    let matches = [];
+    const fam = familyOf(base);
 
     rows.forEach((r, ri) => {
-      let ok = true;
-      for (let i = 0; i < p.seq.length; i++) {
-        const td = p.type === "column"
-          ? safeCell(rows[ri + i], p.col)
-          : safeCell(rows[ri + i], p.col + i);
-
-        if (!td) { ok = false; break; }
-
-        const val = normalize(td.innerText);
-        if (val && !p.family.includes(val)) {
-          ok = false; break;
-        }
+      const td = safeCell(r, col);
+      const v = td ? normalize(td.innerText) : null;
+      if (v && fam.includes(v)) {
+        matches.push({ r: ri, c: col });
       }
-      if (ok) matches.push({ row: ri });
     });
 
-    if (matches.length) {
-      const div = document.createElement("div");
-      div.className = "check-line";
-      div.innerText = `Pattern ${index++} (${p.type})`;
-      div.onclick = () => toggleMarks(matches, p);
-      out.appendChild(div);
-    }
-  });
+    addCheckLine(`Pattern (Diagonal ${col})`, matches);
+  }
+
+  renderAI(matches);
 }
 
-// ================= DRAW / REMOVE =================
-let ACTIVE = false;
+/* ================= UI ================= */
 
-function toggleMarks(matches, pat) {
-  const rows = document.querySelectorAll("#recordTable tbody tr");
-  ACTIVE = !ACTIVE;
+function addCheckLine(title, points) {
+  if (!points.length) return;
 
-  rows.forEach(r =>
-    r.querySelectorAll(".circle,.connect-top")
-      .forEach(c => c.classList.remove("circle","connect-top"))
-  );
+  const div = document.createElement("div");
+  div.className = "check-line";
+  div.innerText = title;
 
-  if (!ACTIVE) return;
+  let active = false;
 
-  matches.forEach(m => {
-    for (let i = 0; i < pat.seq.length; i++) {
-      const td = pat.type === "column"
-        ? safeCell(rows[m.row + i], pat.col)
-        : safeCell(rows[m.row + i], pat.col + i);
+  div.onclick = () => {
+    active = !active;
+    clearMarks();
 
-      if (!td) continue;
-      td.classList.add("circle");
-      if (i > 0) td.classList.add("connect-top");
+    if (active) {
+      points.forEach((p, i) => {
+        const row = document.querySelectorAll("#recordTable tbody tr")[p.r];
+        const td = row.children[p.c];
+        td.classList.add("circle");
+        if (i > 0) td.classList.add("connect-top");
+      });
     }
-  });
-    }
+  };
+
+  document.getElementById("checkLines").appendChild(div);
+}
+
+function clearMarks() {
+  document.querySelectorAll(".circle,.connect-top")
+    .forEach(td => td.classList.remove("circle","connect-top"));
+}
+
+/* ================= AI PANEL ================= */
+
+function renderAI(matches) {
+  const panel = document.getElementById("aiPanel");
+  if (!panel) return;
+
+  const strength = Math.min(95, matches.length * 5);
+
+  panel.innerHTML = `
+    <div style="border:1px solid #ccc;padding:10px">
+      <b>Prediction Strength:</b> ${strength}%<br>
+      <b>Matches Found:</b> ${matches.length}<br>
+      <small>AI uses last-10 pattern + family logic</small>
+    </div>
+  `;
+}
