@@ -1,125 +1,50 @@
-// ================= HELPERS =================
+const families={
+"1":["01","11","16","61","66"],
+"2":["02","22","27","72","77"],
+"3":["03","33","38","83","88"],
+"4":["04","44","49","94","99"],
+"5":["05","55","50","00"]
+};
 
-// safe cell getter
-function safeCell(row, col) {
-  return row.children[col] || null;
-}
-
-// normalize value
-function normalize(val) {
-  if (!val) return null;
-  val = val.trim();
-  if (val === "**") return null;
-
-  if (/^\d$/.test(val)) return "0" + val;
-  if (/^\d{2}$/.test(val)) return val;
-
+function familyOf(v){
+  for(let k in families) if(families[k].includes(v)) return k;
   return null;
 }
 
-// family logic
-function familyOf(v) {
-  if (!v) return [];
-  const map = {
-    "0": ["00","05","50","55"],
-    "1": ["01","06","51","56"],
-    "2": ["02","07","52","57"],
-    "3": ["03","08","53","58"],
-    "4": ["04","09","54","59"],
-    "5": ["10","15","60","65"],
-    "6": ["11","16","61","66"],
-    "7": ["12","17","62","67"],
-    "8": ["13","18","63","68"],
-    "9": ["14","19","64","69"]
-  };
-  return map[v[1]] || [];
-}
+let ACTIVE={};
 
-// ================= MAIN =================
+function runAnalysis(){
+  clearAll();
+  const rows=[...document.querySelectorAll("#recordTable tbody tr")];
+  if(rows.length<10){ alert("Min 10 rows"); return; }
 
-function runAnalysis() {
-  const tbody = document.querySelector("#recordTable tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-  const out = document.getElementById("checkLines");
-  out.innerHTML = "";
+  const last10=rows.slice(-10);
+  const out=document.getElementById("checkLines");
+  out.innerHTML="";
+  ACTIVE={};
 
-  if (rows.length < 10) {
-    alert("Minimum 10 rows chahiye");
-    return;
-  }
+  for(let c=1;c<=6;c++){
+    const base=normalize(last10[0].children[c].innerText);
+    if(!base) continue;
+    const fam=familyOf(base);
+    if(!fam) continue;
 
-  const last10 = rows.slice(-10);
-  let patternCount = 0;
+    const id=`col-${c}`;
+    ACTIVE[id]=[];
 
-  // ---------- COLUMN PATTERN ----------
-  for (let col = 1; col <= 6; col++) {
-    let seq = [];
-
-    last10.forEach(r => {
-      const td = safeCell(r, col);
-      seq.push(td ? normalize(td.innerText) : null);
+    rows.forEach((r,i)=>{
+      const v=normalize(r.children[c].innerText);
+      if(v && familyOf(v)===fam){
+        ACTIVE[id].push([i,c]);
+      }
     });
 
-    const base = seq.find(v => v);
-    if (!base) continue;
-
-    patternCount++;
-    createCheckLine(
-      `Pattern ${patternCount} (Column ${col})`,
-      seq,
-      last10.map(r => safeCell(r, col))
-    );
+    const div=document.createElement("div");
+    div.className="check-line";
+    div.innerText=`Pattern Column ${c}`;
+    div.onclick=()=>toggle(id);
+    out.appendChild(div);
   }
 
-  // ---------- DIAGONAL PATTERN ----------
-  for (let startCol = 1; startCol <= 4; startCol++) {
-    let seq = [];
-    let cells = [];
-
-    for (let i = 0; i < 6; i++) {
-      const r = last10[i];
-      const td = safeCell(r, startCol + i);
-      seq.push(td ? normalize(td.innerText) : null);
-      cells.push(td);
-    }
-
-    const base = seq.find(v => v);
-    if (!base) continue;
-
-    patternCount++;
-    createCheckLine(
-      `Pattern ${patternCount} (Diagonal ${startCol})`,
-      seq,
-      cells
-    );
-  }
-
-  if (patternCount === 0) {
-    out.innerHTML = "<i>No valid pattern found</i>";
-  }
+  renderAI(ACTIVE);
 }
-
-// ================= UI =================
-
-function createCheckLine(title, seq, cells) {
-  const out = document.getElementById("checkLines");
-
-  const div = document.createElement("div");
-  div.className = "check-line";
-  div.innerText = title;
-
-  let active = false;
-
-  div.onclick = () => {
-    active = !active;
-    cells.forEach(td => {
-      if (!td) return;
-      td.classList.toggle("circle", active);
-    });
-  };
-
-  out.appendChild(div);
-}
-
-// ================= TEST =================
-console.log("analysis.js loaded OK");
