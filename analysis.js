@@ -1,118 +1,137 @@
-/***********************
- * GLOBAL HELPERS
- ***********************/
+// ================= SAFE HELPERS =================
 function normalize(v) {
-  if (!v || v === "**") return null;
+  if (v === "**" || v === "" || v == null) return null;
   v = v.toString().trim();
-  if (v.length === 1) return "0" + v;
+  if (v.length === 1) v = "0" + v;
   return v;
 }
 
-const FAMILY = [
-  ["11","16","61","66"],
-  ["22","27","72","77"],
-  ["33","38","83","88"],
-  ["44","49","94","99"],
-  ["55","00","05","50"]
-];
-
-function sameFamily(a, b) {
-  if (!a || !b) return false;
-  return FAMILY.some(f => f.includes(a) && f.includes(b));
+function safeCell(row, col) {
+  if (!row || !row.children[col]) return null;
+  return row.children[col];
 }
 
-/***********************
- * MAIN ANALYSIS
- ***********************/
-function runAnalysis() {
-  const table = document.getElementById("recordTable");
-  const rows = Array.from(table.querySelectorAll("tbody tr"));
-  const checkBox = document.getElementById("checkLines");
+function familyOf(v) {
+  if (!v) return null;
+  const f = {
+    "0": ["00","05","50","55"],
+    "1": ["11","16","61","66"],
+    "2": ["22","27","72","77"],
+    "3": ["33","38","83","88"],
+    "4": ["44","49","94","99"]
+  };
+  return f[v[0]] || [v];
+}
 
-  checkBox.innerHTML = "";
+// ================= MAIN ANALYSIS =================
+function runAnalysis() {
+  const tbody = document.querySelector("#recordTable tbody");
+  const rows = [...tbody.querySelectorAll("tr")];
+  const out = document.getElementById("checkLines");
+  out.innerHTML = "";
 
   if (rows.length < 10) {
-    alert("Need at least 10 rows");
+    alert("Minimum 10 rows chahiye");
     return;
   }
 
   const last10 = rows.slice(-10);
 
-  const patterns = [];
+  let patterns = [];
 
-  // ---- COLUMN PATTERNS ----
+  // -------- COLUMN PATTERN --------
   for (let col = 1; col <= 6; col++) {
     let seq = [];
-    for (let i = 0; i < 10; i++) {
-      seq.push(normalize(last10[i].children[col].innerText));
-    }
-    if (seq.every(v => v !== null)) {
-      patterns.push({ type: "Column", col, seq });
-    }
+    last10.forEach(r => {
+      const td = safeCell(r, col);
+      seq.push(td ? normalize(td.innerText) : null);
+    });
+
+    const base = seq.find(v => v);
+    if (!base) continue;
+    const fam = familyOf(base);
+
+    patterns.push({
+      type: "column",
+      col,
+      family: fam,
+      seq
+    });
   }
 
-  // ---- DIAGONAL PATTERNS ----
-  for (let startCol = 1; startCol <= 6; startCol++) {
+  // -------- DIAGONAL PATTERN --------
+  for (let col = 1; col <= 4; col++) {
     let seq = [];
-    let col = startCol;
-    for (let i = 0; i < 10 && col <= 6; i++, col++) {
-      seq.push(normalize(last10[i].children[col].innerText));
+    for (let i = 0; i < 6; i++) {
+      const td = safeCell(last10[i], col + i);
+      seq.push(td ? normalize(td.innerText) : null);
     }
-    if (seq.length >= 5 && seq.every(v => v !== null)) {
-      patterns.push({ type: "Diagonal", startCol, seq });
-    }
+    const base = seq.find(v => v);
+    if (!base) continue;
+
+    patterns.push({
+      type: "diagonal",
+      col,
+      family: familyOf(base),
+      seq
+    });
   }
 
-  // ---- SEARCH IN FULL RECORD ----
-  patterns.forEach((pat, index) => {
-    const matches = [];
+  // ================= MATCH FIND =================
+  let index = 1;
+  patterns.forEach(p => {
+    let matches = [];
 
-    for (let r = 0; r <= rows.length - pat.seq.length; r++) {
+    rows.forEach((r, ri) => {
       let ok = true;
-      for (let i = 0; i < pat.seq.length; i++) {
-        let cell;
-        if (pat.type === "Column") {
-          cell = normalize(rows[r+i].children[pat.col].innerText);
-        } else {
-          const c = pat.startCol + i;
-          if (c > 6) { ok = false; break; }
-          cell = normalize(rows[r+i].children[c].innerText);
-        }
+      for (let i = 0; i < p.seq.length; i++) {
+        const td = p.type === "column"
+          ? safeCell(rows[ri + i], p.col)
+          : safeCell(rows[ri + i], p.col + i);
 
-        if (!cell || !sameFamily(cell, pat.seq[i])) {
-          ok = false;
-          break;
+        if (!td) { ok = false; break; }
+
+        const val = normalize(td.innerText);
+        if (val && !p.family.includes(val)) {
+          ok = false; break;
         }
       }
-      if (ok) matches.push({ row: r, pat });
-    }
+      if (ok) matches.push({ row: ri });
+    });
 
     if (matches.length) {
       const div = document.createElement("div");
       div.className = "check-line";
-      div.innerText = `Pattern ${index+1} (${pat.type})`;
-
-      div.onclick = () => togglePattern(matches, rows);
-
-      checkBox.appendChild(div);
+      div.innerText = `Pattern ${index++} (${p.type})`;
+      div.onclick = () => toggleMarks(matches, p);
+      out.appendChild(div);
     }
   });
 }
 
-/***********************
- * DRAW / REMOVE
- ***********************/
-function togglePattern(matches, rows) {
+// ================= DRAW / REMOVE =================
+let ACTIVE = false;
+
+function toggleMarks(matches, pat) {
+  const rows = document.querySelectorAll("#recordTable tbody tr");
+  ACTIVE = !ACTIVE;
+
+  rows.forEach(r =>
+    r.querySelectorAll(".circle,.connect-top")
+      .forEach(c => c.classList.remove("circle","connect-top"))
+  );
+
+  if (!ACTIVE) return;
+
   matches.forEach(m => {
-    for (let i = 0; i < m.pat.seq.length; i++) {
-      let td;
-      if (m.pat.type === "Column") {
-        td = rows[m.row+i].children[m.pat.col];
-      } else {
-        td = rows[m.row+i].children[m.pat.startCol+i];
-      }
-      td.classList.toggle("circle");
-      if (i > 0) td.classList.toggle("connect-top");
+    for (let i = 0; i < pat.seq.length; i++) {
+      const td = pat.type === "column"
+        ? safeCell(rows[m.row + i], pat.col)
+        : safeCell(rows[m.row + i], pat.col + i);
+
+      if (!td) continue;
+      td.classList.add("circle");
+      if (i > 0) td.classList.add("connect-top");
     }
   });
-}
+    }
