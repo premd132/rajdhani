@@ -1,5 +1,4 @@
 const tbody = document.querySelector("#recordTable tbody");
-
 /* normalize value */
 function norm(v) {
   v = v.trim();
@@ -8,22 +7,18 @@ function norm(v) {
   if (/^\d{2}$/.test(v)) return v;
   return "";
 }
-
 /* CSV split */
 function smartSplit(line) {
   return line.split(/[,\t ]+/).map(v => v.trim());
 }
-
 /* CSV LOAD */
 document.getElementById("csvFile").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = () => {
     const lines = reader.result.split(/\r?\n/);
     tbody.innerHTML = "";
-
     let w = 1;
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
@@ -34,7 +29,6 @@ document.getElementById("csvFile").addEventListener("change", e => {
   };
   reader.readAsText(file);
 });
-
 /* ADD ROW */
 function addRow(values, week) {
   const tr = document.createElement("tr");
@@ -43,7 +37,6 @@ function addRow(values, week) {
     values.map(v => `<td>${v}</td>`).join("");
   tbody.appendChild(tr);
 }
-
 /* EDIT */
 function enableEdit() {
   document.querySelectorAll("#recordTable td").forEach((td, i) => {
@@ -53,7 +46,6 @@ function enableEdit() {
     }
   });
 }
-
 /* SAVE */
 function saveData() {
   const data = [];
@@ -63,7 +55,6 @@ function saveData() {
   localStorage.setItem("recordData", JSON.stringify(data));
   alert("Data Saved");
 }
-
 /* LOAD SAVED */
 (() => {
   const saved = JSON.parse(localStorage.getItem("recordData"));
