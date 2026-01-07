@@ -1,5 +1,7 @@
-const checkBox = document.getElementById("checkLines");
-
+let checkBox;
+document.addEventListener("DOMContentLoaded", () => {
+  checkBox = document.getElementById("checkLines");
+});
 /* FAMILY */
 const FAMILY = [
   ["11","16","61","66"],
@@ -8,11 +10,9 @@ const FAMILY = [
   ["44","49","94","99"],
   ["55","00","05","50"]
 ];
-
 function isFamily(a,b){
   return FAMILY.some(f => f.includes(a) && f.includes(b));
 }
-
 /* get clean table data */
 function getTableData(){
   const rows = [...document.querySelectorAll("#recordTable tbody tr")];
@@ -24,21 +24,18 @@ function getTableData(){
     }))
   }));
 }
-
 /* last 10 valid rows */
 function last10Valid(data){
   return data.filter(r =>
     r.cells.every(c => c.value !== "**")
   ).slice(-10);
 }
-
 /* MAIN */
 function runAnalysis(){
   checkBox.innerHTML = "";
   document.querySelectorAll("td").forEach(td=>{
     td.classList.remove("circle","connect");
   });
-
   const table = getTableData();
   const last10 = last10Valid(table);
 
@@ -46,9 +43,7 @@ function runAnalysis(){
     alert("Not enough valid rows");
     return;
   }
-
   const patterns = [];
-
   /* COLUMN */
   for(let c=0;c<6;c++){
     let seq=[];
@@ -60,7 +55,6 @@ function runAnalysis(){
     if(seq.length>=2)
       patterns.push({type:"Column", cells:seq});
   }
-
   /* DIAGONAL */
   for(let c=0;c<5;c++){
     let seq=[];
@@ -72,7 +66,6 @@ function runAnalysis(){
     if(seq.length>=2)
       patterns.push({type:"Diagonal", cells:seq});
   }
-
   /* ZIG-ZAG */
   for(let c=1;c<5;c++){
     let seq=[];
@@ -84,10 +77,8 @@ function runAnalysis(){
     if(seq.length>=2)
       patterns.push({type:"ZigZag", cells:seq});
   }
-
   patterns.forEach((p,i)=>addCheckLine(p,i));
 }
-
 /* CHECK LINE */
 function addCheckLine(pattern,i){
   const div = document.createElement("div");
@@ -96,7 +87,6 @@ function addCheckLine(pattern,i){
   div.onclick=()=>toggle(pattern,div);
   checkBox.appendChild(div);
 }
-
 /* TOGGLE */
 function toggle(pattern,div){
   div.classList.toggle("active");
