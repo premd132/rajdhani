@@ -12,6 +12,7 @@ th, td {
   border: 1px solid #ccc;
   padding: 6px;
   text-align: center;
+  position: relative;
 }
 
 .controls {
@@ -22,6 +23,7 @@ th, td {
   background: #eef;
 }
 
+/* Check line box */
 .check-line {
   background: #eaffea;
   margin: 6px 0;
@@ -30,10 +32,7 @@ th, td {
   cursor: pointer;
 }
 
-/* 🔴 circle */
-td.circle {
-  position: relative;
-}
+/* 🔴 Circle */
 td.circle::after {
   content: "";
   position: absolute;
@@ -47,14 +46,28 @@ td.circle::after {
   pointer-events: none;
 }
 
-/* 🔴 vertical line */
-td.connect-top::before {
+/* 🔗 Vertical line */
+td.connect-vertical::before {
   content: "";
   position: absolute;
-  top: -18px;
   left: 50%;
+  top: -100%;
   width: 3px;
-  height: 18px;
+  height: 200%;
   background: red;
   transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* 🔗 Diagonal line (zig-zag support) */
+td.connect-diagonal::before {
+  content: "";
+  position: absolute;
+  width: 3px;
+  height: 150%;
+  background: red;
+  top: -75%;
+  left: 50%;
+  transform: rotate(45deg);
+  transform-origin: top;
 }
