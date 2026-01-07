@@ -50,7 +50,9 @@ function enableEdit() {
 function saveData() {
   const data = [];
   document.querySelectorAll("#recordTable tbody tr").forEach(tr => {
-    const row = [...tr.children].slice(1).map(td => td.innerText.trim());
+    const row = [...tr.children]
+  .slice(1)
+  .map(td => normalizeJodi(td.innerText.trim()));
     data.push(row);
   });
   localStorage.setItem("recordData", JSON.stringify(data));
