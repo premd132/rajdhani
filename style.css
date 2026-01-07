@@ -1,34 +1,6 @@
-body { font-family: Arial; padding: 10px }
-table { width:100%; border-collapse: collapse }
+body { font-family: Arial; padding:10px }
+table { width:100%; border-collapse:collapse }
 th,td { border:1px solid #ccc; padding:6px; text-align:center }
 
+.controls { margin-bottom:10px }
 .editable { background:#eef }
-
-.check-line {
-  background:#eaffea;
-  margin:5px 0;
-  padding:6px;
-  border-left:4px solid green;
-  cursor:pointer;
-}
-
-td.circle {
-  position:relative;
-}
-td.circle::after {
-  content:"";
-  position:absolute;
-  width:20px;height:20px;
-  border:3px solid red;
-  border-radius:50%;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-}
-td.line::before {
-  content:"";
-  position:absolute;
-  width:3px;height:18px;
-  background:red;
-  top:-18px;left:50%;
-  transform:translateX(-50%);
-}
