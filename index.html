@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mon–Sat Record Pattern Analysis</title>
+<title>Mon–Sat Pattern Analyzer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h2>Mon–Sat Record Pattern Analysis (1 Row = 1 Week)</h2>
+
+<h2>Mon–Sat Record Pattern Analyzer</h2>
+
 <div class="controls">
   <button onclick="enableEdit()">Edit</button>
   <button onclick="saveData()">Save</button>
   <button onclick="runAnalysis()">Run Analysis</button>
 </div>
-<div class="controls">
-  <input type="file" id="csvFile" accept=".csv">
-</div>
+
+<input type="file" id="csvFile" accept=".csv">
+
 <table id="recordTable">
   <thead>
     <tr>
@@ -25,9 +27,14 @@
   </thead>
   <tbody></tbody>
 </table>
-<h3>✔ Check Lines</h3>
+
+<h3>Check Lines</h3>
 <div id="checkLines"></div>
+
 <script src="storage.js"></script>
-<script src="analysis.js"></script>
+<script src="logic-utils.js"></script>
+<script src="pattern-engine.js"></script>
+<script src="pattern-render.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
