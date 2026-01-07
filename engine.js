@@ -46,11 +46,53 @@ function scanRecord(templates){
       let ok=true;
       const found=[];
 
+      function scanRecord(templates){
+  const rows=[...document.querySelectorAll("#recordTable tbody tr")];
+  const results=[];
+
+  templates.forEach(tpl=>{
+    const matches=[];
+
+    for(let r=0; r<rows.length; r++){
+      let found=[];
+      let miss=0;          // ✅ tolerance counter
+
       tpl.familySeq.forEach((fam,i)=>{
-        const td=rows[r+i].children[tpl.steps[i].col];
-        const f=getFamily(td?.innerText.trim());
-        if(f!==fam) ok=false;
-        else found.push({row:r+i,col:tpl.steps[i].col});
+        const rr=r+i;
+        if(rr>=rows.length){ miss++; return; }
+
+        const td=rows[rr].children[tpl.steps[i].col];
+        if(!td){ miss++; return; }
+
+        const txt=td.innerText.trim();
+        if(!txt || txt==="**"){ miss++; return; }
+
+        const f=getFamily(txt);
+
+        if(f===fam){
+          found.push({row:rr,col:tpl.steps[i].col});
+        }else{
+          miss++;
+        }
+      });
+
+      // ✅ ALLOW 1–2 BREAKS (human logic)
+      if(found.length>=3 && miss<=2){
+        matches.push(found);
+      }
+    }
+
+    if(matches.length){
+      results.push({
+        type:tpl.type,
+        family:tpl.familySeq[0],
+        matches
+      });
+    }
+  });
+
+  return results;
+      }
       });
 
       if(ok) matches.push(found);
