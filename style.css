@@ -1,18 +1,28 @@
-body { font-family: Arial; padding:10px }
-table { width:100%; border-collapse:collapse; margin-top:10px }
-th,td { border:1px solid #ccc; padding:6px; text-align:center }
+/* ===== STEP 5 DRAWING ===== */
 
-.controls { margin-bottom:10px }
-.editable { background:#eef }
-
-.check-line {
-  padding:6px;
-  margin:6px 0;
-  background:#eaffea;
-  border-left:4px solid green;
-  cursor:pointer;
-  font-size:14px;
+td.circle {
+  position: relative;
 }
-.check-line.active {
-  background:#c9ffd0;
+
+td.circle::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 3px solid red;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+td.v-line::before {
+  content: "";
+  position: absolute;
+  width: 3px;
+  height: 18px;
+  background: red;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
 }
