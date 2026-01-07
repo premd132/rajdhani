@@ -25,13 +25,15 @@ document.getElementById("csvFile").addEventListener("change", e => {
   reader.readAsText(file);
 });
 
-/* ADD ROW */
 function addRow(values, week) {
   const tr = document.createElement("tr");
+
   tr.innerHTML =
     `<td>W${week}</td>` +
-    values.map(v => `<td>${v}</td>`).join("");
+    values.map(v => `<td>${normalizeJodi(v)}</td>`).join("");
+
   tbody.appendChild(tr);
+}
 }
 
 /* EDIT */
