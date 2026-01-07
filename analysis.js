@@ -1,8 +1,13 @@
-let checkBox;
-document.addEventListener("DOMContentLoaded", () => {
-  checkBox = document.getElementById("checkLines");
-});
-/* FAMILY */
+/***********************
+ * GLOBAL HELPERS
+ ***********************/
+function normalize(v) {
+  if (!v || v === "**") return null;
+  v = v.toString().trim();
+  if (v.length === 1) return "0" + v;
+  return v;
+}
+
 const FAMILY = [
   ["11","16","61","66"],
   ["22","27","72","77"],
@@ -10,88 +15,104 @@ const FAMILY = [
   ["44","49","94","99"],
   ["55","00","05","50"]
 ];
-function isFamily(a,b){
+
+function sameFamily(a, b) {
+  if (!a || !b) return false;
   return FAMILY.some(f => f.includes(a) && f.includes(b));
 }
-/* get clean table data */
-function getTableData(){
-  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
-  return rows.map((tr,r)=>({
-    row:r,
-    cells:[...tr.children].slice(1).map((td,c)=>({
-      value:td.innerText.trim(),
-      td
-    }))
-  }));
-}
-/* last 10 valid rows */
-function last10Valid(data){
-  return data.filter(r =>
-    r.cells.every(c => c.value !== "**")
-  ).slice(-10);
-}
-/* MAIN */
-function runAnalysis(){
-  checkBox.innerHTML = "";
-  document.querySelectorAll("td").forEach(td=>{
-    td.classList.remove("circle","connect");
-  });
-  const table = getTableData();
-  const last10 = last10Valid(table);
 
-  if(last10.length < 10){
-    alert("Not enough valid rows");
+/***********************
+ * MAIN ANALYSIS
+ ***********************/
+function runAnalysis() {
+  const table = document.getElementById("recordTable");
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  const checkBox = document.getElementById("checkLines");
+
+  checkBox.innerHTML = "";
+
+  if (rows.length < 10) {
+    alert("Need at least 10 rows");
     return;
   }
+
+  const last10 = rows.slice(-10);
+
   const patterns = [];
-  /* COLUMN */
-  for(let c=0;c<6;c++){
-    let seq=[];
-    for(let i=1;i<last10.length;i++){
-      const a = last10[i-1].cells[c].value;
-      const b = last10[i].cells[c].value;
-      if(isFamily(a,b)) seq.push(last10[i].cells[c]);
+
+  // ---- COLUMN PATTERNS ----
+  for (let col = 1; col <= 6; col++) {
+    let seq = [];
+    for (let i = 0; i < 10; i++) {
+      seq.push(normalize(last10[i].children[col].innerText));
     }
-    if(seq.length>=2)
-      patterns.push({type:"Column", cells:seq});
-  }
-  /* DIAGONAL */
-  for(let c=0;c<5;c++){
-    let seq=[];
-    for(let i=1;i<last10.length;i++){
-      const a = last10[i-1].cells[c].value;
-      const b = last10[i].cells[c+1].value;
-      if(isFamily(a,b)) seq.push(last10[i].cells[c+1]);
+    if (seq.every(v => v !== null)) {
+      patterns.push({ type: "Column", col, seq });
     }
-    if(seq.length>=2)
-      patterns.push({type:"Diagonal", cells:seq});
   }
-  /* ZIG-ZAG */
-  for(let c=1;c<5;c++){
-    let seq=[];
-    for(let i=1;i<last10.length;i++){
-      const a = last10[i-1].cells[c].value;
-      const b = last10[i].cells[c-1].value;
-      if(isFamily(a,b)) seq.push(last10[i].cells[c-1]);
+
+  // ---- DIAGONAL PATTERNS ----
+  for (let startCol = 1; startCol <= 6; startCol++) {
+    let seq = [];
+    let col = startCol;
+    for (let i = 0; i < 10 && col <= 6; i++, col++) {
+      seq.push(normalize(last10[i].children[col].innerText));
     }
-    if(seq.length>=2)
-      patterns.push({type:"ZigZag", cells:seq});
+    if (seq.length >= 5 && seq.every(v => v !== null)) {
+      patterns.push({ type: "Diagonal", startCol, seq });
+    }
   }
-  patterns.forEach((p,i)=>addCheckLine(p,i));
+
+  // ---- SEARCH IN FULL RECORD ----
+  patterns.forEach((pat, index) => {
+    const matches = [];
+
+    for (let r = 0; r <= rows.length - pat.seq.length; r++) {
+      let ok = true;
+      for (let i = 0; i < pat.seq.length; i++) {
+        let cell;
+        if (pat.type === "Column") {
+          cell = normalize(rows[r+i].children[pat.col].innerText);
+        } else {
+          const c = pat.startCol + i;
+          if (c > 6) { ok = false; break; }
+          cell = normalize(rows[r+i].children[c].innerText);
+        }
+
+        if (!cell || !sameFamily(cell, pat.seq[i])) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) matches.push({ row: r, pat });
+    }
+
+    if (matches.length) {
+      const div = document.createElement("div");
+      div.className = "check-line";
+      div.innerText = `Pattern ${index+1} (${pat.type})`;
+
+      div.onclick = () => togglePattern(matches, rows);
+
+      checkBox.appendChild(div);
+    }
+  });
 }
-/* CHECK LINE */
-function addCheckLine(pattern,i){
-  const div = document.createElement("div");
-  div.className="check-line";
-  div.innerText=`Pattern ${i+1} (${pattern.type})`;
-  div.onclick=()=>toggle(pattern,div);
-  checkBox.appendChild(div);
-}
-/* TOGGLE */
-function toggle(pattern,div){
-  div.classList.toggle("active");
-  pattern.cells.forEach((c,i)=>{
-    c.td.classList.toggle("circle");
-    if(i>0) c.td.classList.toggle("connect");
+
+/***********************
+ * DRAW / REMOVE
+ ***********************/
+function togglePattern(matches, rows) {
+  matches.forEach(m => {
+    for (let i = 0; i < m.pat.seq.length; i++) {
+      let td;
+      if (m.pat.type === "Column") {
+        td = rows[m.row+i].children[m.pat.col];
+      } else {
+        td = rows[m.row+i].children[m.pat.startCol+i];
+      }
+      td.classList.toggle("circle");
+      if (i > 0) td.classList.toggle("connect-top");
+    }
   });
 }
