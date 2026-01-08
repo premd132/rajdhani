@@ -1,3 +1,10 @@
+const DIRECTIONS = [
+  { name: "down", dr: 1, dc: 0 },
+  { name: "diag-right", dr: 1, dc: 1 },
+  { name: "diag-left", dr: 1, dc: -1 },
+  { name: "zigzag-r", dr: 1, dc: (i)=> i%2===0 ? 1 : -1 },
+  { name: "zigzag-l", dr: 1, dc: (i)=> i%2===0 ? -1 : 1 },
+];
 function runEngine() {
   clearDrawing();
 
