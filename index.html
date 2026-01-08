@@ -2,36 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Family Pattern Analyzer</title>
+<title>Mon-Sat Record Pattern Analyzer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>Mon–Sat Record Pattern Analyzer</h2>
+<h2>Mon-Sat Record Pattern Analyzer</h2>
 
-  <input type="file" id="csvFile" accept=".csv">
+<input type="file" id="csvFile" accept=".csv">
+
+<br><br>
 
 <button onclick="enableEdit()">Edit</button>
 <button onclick="saveData()">Save</button>
 <button onclick="runStep4()">Run Analysis</button>
 
-<script src="storage.js"></script>
-<script src="family.js"></script>
-<script src="engine.js"></script>
-
-<table id="recordTable">
-<thead>
-<tr>
-  <th>Week</th>
-  <th>Mon</th><th>Tue</th><th>Wed</th>
-  <th>Thu</th><th>Fri</th><th>Sat</th>
-</tr>
-</thead>
-<tbody></tbody>
+<table id="recordTable" border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Week</th>
+      <th>Mon</th><th>Tue</th><th>Wed</th>
+      <th>Thu</th><th>Fri</th><th>Sat</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
 
 <h3>✔ Check Lines</h3>
 <div id="checkLines"></div>
+
+<script src="storage.js"></script>
+<script src="family.js"></script>
+<script src="engine.js"></script>
 
 </body>
 </html>
