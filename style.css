@@ -1,19 +1,31 @@
-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-td, th { border:1px solid #ccc; padding:4px; text-align:center; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 4px;
+}
+
+.editable {
+  background: #fff9c4;
+}
 
 .circle {
-  border:2px solid red;
-  border-radius:50%;
+  border: 2px solid red;
+  border-radius: 50%;
 }
 
 .line {
-  border-left:3px solid red;
+  border-left: 3px solid red;
 }
 
 .check-line {
-  background:#e8ffe8;
-  margin:5px;
-  padding:6px;
-  cursor:pointer;
+  background: #e8f5e9;
+  margin: 4px 0;
+  padding: 6px;
+  cursor: pointer;
 }
-.check-line.active { background:#b8ffb8; }
