@@ -1,31 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Family Pattern Analyzer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Pattern Analyzer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h2>Mon–Sat Pattern Analyzer</h2>
 
-<h2>Mon–Sat Record Pattern Analyzer</h2>
+  <input type="file" id="csvFile" accept=".csv">
+  <button onclick="runAnalysis()">Run Analysis</button>
 
-<input type="file" id="csvFile" accept=".csv">
-<button onclick="enableEdit()">Edit</button>
-<button onclick="saveData()">Save</button>
-<button onclick="runEngine()">Run Analysis</button>
+  <table id="recordTable">
+    <thead>
+      <tr>
+        <th>Week</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<table id="recordTable">
-<thead>
-<tr>
-<th>Week</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+  <h3>✓ Check Lines</h3>
+  <div id="result"></div>
 
-<h3>✔ Check Lines</h3>
-<div id="checkLines"></div>
-
-<script src="engine.js"></script>
+  <script src="engine.js"></script>
 </body>
 </html>
