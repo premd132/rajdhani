@@ -1,97 +1,122 @@
-function clearDraw() {
-  document.querySelectorAll("td").forEach(td => {
-    td.classList.remove("circle", "line");
+const tbody=document.querySelector("#recordTable tbody");
+
+/* ---------- FAMILY ---------- */
+function normalize(v){
+ if(!v||v=="**") return null;
+ return v.toString().padStart(2,"0");
+}
+function getFamily(v){
+ if(!v) return null;
+ const f={
+ "0":["00","05","50","55"],
+ "1":["11","16","61","66"],
+ "2":["22","27","72","77"],
+ "3":["33","38","83","88"],
+ "4":["44","49","94","99"]
+ };
+ return f[v[0]]||[v];
+}
+
+/* ---------- CSV LOAD ---------- */
+document.getElementById("csvFile").addEventListener("change",e=>{
+ const f=e.target.files[0]; if(!f) return;
+ const r=new FileReader();
+ r.onload=()=>{
+  tbody.innerHTML="";
+  r.result.split(/\r?\n/).forEach((l,i)=>{
+   if(!l.trim()) return;
+   const c=l.split(",");
+   const tr=document.createElement("tr");
+   tr.innerHTML=`<td>W${i+1}</td>`+c.map(v=>`<td>${normalize(v)||""}</td>`).join("");
+   tbody.appendChild(tr);
   });
+ };
+ r.readAsText(f);
+});
+
+/* ---------- EDIT + SAVE ---------- */
+function enableEdit(){
+ document.querySelectorAll("#recordTable td").forEach((td,i)=>{
+  if(i%7!=0){ td.contentEditable=true; td.classList.add("editable"); }
+ });
+}
+function saveData(){
+ const data=[];
+ document.querySelectorAll("#recordTable tbody tr").forEach(tr=>{
+  data.push([...tr.children].slice(1).map(td=>td.innerText.trim()));
+ });
+ localStorage.setItem("record",JSON.stringify(data));
+ alert("Saved");
+}
+(function load(){
+ const d=JSON.parse(localStorage.getItem("record")||"null");
+ if(!d) return;
+ tbody.innerHTML="";
+ d.forEach((row,i)=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>W${i+1}</td>`+row.map(v=>`<td>${v}</td>`).join("");
+  tbody.appendChild(tr);
+ });
+})();
+
+/* ---------- DRAW ---------- */
+function clearDraw(){
+ document.querySelectorAll("#recordTable td")
+ .forEach(td=>td.classList.remove("circle","line"));
+}
+function draw(match){
+ clearDraw();
+ match.forEach((s,i)=>{
+  const td=tbody.children[s.row].children[s.col];
+  td.classList.add("circle");
+  if(i>0) td.classList.add("line");
+ });
 }
 
-function rows() {
-  return [...document.querySelectorAll("#recordTable tbody tr")];
-}
+/* ---------- ENGINE ---------- */
+function runEngine(){
+ clearDraw();
+ const rows=[...tbody.children];
+ if(rows.length<6){ alert("Minimum 6 rows"); return; }
 
-/* =========================
-   STEP 1: BUILD COLUMN PATTERNS
-   ========================= */
-function buildColumnTemplates() {
-  const r = rows();
-  const last = r.slice(-6);
-  const templates = [];
+ const last=rows.slice(-6);
+ const templates=[];
 
-  for (let col = 1; col <= 6; col++) {
-    const famSeq = [];
-    last.forEach(row => {
-      const val = row.children[col].innerText.trim();
-      const fam = getFamily(val);
-      if (fam) famSeq.push(fam);
-    });
+ for(let col=1;col<=6;col++){
+  const famSeq=[];
+  last.forEach((r,i)=>{
+   const v=normalize(r.children[col].innerText);
+   famSeq.push({fam:getFamily(v),row:i,col});
+  });
+  templates.push(famSeq);
+ }
 
-    if (famSeq.length >= 4) {
-      templates.push({ col, famSeq });
-    }
+ const results=[];
+ templates.forEach((tpl,tIndex)=>{
+  for(let r=0;r<=rows.length-6;r++){
+   let ok=true,found=[];
+   for(let i=0;i<6;i++){
+    const td=rows[r+i].children[tpl[i].col];
+    const fam=getFamily(normalize(td.innerText));
+    if(!fam||!tpl[i].fam.some(x=>fam.includes(x))) ok=false;
+    else found.push({row:r+i,col:tpl[i].col});
+   }
+   if(ok) results.push({name:`Pattern ${results.length+1} | Column ${tpl[0].col}`,found});
   }
-  return templates;
-}
+ });
 
-/* =========================
-   STEP 2: SCAN FULL RECORD
-   ========================= */
-function scanAll(templates) {
-  const r = rows();
-  const results = [];
+ const box=document.getElementById("checkLines");
+ box.innerHTML="";
+ if(!results.length){ box.innerHTML="<i>No family pattern found</i>"; return; }
 
-  templates.forEach(tpl => {
-    for (let i = 0; i <= r.length - tpl.famSeq.length; i++) {
-      let ok = true;
-      const steps = [];
-
-      tpl.famSeq.forEach((fam, j) => {
-        const td = r[i + j].children[tpl.col];
-        if (getFamily(td.innerText.trim()) !== fam) {
-          ok = false;
-        } else {
-          steps.push({ row: i + j, col: tpl.col });
-        }
-      });
-
-      if (ok) results.push({ col: tpl.col, steps });
-    }
-  });
-
-  return results;
-}
-
-/* =========================
-   STEP 3: DRAW
-   ========================= */
-function draw(steps) {
-  clearDraw();
-  steps.forEach((s, i) => {
-    const td = rows()[s.row].children[s.col];
-    td.classList.add("circle");
-    if (i > 0) td.classList.add("line");
-  });
-}
-
-/* =========================
-   STEP 4: RUN
-   ========================= */
-function runAnalysis() {
-  clearDraw();
-  const box = document.getElementById("checkLines");
-  box.innerHTML = "";
-
-  const templates = buildColumnTemplates();
-  const results = scanAll(templates);
-
-  if (!results.length) {
-    box.innerHTML = "<i>No family pattern found</i>";
-    return;
-  }
-
-  results.forEach((res, i) => {
-    const d = document.createElement("div");
-    d.className = "check-line";
-    d.innerText = `Pattern ${i + 1} | Column ${res.col}`;
-    d.onclick = () => draw(res.steps);
-    box.appendChild(d);
-  });
+ results.forEach(r=>{
+  const d=document.createElement("div");
+  d.className="check-line";
+  d.innerText=r.name;
+  d.onclick=()=>{
+   const a=d.classList.toggle("active");
+   if(a) draw(r.found); else clearDraw();
+  };
+  box.appendChild(d);
+ });
 }
