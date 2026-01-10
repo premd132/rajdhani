@@ -3,78 +3,76 @@ function clearDraw(){
     .forEach(td=>td.classList.remove("circle","line"));
 }
 
+// नीचे की rows से strong family निकालो
+function getStrongFamilies(rows){
+  const count = {};
+  rows.forEach(r=>{
+    r.forEach(v=>{
+      const f = getFamily(v);
+      if(!f) return;
+      count[f] = (count[f]||0)+1;
+    });
+  });
+  return Object.keys(count).filter(f=>count[f]>=2); // 2+ बार आई हो
+}
+
 function runAnalysis(){
   clearDraw();
-  const rows=[...document.querySelectorAll("#recordTable tbody tr")];
-  const box=document.getElementById("checkLines");
-  box.innerHTML="";
+  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
+  const box = document.getElementById("checkLines");
+  box.innerHTML = "";
 
-  if(rows.length<2){
-    box.innerHTML="<i>Data kam hai</i>";
+  if(rows.length < 5){
+    box.innerHTML = "<i>कम से कम 5 rows चाहिए</i>";
     return;
   }
 
-  let allMatches=[];
-  let id=1;
+  // नीचे की 5 rows से strong family
+  const last5 = rows.slice(-5).map(r=>
+    [...r.children].slice(1).map(td=>td.innerText.trim())
+  );
+  const strongFams = getStrongFamilies(last5);
 
-  // 2,3,4,5 rows ke pattern
-  [2,3,4,5].forEach(size=>{
-    if(rows.length<size) return;
+  if(!strongFams.length){
+    box.innerHTML = "<i>No strong family in bottom rows</i>";
+    return;
+  }
 
-    const baseRows = rows.slice(-size);
+  const matchesByFamily = {};
 
-    // har column ke liye
-    for(let col=1; col<=6; col++){
-      const baseFam = baseRows.map(r =>
-        getFamily(r.children[col].innerText.trim())
-      );
-      if(baseFam.includes(null)) return;
-
-      // poore record me search
-      for(let r=0; r<=rows.length-size; r++){
-        let ok=true;
-        let steps=[];
-        for(let i=0;i<size;i++){
-          const fam = getFamily(rows[r+i].children[col].innerText.trim());
-          if(fam!==baseFam[i]){
-            ok=false; break;
-          }
-          steps.push({row:r+i,col});
-        }
-        if(ok){
-          allMatches.push({
-            id:id++,
-            col,
-            size,
-            steps
-          });
-        }
+  // पूरे रिकॉर्ड में search
+  rows.forEach((r,ri)=>{
+    [...r.children].slice(1).forEach((td,ci)=>{
+      const fam = getFamily(td.innerText.trim());
+      if(strongFams.includes(fam)){
+        if(!matchesByFamily[fam]) matchesByFamily[fam] = [];
+        matchesByFamily[fam].push({row:ri,col:ci+1});
       }
-    }
+    });
   });
 
-  if(!allMatches.length){
-    box.innerHTML="<i>No pattern found</i>";
-    return;
-  }
-
-  // Check Lines बनाओ
-  allMatches.forEach(m=>{
-    const d=document.createElement("div");
-    d.className="check-line";
-    d.innerText=`Check ${m.id} | Col ${m.col} | ${m.size} Row Pattern`;
+  let id=1;
+  Object.keys(matchesByFamily).forEach(fam=>{
+    const list = matchesByFamily[fam];
+    const div = document.createElement("div");
+    div.className = "check-line";
+    div.innerText = `Check ${id++} | Family ${fam}`;
     let on=false;
-    d.onclick=()=>{
+    div.onclick = ()=>{
       on=!on;
       clearDraw();
       if(on){
-        m.steps.forEach((s,i)=>{
-          const td=rows[s.row].children[s.col];
+        let prev=null;
+        list.forEach(p=>{
+          const td = rows[p.row].children[p.col];
           td.classList.add("circle");
-          if(i>0) td.classList.add("line");
+          if(prev && (p.col===prev.col || Math.abs(p.col-prev.col)===1)){
+            td.classList.add("line"); // flow मिला तो line
+          }
+          prev = p;
         });
       }
     };
-    box.appendChild(d);
+    box.appendChild(div);
   });
 }
