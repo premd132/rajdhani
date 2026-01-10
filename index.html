@@ -2,19 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Family Pattern Analyzer</title>
+<title>Final Pattern Analyzer</title>
 <style>
-body{font-family:Arial;}
-table{border-collapse:collapse;font-size:12px;}
-td,th{border:1px solid #999;padding:4px;text-align:center;min-width:40px;}
-.circle{border:3px solid red;border-radius:50%;}
-#checkLines{margin-top:15px;background:#eaffea;padding:10px;}
-.line{margin:4px 0;}
+table{border-collapse:collapse;font-size:12px}
+td,th{border:1px solid #999;padding:4px;text-align:center;min-width:36px}
+.circle{border:3px solid red;border-radius:50%}
+.check-line{background:#eaffea;margin:4px 0;padding:6px;cursor:pointer}
+.check-line:hover{background:#c9f5c9}
 </style>
 </head>
 <body>
 
-<h2>Family Pattern Analyzer</h2>
+<h3>Upload CSV</h3>
 <input type="file" id="csvFile">
 <button onclick="runAnalysis()">Run Analysis</button>
 
@@ -24,7 +23,8 @@ td,th{border:1px solid #999;padding:4px;text-align:center;min-width:40px;}
 <div id="checkLines"></div>
 
 <script>
-const families = {
+// ===== FAMILY MAP =====
+const FAMILY_MAP = {
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
 "14":["14","19","41","46","64","69","91","96"],
@@ -35,84 +35,137 @@ const families = {
 "34":["34","39","43","48","84","89","93","98"],
 "35":["03","08","30","35","53","58","80","85"],
 "45":["04","09","40","45","54","59","90","95"],
-"HR":["05","16","27","38","49","50","61","72","83","94"],
-"FR":["00","11","22","33","44","55","66","77","88","99"]
+"HALF":["05","16","27","38","49","50","61","72","83","94"],
+"FULL":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-function getFamily(num){
- for(let f in families){
-  if(families[f].includes(num)) return f;
- }
- return null;
+function pad2(v){ return v.toString().padStart(2,"0"); }
+function palti(v){ v=pad2(v); return v[1]+v[0]; }
+function getFamily(v){
+  if(!v||v==="**") return null;
+  v=pad2(v);
+  for(const k in FAMILY_MAP){
+    if(FAMILY_MAP[k].includes(v)) return k;
+  }
+  return null;
+}
+function sameJodi(a,b){ return pad2(a)===pad2(b); }
+function sameFamily(a,b){
+  const fa=getFamily(a), fb=getFamily(b);
+  return fa && fb && fa===fb;
+}
+function isPalti(a,b){ return pad2(a)===palti(b); }
+function isMatch(a,b){
+  return sameJodi(a,b) || sameFamily(a,b) || isPalti(a,b);
 }
 
+// ===== CSV LOAD =====
 document.getElementById("csvFile").addEventListener("change",e=>{
- const file=e.target.files[0];
- const r=new FileReader();
- r.onload=()=>{
-  const rows=r.result.trim().split("\n").map(r=>r.split(","));
-  drawTable(rows);
- }
- r.readAsText(file);
+  const f=e.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const rows=r.result.trim().split(/\r?\n/).map(x=>x.split(","));
+    const t=document.getElementById("recordTable");
+    t.innerHTML="";
+    rows.forEach((r,i)=>{
+      const tr=document.createElement("tr");
+      r.forEach(c=>{
+        const td=document.createElement(i===0?"th":"td");
+        td.innerText=c.trim();
+        tr.appendChild(td);
+      });
+      t.appendChild(tr);
+    });
+  };
+  r.readAsText(f);
 });
 
-function drawTable(data){
- const t=document.getElementById("recordTable");
- t.innerHTML="";
- data.forEach((r,i)=>{
-  const tr=document.createElement("tr");
-  r.forEach(c=>{
-   const td=document.createElement(i==0?"th":"td");
-   td.innerText=c.trim();
-   tr.appendChild(td);
-  });
-  t.appendChild(tr);
- });
+// ===== CLEAR =====
+function clearMarks(){
+  document.querySelectorAll(".circle").forEach(x=>x.classList.remove("circle"));
+  document.getElementById("checkLines").innerHTML="";
 }
 
-function clearCircles(){
- document.querySelectorAll(".circle").forEach(e=>e.classList.remove("circle"));
-}
-
+// ===== MAIN ANALYSIS =====
 function runAnalysis(){
- clearCircles();
- const table=document.getElementById("recordTable");
- const rows=[...table.rows].slice(1); // skip header
- if(rows.length<4) return;
+  clearMarks();
+  const table=document.getElementById("recordTable");
+  if(!table.rows.length) return;
 
- const last4=rows.slice(-4);
- const checks=[];
- const cols=rows[0].cells.length;
+  const rows=[...table.rows].slice(1); // skip header
+  if(rows.length<4){ alert("कम से कम 4 rows चाहिए"); return; }
 
- for(let c=1;c<cols;c++){ // skip week col
-  const fams=[];
-  last4.forEach(r=>{
-   const v=r.cells[c].innerText.trim();
-   fams.push(getFamily(v));
-  });
-  const repeat=fams.find(f=>f && fams.filter(x=>x==f).length>=2);
-  if(repeat){
-   last4.forEach((r,i)=>{
-    if(getFamily(r.cells[c].innerText.trim())==repeat){
-     r.cells[c].classList.add("circle");
+  const last4 = rows.slice(-4);
+  const cols = rows[0].cells.length;
+  const patterns=[]; // {col, rows:[idxs], rule}
+
+  // vertical only
+  for(let c=0;c<cols;c++){
+    const vals = last4.map(r=>r.cells[c]?.innerText.trim()||"");
+    // check any pair match by rules
+    for(let i=0;i<4;i++){
+      for(let j=i+1;j<4;j++){
+        if(isMatch(vals[i],vals[j])){
+          patterns.push({col:c, base:vals.slice(), pair:[i,j]});
+          break;
+        }
+      }
+      if(patterns.length) break;
     }
-   });
-   checks.push(`Column ${c} | Family ${repeat} repeated in last 4 rows`);
   }
- }
 
- const cl=document.getElementById("checkLines");
- cl.innerHTML="";
- if(checks.length==0){
-  cl.innerHTML="<div>No family repeat in last 4 rows</div>";
- }else{
-  checks.forEach((t,i)=>{
-   const d=document.createElement("div");
-   d.className="line";
-   d.innerText=`Check ${i+1}: ${t}`;
-   cl.appendChild(d);
+  if(!patterns.length){
+    document.getElementById("checkLines").innerHTML="<i>No pattern in last 4 rows</i>";
+    return;
+  }
+
+  // draw circles in last 4 rows
+  patterns.forEach(p=>{
+    p.base.forEach((v,ri)=>{
+      const td = last4[ri].cells[p.col];
+      if(td && v && v!=="**") td.classList.add("circle");
+    });
   });
- }
+
+  // search same pattern in history
+  const checks=[];
+  patterns.forEach(p=>{
+    const hits=[];
+    for(let r=0;r<=rows.length-4;r++){
+      const block = rows.slice(r,r+4);
+      const vals = block.map(x=>x.cells[p.col]?.innerText.trim()||"");
+      // shape match: where base has circle (we used all 4 as base)
+      let ok=false;
+      for(let i=0;i<4;i++){
+        for(let j=i+1;j<4;j++){
+          if(isMatch(vals[i],vals[j])) ok=true;
+        }
+      }
+      if(ok) hits.push({start:r});
+    }
+    if(hits.length) checks.push({p,hits});
+  });
+
+  const box=document.getElementById("checkLines");
+  let n=1;
+  checks.forEach(obj=>{
+    obj.hits.forEach(h=>{
+      const d=document.createElement("div");
+      d.className="check-line";
+      d.innerText=`Check ${n++} | Col ${obj.p.col+1}`;
+      d.onclick=()=>{
+        clearMarks();
+        // draw this match
+        const rowsAll=[...document.querySelectorAll("#recordTable tr")].slice(1);
+        for(let k=0;k<4;k++){
+          const td = rowsAll[h.start+k].cells[obj.p.col];
+          if(td) td.classList.add("circle");
+        }
+      };
+      box.appendChild(d);
+    });
+  });
 }
 </script>
 </body>
