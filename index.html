@@ -2,15 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Final Pattern System</title>
+<title>Pattern System</title>
 <style>
-table { border-collapse: collapse; font-size: 12px; }
-td, th { border:1px solid #aaa; padding:4px; text-align:center; }
-.blank { background:#f5f5f5; cursor:pointer; }
-.circle { border:3px solid red; border-radius:50%; }
-#checks div{background:#dff0d8;margin:4px;padding:6px;cursor:pointer}
-#popup{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none}
-#popupBox{background:#fff;margin:5%;padding:10px;max-height:80%;overflow:auto}
+table{border-collapse:collapse;font-size:12px}
+td,th{border:1px solid #999;padding:4px;text-align:center}
+.blank{background:#eee;cursor:pointer}
+.circle{border:3px solid red;border-radius:50%}
+#checks div{background:#e8ffe8;margin:4px;padding:4px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -21,43 +19,33 @@ td, th { border:1px solid #aaa; padding:4px; text-align:center; }
 <h4>✔ Check Lines</h4>
 <div id="checks"></div>
 
-<div id="popup">
-  <div id="popupBox">
-    <button onclick="closePop()">Close</button>
-    <div id="popData"></div>
-  </div>
-</div>
-
 <script>
-// ---------- FAMILY DATA ----------
-const families = {
-  "12":["12","17","21","26","62","67","71","76"],
-  "13":["13","18","31","36","63","68","81","86"],
-  "14":["14","19","41","46","64","69","91","96"],
-  "15":["01","06","10","15","51","56","60","65"],
-  "23":["23","28","32","37","73","78","82","87"],
-  "24":["24","29","42","47","74","79","92","97"],
-  "25":["02","07","20","25","52","57","70","75"],
-  "34":["34","39","43","48","84","89","93","98"],
-  "35":["03","08","30","35","53","58","80","85"],
-  "45":["04","09","40","45","54","59","90","95"],
-  "HR":["05","16","27","38","49","50","61","72","83","94"],
-  "FR":["00","11","22","33","44","55","66","77","88","99"]
+/* ===== FAMILY DATA ===== */
+const families={
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"],
+"HR":["05","16","27","38","49","50","61","72","83","94"],
+"FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
 function norm(v){
- if(v===""||v=="**") return "**";
- v=String(v);
- return v.length==1?"0"+v:v;
+ if(v==="**"||v==="")return "**";
+ v=String(v); return v.length==1?"0"+v:v;
 }
 function getFamily(v){
- for(let k in families){
-   if(families[k].includes(v)) return k;
- }
+ for(let k in families) if(families[k].includes(v)) return k;
  return "NA";
 }
 
-// ---------- SAMPLE DATA (replace with CSV load later) ----------
+/* ===== SAMPLE DATA ===== */
 let data=[
 ["51","91","41","57","19","95"],
 ["05","90","74","06","19","63"],
@@ -73,97 +61,13 @@ let data=[
 ["96","25","78","59","30","94"],
 ["","","","","",""] // blank row
 ];
+data=data.map(r=>r.map(norm));
 
-data=data.map(r=> r.map(norm));
-
-// ---------- RENDER ----------
+/* ===== DRAW TABLE ===== */
 function draw(){
  let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
  data.forEach((r,ri)=>{
    t+="<tr>";
    r.forEach((c,ci)=>{
-     if(c=="") t+=`<td class='blank' onclick='makePattern(${ci})'></td>`;
-     else t+=`<td id='c-${ri}-${ci}'>${c}</td>`;
-   });
-   t+="</tr>";
- });
- tbl.innerHTML=t;
-}
-draw();
-
-// ---------- PATTERN FROM BLANK ----------
-let checks=[];
-function makePattern(col){
- let last=[];
- for(let i=data.length-2;i>=0 && last.length<4;i--){
-   if(data[i][col]!="**") last.push(data[i][col]);
- }
- if(last.length<2){alert("Not enough data");return;}
- let fams=last.map(v=>getFamily(v));
- searchPattern(col,fams);
-}
-
-function sameFamily(a,b){ return getFamily(a)==getFamily(b); }
-
-// ---------- SEARCH ----------
-function searchPattern(col,fams){
- let found=[];
- for(let i=0;i<data.length-fams.length;i++){
-   let ok=true;
-   for(let j=0;j<fams.length;j++){
-     if(getFamily(data[i+j][col])!=fams[j]){ ok=false; break;}
-   }
-   if(ok) found.push(i);
- }
- if(found.length){
-   let id=checks.length+1;
-   checks.push({col,fams,found});
-   renderChecks();
-   mark(found,col,fams.length);
- }else alert("No match in history");
-}
-
-// ---------- MARK ----------
-function mark(rows,col,len){
- rows.forEach(r=>{
-   for(let i=0;i<len+1;i++){
-     let td=document.getElementById(`c-${r+i}-${col}`);
-     if(td) td.classList.add("circle");
-   }
- });
-}
-
-// ---------- CHECK LINES ----------
-function renderChecks(){
- checksDiv.innerHTML="";
- checks.forEach((c,i)=>{
-   let d=document.createElement("div");
-   d.innerText=`Check ${i+1} | Col ${c.col+1} | ${c.fams.length} Row Pattern`;
-   d.onclick=()=>showPop(i);
-   checksDiv.appendChild(d);
- });
-}
-
-function showPop(i){
- let c=checks[i];
- let h="<table border=1>";
- c.found.forEach(r=>{
-   for(let i2=0;i2<c.fams.length+1;i2++){
-     h+="<tr>";
-     data[r+i2].forEach((v,ci)=>{
-       if(ci==c.col) h+=`<td class='circle'>${v}</td>`;
-       else h+=`<td>${v}</td>`;
-     });
-     h+="</tr>";
-   }
-   h+="<tr><td colspan=6>---</td></tr>";
- });
- h+="</table>";
- popData.innerHTML=h;
- popup.style.display="block";
-}
-function closePop(){popup.style.display="none";}
-</script>
-  console.log("JS Loaded OK");
-</body>
-</html>
+     if(c=="") t+=`<td class='blank' onclick='makePattern(${ri},${ci})'>**</td>`;
+     else t+=`<td id='c-${ri}-${ci}'>${
