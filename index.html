@@ -2,20 +2,24 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Final Family Pattern Tool</title>
+  <title>Family Pattern Analyzer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>Family Pattern Analyzer</h2>
+<h2>Mon–Sat Record Pattern Analyzer</h2>
 
 <input type="file" id="csvFile" accept=".csv">
+<button onclick="enableEdit()">Edit</button>
+<button onclick="saveData()">Save</button>
 <button onclick="runAnalysis()">Run Analysis</button>
 
 <table id="recordTable">
   <thead>
     <tr>
-      <th>Week</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      <th>Week</th>
+      <th>Mon</th><th>Tue</th><th>Wed</th>
+      <th>Thu</th><th>Fri</th><th>Sat</th>
     </tr>
   </thead>
   <tbody></tbody>
@@ -24,6 +28,7 @@
 <h3>✔ Check Lines</h3>
 <div id="checkLines"></div>
 
+<script src="storage.js"></script>
 <script src="family.js"></script>
 <script src="engine.js"></script>
 </body>
