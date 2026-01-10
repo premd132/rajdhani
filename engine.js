@@ -1,61 +1,71 @@
-function clearMarks(){
-  document.querySelectorAll("td").forEach(td=>{
-    td.classList.remove("circle");
-  });
-  document.getElementById("checkLines").innerHTML="";
+// 1) Last 6 rows
+function getLastRows(n = 6){
+  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
+  return rows.slice(-n);
 }
 
+// 2) Palti + same
+function sameOrPalti(a,b){
+  if(!a || !b) return false;
+  if(a === b) return true;
+  return a === b.split("").reverse().join("");
+}
+
+// 3) Main analysis (button se chalega)
 function runAnalysis(){
-  clearMarks();
-  const rows=[...document.querySelectorAll("#recordTable tbody tr")];
-  if(rows.length<5){ alert("कम से कम 5 row चाहिए"); return; }
+  clearDrawing();
+  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
+  const last = rows.slice(-6);
+  const box = document.getElementById("checkLines");
+  box.innerHTML = "";
 
-  const bottom = rows.slice(-4); // sirf niche ke 4 row
-  let foundPatterns=[];
+  let checkNo = 1;
 
-  for(let col=1;col<=6;col++){
-    let fams = bottom.map(r=>{
-      const v=r.children[col].innerText.trim();
-      return getFamily(v);
-    });
+  for(let col=1; col<=6; col++){
+    let fams = last.map(r => getFamily(r.children[col].innerText.trim()));
+    let used = {};
 
-    let count={};
-    fams.forEach(f=>{ if(f) count[f]=(count[f]||0)+1; });
-
-    for(let f in count){
-      if(count[f]>=2){
-        // niche circle
-        bottom.forEach(r=>{
-          const td=r.children[col];
-          if(getFamily(td.innerText.trim())===f){
-            td.classList.add("circle");
+    fams.forEach((f,i)=>{
+      fams.forEach((g,j)=>{
+        if(i!==j && f===g){
+          if(!used[f]){
+            used[f]=true;
+            makeCheck(col,f,checkNo++);
           }
-        });
-        foundPatterns.push({col,f});
-      }
-    }
-  }
-
-  // upar same family search
-  foundPatterns.forEach(p=>{
-    rows.forEach(r=>{
-      const td=r.children[p.col];
-      if(getFamily(td.innerText.trim())===p.f){
-        td.classList.add("circle");
-      }
+        }
+      });
     });
+  }
+}
+
+// 4) Check line banana
+function makeCheck(col,fam,no){
+  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
+  const box = document.getElementById("checkLines");
+
+  let found = [];
+
+  rows.forEach((r,ri)=>{
+    const v = r.children[col].innerText.trim();
+    if(getFamily(v)===fam){
+      found.push({row:ri,col});
+    }
   });
 
-  // check lines
-  const box=document.getElementById("checkLines");
-  if(!foundPatterns.length){
-    box.innerHTML="<i>No family repeat in last 4 rows</i>";
-    return;
+  if(found.length>=1){
+    const div=document.createElement("div");
+    div.className="check-line";
+    div.innerText=`Check ${no} | Col ${col} | Family ${fam}`;
+    div.onclick=()=>draw(found);
+    box.appendChild(div);
   }
-  foundPatterns.forEach((p,i)=>{
-    const d=document.createElement("div");
-    d.className="check-line";
-    d.innerText=`Check ${i+1} | Column ${p.col} | Family ${p.f}`;
-    box.appendChild(d);
+}
+
+// 5) Circle draw
+function draw(list){
+  clearDrawing();
+  list.forEach((p)=>{
+    const td=document.querySelectorAll("#recordTable tbody tr")[p.row].children[p.col];
+    td.classList.add("circle");
   });
 }
