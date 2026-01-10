@@ -13,11 +13,11 @@ const FAMILY_MAP = {
   "FULL":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-function getFamily(num){
-  if(!num || num=="**") return null;
-  num = num.padStart(2,"0");
-  for(let f in FAMILY_MAP){
-    if(FAMILY_MAP[f].includes(num)) return f;
+function getFamily(v){
+  if(!v || v==="**") return null;
+  v = v.toString().padStart(2,"0");
+  for(const k in FAMILY_MAP){
+    if(FAMILY_MAP[k].includes(v)) return k;
   }
   return null;
 }
