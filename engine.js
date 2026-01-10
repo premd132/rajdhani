@@ -14,9 +14,40 @@ function runAnalysis(){
 
   let patterns=[];
 
-  for(let col=1;col<=6;col++){
-    let last6=rows.slice(-6).map(r=>getFamily(r.children[col].innerText.trim()));
-    if(last6.includes(null)) continue;
+  for(let col=1; col<=6; col++){
+  let famSeq = rows.map(r=>getFamily(r.children[col].innerText.trim()));
+
+  let foundAny = false;
+
+  for(let i=0;i<famSeq.length-4;i++){
+    let base = famSeq.slice(i,i+4);
+    if(base.includes(null)) continue;
+
+    for(let j=i+4;j<famSeq.length-4;j++){
+      let test = famSeq.slice(j,j+4);
+      if(test.includes(null)) continue;
+
+      let same = base.every((v,k)=>v===test[k]);
+      let reverse = base.every((v,k)=>v===test[3-k]);
+
+      if(same || reverse){
+        foundAny = true;
+        patterns.push({
+          col,
+          matches:[
+            base.map((_,k)=>({row:i+k,col})),
+            test.map((_,k)=>({row:j+k,col}))
+          ]
+        });
+      }
+    }
+  }
+
+  // Agar is column me kuch bhi real match nahi mila, to skip
+  if(!foundAny){
+    patterns = patterns.filter(p=>p.col!==col);
+  }
+  }
 
     let matches=[];
     for(let i=0;i<=rows.length-6;i++){
