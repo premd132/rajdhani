@@ -1,96 +1,61 @@
-function getFamily(num){
-  return FAMILY_MAP[num] || null;
-}
-
-// 1) Niche se 3 aur 4 row ke vertical pattern nikalna
-function buildBasePatterns(){
-  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
-  const last = rows.slice(-5); // niche ke 5 row
-
-  let patterns = [];
-
-  [3,4].forEach(size=>{
-    for(let col=1; col<=6; col++){
-      for(let i=0; i<=last.length-size; i++){
-        let block = last.slice(i, i+size);
-        let fams = block.map(r=>{
-          let v = r.children[col].innerText.trim();
-          return getFamily(v);
-        });
-        let repeats = fams.filter((f,idx)=>f && fams.indexOf(f)!==idx);
-        if(repeats.length){
-          patterns.push({
-            col,
-            size,
-            fams,
-            shape: fams.map(f=> repeats.includes(f)) // true = circle
-          });
-        }
-      }
-    }
+function clearMarks(){
+  document.querySelectorAll("td").forEach(td=>{
+    td.classList.remove("circle");
   });
-  return patterns;
+  document.getElementById("checkLines").innerHTML="";
 }
 
-// 2) Upar ke record me wahi pattern dhundhna
-function scanHistory(pattern){
-  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
-  let found = [];
+function runAnalysis(){
+  clearMarks();
+  const rows=[...document.querySelectorAll("#recordTable tbody tr")];
+  if(rows.length<5){ alert("कम से कम 5 row चाहिए"); return; }
 
-  for(let i=0;i<=rows.length-pattern.size;i++){
-    let block = rows.slice(i,i+pattern.size);
-    let fams = block.map(r=>{
-      let v = r.children[pattern.col].innerText.trim();
+  const bottom = rows.slice(-4); // sirf niche ke 4 row
+  let foundPatterns=[];
+
+  for(let col=1;col<=6;col++){
+    let fams = bottom.map(r=>{
+      const v=r.children[col].innerText.trim();
       return getFamily(v);
     });
 
-    let ok = true;
-    for(let k=0;k<pattern.size;k++){
-      if(pattern.shape[k]){
-        if(fams.indexOf(fams[k])===fams.lastIndexOf(fams[k])) ok=false;
+    let count={};
+    fams.forEach(f=>{ if(f) count[f]=(count[f]||0)+1; });
+
+    for(let f in count){
+      if(count[f]>=2){
+        // niche circle
+        bottom.forEach(r=>{
+          const td=r.children[col];
+          if(getFamily(td.innerText.trim())===f){
+            td.classList.add("circle");
+          }
+        });
+        foundPatterns.push({col,f});
       }
     }
-    if(ok){
-      found.push({start:i, pattern});
-    }
   }
-  return found;
-}
 
-// 3) Circle draw karna
-function drawMatch(match){
-  clearDrawing();
-  const rows = [...document.querySelectorAll("#recordTable tbody tr")];
-  const {start, pattern} = match;
-  for(let i=0;i<pattern.size;i++){
-    if(pattern.shape[i]){
-      let td = rows[start+i].children[pattern.col];
-      td.classList.add("circle");
-    }
-  }
-}
-
-// 4) Run button
-function runStep4(){
-  const box = document.getElementById("checkLines");
-  box.innerHTML="";
-
-  const bases = buildBasePatterns();
-  let count = 1;
-
-  bases.forEach(p=>{
-    const hits = scanHistory(p);
-    hits.forEach(h=>{
-      let div = document.createElement("div");
-      div.className="check-line";
-      div.innerText = `Check ${count} | Col ${p.col} | ${p.size} Row Pattern`;
-      div.onclick = ()=>drawMatch(h);
-      box.appendChild(div);
-      count++;
+  // upar same family search
+  foundPatterns.forEach(p=>{
+    rows.forEach(r=>{
+      const td=r.children[p.col];
+      if(getFamily(td.innerText.trim())===p.f){
+        td.classList.add("circle");
+      }
     });
   });
 
-  if(count===1){
-    box.innerHTML="<i>No pattern found</i>";
+  // check lines
+  const box=document.getElementById("checkLines");
+  if(!foundPatterns.length){
+    box.innerHTML="<i>No family repeat in last 4 rows</i>";
+    return;
   }
+  foundPatterns.forEach((p,i)=>{
+    const d=document.createElement("div");
+    d.className="check-line";
+    d.innerText=`Check ${i+1} | Column ${p.col} | Family ${p.f}`;
+    box.appendChild(d);
+  });
 }
