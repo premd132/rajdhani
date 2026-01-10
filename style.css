@@ -1,23 +1,19 @@
-table { border-collapse: collapse; width:100%; }
-th,td { border:1px solid #ccc; padding:5px; text-align:center; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+td, th { border:1px solid #ccc; padding:4px; text-align:center; }
 
-.editable { background:#eef; }
-
-.circle{
-  border:3px solid red;
+.circle {
+  border:2px solid red;
   border-radius:50%;
 }
 
-.line{
+.line {
   border-left:3px solid red;
 }
 
-.check-line{
-  background:#e6ffe6;
-  margin:5px 0;
-  padding:5px;
+.check-line {
+  background:#e8ffe8;
+  margin:5px;
+  padding:6px;
   cursor:pointer;
 }
-.check-line.active{
-  background:#b2ffb2;
-}
+.check-line.active { background:#b8ffb8; }
