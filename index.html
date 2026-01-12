@@ -6,7 +6,7 @@
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
+td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:700}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
@@ -83,64 +83,55 @@ function draw(){
 function edit(r,c,el){data[r][c]=norm(el.innerText)}
 draw();
 
-function addRow(){
- data.push(["","","","","",""]);
- draw();
-}
-function saveData(){
- localStorage.setItem("pdata",JSON.stringify(data));
- alert("Saved");
-}
+function addRow(){ data.push(["","","","","",""]); draw(); }
+function saveData(){ localStorage.setItem("pdata",JSON.stringify(data)); alert("Saved"); }
 
 csv.onchange=e=>{
  let fr=new FileReader();
- fr.onload=()=>{
-  data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm));
-  draw();
- };
+ fr.onload=()=>{ data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm)); draw(); };
  fr.readAsText(e.target.files[0]);
 };
 
-/* ===== NEW PART: PER-CELL CLICK MEMORY ===== */
-let cellClickMap = {};   // key = "r-c" , value = click count
-
 let lastMatches=[];
 
-function makePattern(r,c){
- let key = r+"-"+c;
- if(!cellClickMap[key]) cellClickMap[key]=0;
- cellClickMap[key]++;
-
- let mode = cellClickMap[key] % 3; // 0,1,2 rotate
-
- let len=5;
- let start=Math.max(0,r-len+1);
- let rows=data.slice(start,r+1);
-
+/* ---- Advanced pattern builder ---- */
+function buildAdvancedShape(rows){
  let shape=[];
  for(let i=0;i<rows.length;i++){
-  let fams={};
-  rows[i].forEach(v=>{
+  let famCount={}, colCount={};
+
+  rows[i].forEach((v,ci)=>{
    if(v!="**"){
     let f=fam(v);
-    fams[f]=(fams[f]||0)+1;
+    famCount[f]=(famCount[f]||0)+1;
+    colCount[ci]=(colCount[ci]||0)+1;
    }
   });
+
   let rowShape=[];
-  rows[i].forEach(v=>{
-   if(v=="**") rowShape.push(0);
-   else{
-     let f=fam(v);
-     if(mode==0) rowShape.push(fams[f]>1?1:0);        // normal
-     else if(mode==1) rowShape.push(fams[f]==1?1:0);  // palti
-     else rowShape.push(Math.random()>0.6?1:0);       // random matka style
-   }
+  rows[i].forEach((v,ci)=>{
+   if(v=="**"){ rowShape.push(0); return; }
+   let f=fam(v);
+   let rule1 = famCount[f]>1;
+   let rule2 = colCount[ci]>1;
+   let rule3 = (i>0 && rows[i-1][ci]==v);
+   rowShape.push((rule1||rule2||rule3)?1:0);
   });
   shape.push(rowShape);
  }
- searchPattern(shape,mode);
+ return shape;
 }
 
+/* ---- Pattern click ---- */
+function makePattern(r,c){
+ let len=5;
+ let start=Math.max(0,r-len+1);
+ let rows=data.slice(start,r+1);
+ let shape = buildAdvancedShape(rows);
+ searchPattern(shape);
+}
+
+/* ---- Compare ---- */
 function sameShape(a,b){
  for(let i=0;i<a.length;i++)
   for(let j=0;j<6;j++)
@@ -154,46 +145,22 @@ function sameFamilyShape(a,b){
  return true;
 }
 
-function searchPattern(shape,mode){
+/* ---- Search ---- */
+function searchPattern(shape){
  lastMatches=[];
  let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
-  let test=[];
-  for(let k=0;k<h;k++){
-   let fams={};
-   data[i+k].forEach(v=>{
-    if(v!="**"){
-     let f=fam(v);
-     fams[f]=(fams[f]||0)+1;
-    }
-   });
-   let row=[];
-   data[i+k].forEach(v=>{
-    if(v=="**") row.push(0);
-    else{
-      let f=fam(v);
-      if(mode==0) row.push(fams[f]>1?1:0);
-      else if(mode==1) row.push(fams[f]==1?1:0);
-      else row.push(1);
-    }
-   });
-   test.push(row);
-  }
-  if(sameShape(shape,test)){
-   lastMatches.push({index:i,type:"exact"});
-  }else if(sameFamilyShape(shape,test)){
-   lastMatches.push({index:i,type:"family"});
-  }
+  let test = buildAdvancedShape(data.slice(i,i+h));
+  if(sameShape(shape,test)) lastMatches.push({index:i,type:"exact"});
+  else if(sameFamilyShape(shape,test)) lastMatches.push({index:i,type:"family"});
  }
  showChecks(shape);
 }
 
+/* ---- Check Lines ---- */
 function showChecks(shape){
  checks.innerHTML="";
- if(lastMatches.length==0){
-  checks.innerHTML="<i>No match</i>";
-  return;
- }
+ if(lastMatches.length==0){ checks.innerHTML="<i>No match</i>"; return; }
  lastMatches.forEach((m,idx)=>{
   let d=document.createElement("div");
   d.innerText=(idx+1)+". "+m.type+" match (click)";
@@ -202,6 +169,7 @@ function showChecks(shape){
  });
 }
 
+/* ---- Popup ---- */
 function showOne(shape,n){
  let idx=lastMatches[n].index;
  let h=shape.length;
@@ -220,7 +188,6 @@ function showOne(shape,n){
  popData.innerHTML=html;
  popup.style.display="block";
 }
-
 function closePop(){popup.style.display="none"}
 </script>
 </body>
