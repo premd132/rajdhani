@@ -20,7 +20,7 @@ td,th{border:1px solid #999;padding:4px;text-align:center}
 <div id="checks"></div>
 
 <script>
-/* ===== FAMILY DATA ===== */
+// ===== FAMILY DATA =====
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -37,15 +37,16 @@ const families={
 };
 
 function norm(v){
- if(v==="**"||v==="")return "**";
- v=String(v); return v.length==1?"0"+v:v;
+ if(v===""||v==="**") return "";
+ v=String(v); 
+ return v.length==1?"0"+v:v;
 }
 function getFamily(v){
  for(let k in families) if(families[k].includes(v)) return k;
  return "NA";
 }
 
-/* ===== SAMPLE DATA ===== */
+// ===== SAMPLE DATA =====
 let data=[
 ["51","91","41","57","19","95"],
 ["05","90","74","06","19","63"],
@@ -63,26 +64,34 @@ let data=[
 ];
 data=data.map(r=>r.map(norm));
 
-/* ===== DRAW TABLE ===== */
+// ===== DRAW TABLE =====
 function draw(){
-  let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
-  data.forEach((r,ri)=>{
-    t+="<tr>";
-    r.forEach((c,ci)=>{
-      if(c=="") t+=`<td class='blank' onclick='makePattern(${ri},${ci})'>**</
-      td>`;
-      else 
-        t+=`<td id='c-${ri}-${ci}'>${c}</
-      td>`;
-    });
-    t+="</tr>";
-  });
-  document.getElementById("tbl").innerHTML 
-   = t;
+ let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
+ data.forEach((r,ri)=>{
+   t+="<tr>";
+   r.forEach((c,ci)=>{
+     if(c=="") 
+       t+=`<td class='blank' onclick='makePattern(${ri},${ci})'>**</td>`;
+     else 
+       t+=`<td id='c-${ri}-${ci}'>${c}</td>`;
+   });
+   t+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=t;
 }
 
+// ===== CLICK BLANK =====
 function makePattern(r,c){
-  alert("Blank cell clicked: row "+r+" col "+c);
+ let fam=[];
+ for(let i=r-1;i>=0 && fam.length<3;i--){
+   let v=data[i][c];
+   if(v) fam.push(getFamily(v));
+ }
+ document.getElementById("checks").innerHTML=
+   "<div>Picked families: "+fam.join(" → ")+"</div>";
 }
 
 draw();
+</script>
+</body>
+</html>
