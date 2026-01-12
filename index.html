@@ -65,9 +65,23 @@ data=data.map(r=>r.map(norm));
 
 /* ===== DRAW TABLE ===== */
 function draw(){
- let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
- data.forEach((r,ri)=>{
-   t+="<tr>";
-   r.forEach((c,ci)=>{
-     if(c=="") t+=`<td class='blank' onclick='makePattern(${ri},${ci})'>**</td>`;
-     else t+=`<td id='c-${ri}-${ci}'>${
+  let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
+  data.forEach((r,ri)=>{
+    t+="<tr>";
+    r.forEach((c,ci)=>{
+      if(c=="") t+=`<td class='blank' onclick='makePattern(${ri},${ci})'>**</
+      td>`;
+      else 
+       t+=`<td id='c-${ri}-${ci}'>${c}</td>`;
+    });
+    t+="</tr>";
+  });
+  document.getElementById("tbl").innerHTML 
+   = t;
+}
+
+function makePattern(r,c){
+  alert("Blank cell clicked: row "+r+" col "+c);
+}
+
+draw();
