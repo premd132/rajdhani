@@ -111,32 +111,53 @@ csv.onchange=e=>{
  fr.readAsText(e.target.files[0]);
 };
 
-/* ===== PATTERN BUILD ===== */
-let lastMatches=[];
+/* ===== PATTERN ENGINE ===== */
+let patterns=[];
+let clickCount={}; // per cell click counter
+
 function makePattern(r,c){
+ let key=r+"_"+c;
+ clickCount[key]=(clickCount[key]||0)+1;
+ let mode=(clickCount[key]-1)%3; // 0,1,2 rotate
  let len=5;
  let start=Math.max(0,r-len+1);
  let rows=data.slice(start,r+1);
 
- // find circle positions
  let shape=[];
  for(let i=0;i<rows.length;i++){
-  let fams={};
-  rows[i].forEach(v=>{
-   if(v!="**"){
-    let f=fam(v);
-    fams[f]=(fams[f]||0)+1;
+  let row=rows[i];
+  let mark=[0,0,0,0,0,0];
+
+  if(mode==0){ // family repeat in row
+   let fcount={};
+   row.forEach(v=>{if(v!="**"){let f=fam(v);fcount[f]=(fcount[f]||0)+1;}});
+   row.forEach((v,j)=>{ if(v!="**" && fcount[fam(v)]>1) mark[j]=1;});
+  }
+
+  if(mode==1){ // exact jodi repeat in row
+   let jcount={};
+   row.forEach(v=>{if(v!="**")jcount[v]=(jcount[v]||0)+1;});
+   row.forEach((v,j)=>{ if(v!="**" && jcount[v]>1) mark[j]=1;});
+  }
+
+  if(mode==2){ // family repeat column-wise in window
+   for(let col=0;col<6;col++){
+    let fcount={};
+    rows.forEach(rw=>{
+     let v=rw[col];
+     if(v!="**"){let f=fam(v);fcount[f]=(fcount[f]||0)+1;}
+    });
+    let v=row[col];
+    if(v!="**" && fcount[fam(v)]>1) mark[col]=1;
    }
-  });
-  let rowShape=[];
-  rows[i].forEach(v=>{
-   if(v=="**") rowShape.push(0);
-   else rowShape.push(fams[fam(v)]>1?1:0);
-  });
-  shape.push(rowShape);
+  }
+
+  shape.push(mark);
  }
 
- searchPattern(shape);
+ let result=searchPattern(shape);
+ patterns.push({shape:shape,matches:result});
+ showChecks();
 }
 
 /* ===== SEARCH ===== */
@@ -148,47 +169,45 @@ function sameShape(a,b){
 }
 
 function searchPattern(shape){
- lastMatches=[];
+ let found=[];
  let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
   let test=[];
   for(let k=0;k<h;k++){
-   let fams={};
-   data[i+k].forEach(v=>{
-    if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
-   });
-   let row=[];
-   data[i+k].forEach(v=>{
-    if(v=="**") row.push(0);
-    else row.push(fams[fam(v)]>1?1:0);
-   });
-   test.push(row);
+   let row=data[i+k];
+   let mark=[0,0,0,0,0,0];
+   let fcount={}, jcount={};
+
+   row.forEach(v=>{if(v!="**"){let f=fam(v);fcount[f]=(fcount[f]||0)+1;jcount[v]=(jcount[v]||0)+1;}});
+   for(let j=0;j<6;j++){
+    let v=row[j];
+    if(v!="**" && (fcount[fam(v)]>1 || jcount[v]>1)) mark[j]=1;
+   }
+   test.push(mark);
   }
-  if(sameShape(shape,test)){
-   lastMatches.push(i);
-  }
+  if(sameShape(shape,test)) found.push(i);
  }
- showChecks(shape);
+ return found;
 }
 
 /* ===== CHECK LINES ===== */
-function showChecks(shape){
+function showChecks(){
  checks.innerHTML="";
- if(lastMatches.length==0){
-  checks.innerHTML="<i>No match</i>";
-  return;
- }
- let d=document.createElement("div");
- d.innerText="Pattern found at "+lastMatches.length+" places (click)";
- d.onclick=()=>showMatch(shape);
- checks.appendChild(d);
+ patterns.forEach((p,idx)=>{
+  let d=document.createElement("div");
+  d.innerText=`${idx+1}. Pattern found at ${p.matches.length} places (click)`;
+  d.onclick=()=>showMatch(idx);
+  checks.appendChild(d);
+ });
 }
 
 /* ===== POPUP ===== */
-function showMatch(shape){
- let h=shape.length;
+function showMatch(id){
+ let p=patterns[id];
+ let shape=p.shape;
  let html="";
- lastMatches.forEach((idx,n)=>{
+ let h=shape.length;
+ p.matches.forEach((idx,n)=>{
   html+="<h4>Match "+(n+1)+"</h4><table>";
   for(let i=0;i<h+1;i++){
    html+="<tr>";
