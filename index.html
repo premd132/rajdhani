@@ -5,8 +5,13 @@
 <title>Pattern System</title>
 <style>
 body{font-family:Arial;margin:0;padding:8px;width:100vw;overflow-x:auto}
-table{border-collapse:collapse;font-size:12px;width:100%;table-layout:fixed}
-td,th{border:1px solid #999;padding:6px;text-align:center}
+table{border-collapse:collapse;font-size:13px;width:100%;table-layout:fixed}
+td,th{
+ border:1px solid #999;
+ padding:6px;
+ text-align:center;
+ font-weight:600;   /* medium bold */
+}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:6px;padding:8px;cursor:pointer}
@@ -108,19 +113,12 @@ function draw(){
 function edit(r,c,el){data[r][c]=norm(el.innerText)}
 draw();
 
-/* ===== ADD ROW ===== */
-function addRow(){
- data.push(["","","","","",""]);
- draw();
-}
-
-/* ===== SAVE ===== */
+/* ===== ADD / SAVE / CSV ===== */
+function addRow(){ data.push(["","","","","",""]); draw(); }
 function saveData(){
  localStorage.setItem("pdata",JSON.stringify(data));
  alert("Saved");
 }
-
-/* ===== CSV UPLOAD ===== */
 csv.onchange=e=>{
  let fr=new FileReader();
  fr.onload=()=>{
@@ -130,7 +128,7 @@ csv.onchange=e=>{
  fr.readAsText(e.target.files[0]);
 };
 
-/* ===== PATTERN ===== */
+/* ===== PATTERN BUILD ===== */
 let lastMatches=[];
 let famPattern=[];
 
@@ -143,10 +141,12 @@ function makePattern(r,c){
  let end=r-shift;
  if(end<0) end=r;
  let start=Math.max(0,end-len+1);
+
  let rows=data.slice(start,end+1);
 
  let shape=[];
  famPattern=[];
+
  rows.forEach(row=>{
   let fams={};
   row.forEach(v=>{
@@ -175,16 +175,22 @@ function sameShape(a,b){
    if(a[i][j]!=b[i][j]) return false;
  return true;
 }
-function altMatch(shape,famPat,start){
- for(let i=0;i<shape.length;i++)
-  for(let j=0;j<6;j++)
-   if(shape[i][j]==1 && fam(data[start+i][j])!=famPat[i][j]) return false;
+
+function familyAltMatch(shape,famPat,start){
+ for(let i=0;i<shape.length;i++){
+  for(let j=0;j<6;j++){
+   if(shape[i][j]==1){
+    if(fam(data[start+i][j])!=famPat[i][j]) return false;
+   }
+  }
+ }
  return true;
 }
 
 function searchPattern(shape,famPat){
  lastMatches=[];
  let h=shape.length;
+
  for(let i=0;i<=data.length-h;i++){
   let test=[];
   for(let k=0;k<h;k++){
@@ -199,10 +205,12 @@ function searchPattern(shape,famPat){
    });
    test.push(row);
   }
-  if(sameShape(shape,test) || altMatch(shape,famPat,i)){
+
+  if(sameShape(shape,test) || familyAltMatch(shape,famPat,i)){
    lastMatches.push(i);
   }
  }
+
  showChecks(shape);
 }
 
