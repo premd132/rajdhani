@@ -2,14 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Auto Pattern System</title>
+<title>Auto Pattern</title>
 <style>
 body{font-family:Arial}
-table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
+table{border-collapse:collapse;font-size:14px}
+td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
-.mark{background:yellow}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
 #popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
 border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
@@ -44,19 +43,19 @@ const families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-
 function fam(v){
  for(let k in families) if(families[k].includes(v)) return k;
  return "NA";
 }
 function palti(v){return v[1]+v[0];}
 
-/* ===== SAMPLE DATA ===== */
+/* ===== DATA ===== */
 let data=[
 ["91","69","60","71","85","20"],
 ["95","28","11","29","28","18"],
 ["47","83","45","80","33","18"],
 ["96","25","78","59","30","94"],
+["40","85","95","31","15","**"],
 ["**","**","**","**","**","**"]
 ];
 
@@ -66,8 +65,8 @@ function draw(){
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   if(c=="**") h+=`<td class="blank" onclick="startPattern(${ri},${ci})">**</td>`;
-   else h+=`<td onclick="pickBase(${ri},${ci})">${c}</td>`;
+   if(c=="**") h+=`<td class="blank" onclick="blankClick(${ri},${ci})">**</td>`;
+   else h+=`<td onclick="baseClick(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -76,77 +75,76 @@ function draw(){
 draw();
 
 /* ===== GLOBAL ===== */
-let baseCell=null;
-let liveShape=null;
+let capturedShape=null;
+let baseJodi=null;
 
-/* ===== STEP 1: BLANK CLICK ===== */
-function startPattern(r,c){
- let shape=[];
+/* ===== BLANK CLICK ===== */
+function blankClick(r,c){
+ capturedShape=[];
  for(let i=r-4;i<=r;i++){
   if(i<0) continue;
   let row=[];
   for(let j=0;j<6;j++){
    row.push(data[i][j]!="**"?1:0);
   }
-  shape.push(row);
+  capturedShape.push(row);
  }
- liveShape=shape;
- alert("Ab base jodi par click karo");
+ alert("Ab kisi bhi jodi par click karke base set karo");
 }
 
-/* ===== STEP 2: BASE JODI ===== */
-function pickBase(r,c){
- if(!liveShape) return;
- baseCell={r,c,val:data[r][c]};
- runAutoSearch();
+/* ===== BASE CLICK ===== */
+function baseClick(r,c){
+ if(!capturedShape) return;
+ baseJodi=data[r][c];
+ runSearch();
 }
 
-/* ===== AUTO SEARCH ===== */
-function runAutoSearch(){
- let results=[];
+/* ===== SEARCH ===== */
+function runSearch(){
+ let res=[];
  for(let i=0;i<data.length-4;i++){
   for(let j=0;j<6;j++){
    let score=0;
    for(let k=0;k<5;k++){
     let v=data[i+k][j];
     if(v=="**") continue;
-    if(v==baseCell.val) score+=3;
-    if(palti(v)==baseCell.val) score+=2;
-    if(fam(v)==fam(baseCell.val)) score+=1;
+    if(v==baseJodi) score+=3;
+    if(palti(v)==baseJodi) score+=2;
+    if(fam(v)==fam(baseJodi)) score+=1;
    }
-   if(score>0) results.push({i,j,score});
+   if(score>0) res.push({i,j,score});
   }
  }
- results.sort((a,b)=>b.score-a.score);
- results=results.slice(0,3);
- showChecks(results);
+ res.sort((a,b)=>b.score-a.score);
+ res=res.slice(0,3);
+ showChecks(res);
 }
 
 /* ===== CHECK LINES ===== */
 function showChecks(arr){
  checks.innerHTML="";
+ if(arr.length==0){checks.innerHTML="<i>No match</i>";return;}
  arr.forEach((m,idx)=>{
   let d=document.createElement("div");
-  d.innerText=(idx+1)+". Auto match (score "+m.score+")";
+  d.innerText=(idx+1)+". match (score "+m.score+")";
   d.onclick=()=>showMatch(m);
   checks.appendChild(d);
  });
 }
 
-/* ===== SHOW MATCH ===== */
+/* ===== POPUP ===== */
 function showMatch(m){
- let html="<table>";
+ let h="<table>";
  for(let i=m.i;i<m.i+5;i++){
-  html+="<tr>";
+  h+="<tr>";
   for(let j=0;j<6;j++){
-   let cls="";
-   if(j==m.j) cls="class='circle'";
-   html+=`<td ${cls}>${data[i][j]}</td>`;
+   let cls=(j==m.j)?"class='circle'":"";
+   h+=`<td ${cls}>${data[i][j]}</td>`;
   }
-  html+="</tr>";
+  h+="</tr>";
  }
- html+="</table>";
- popData.innerHTML=html;
+ h+="</table>";
+ popData.innerHTML=h;
  popup.style.display="block";
 }
 </script>
