@@ -6,7 +6,7 @@
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:700}
+td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
@@ -17,10 +17,13 @@ button{margin:4px}
 <body>
 
 <h2>Pattern System</h2>
+
+<button onclick="toggleFam()">Show / Hide Family List</button>
+<div id="famBox" style="display:none;border:1px solid #999;padding:8px;margin:6px 0"></div>
+
 <input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
-<button id="editBtn" onclick="toggleEdit()">Edit OFF</button>
 
 <table id="tbl"></table>
 
@@ -33,7 +36,7 @@ button{margin:4px}
 </div>
 
 <script>
-/* ================= FAMILY LIST ================= */
+/* ===== FAMILY LIST ===== */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -49,6 +52,24 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
+/* alias so FamList missing kabhi na ho */
+const FamList = families;
+
+/* show hide family */
+function toggleFam(){
+ let box=document.getElementById("famBox");
+ if(box.style.display=="none"){
+   let h="";
+   for(let k in families){
+     h+=`<b>${k}</b> : ${families[k].join(", ")}<br>`;
+   }
+   box.innerHTML=h;
+   box.style.display="block";
+ }else{
+   box.style.display="none";
+ }
+}
+
 function norm(v){
  if(v==""||v=="**")return "**";
  v=String(v);
@@ -59,9 +80,7 @@ function fam(v){
  return "NA";
 }
 
-/* ================= DATA ================= */
-let editMode=false;
-
+/* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("pdata")||"[]");
 if(data.length==0){
  data=[
@@ -73,146 +92,68 @@ if(data.length==0){
 }
 data=data.map(r=>r.map(norm));
 
-/* ================= EDIT MODE ================= */
-function toggleEdit(){
- editMode=!editMode;
- document.getElementById("editBtn").innerText=editMode?"Edit ON":"Edit OFF";
- draw();
-}
-
-/* ================= DRAW TABLE ================= */
+/* ===== DRAW ===== */
 function draw(){
  let t="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
  data.forEach((r,ri)=>{
   t+="<tr>";
   r.forEach((c,ci)=>{
-   if(c=="**" && !editMode){
-     t+=`<td class='blank' onclick="makePattern(${ri},${ci})">**</td>`;
-   }else{
-     if(editMode)
-       t+=`<td contenteditable oninput="edit(${ri},${ci},this)">${c=="**"?"":c}</td>`;
-     else
-       t+=`<td>${c}</td>`;
-   }
+   if(c=="**") t+=`<td class='blank' onclick="makePattern(${ri},${ci})">**</td>`;
+   else t+=`<td contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
   });
   t+="</tr>";
  });
  tbl.innerHTML=t;
 }
-function edit(r,c,el){
- let v=el.innerText.trim();
- data[r][c]=v==""?"**":norm(v);
-}
+function edit(r,c,el){data[r][c]=norm(el.innerText)}
 draw();
 
-/* ================= BASIC CONTROLS ================= */
-function addRow(){ data.push(["","","","","",""]); draw(); }
-function saveData(){ localStorage.setItem("pdata",JSON.stringify(data)); alert("Saved"); }
+/* ===== ADD / SAVE ===== */
+function addRow(){
+ data.push(["","","","","",""]);
+ draw();
+}
+function saveData(){
+ localStorage.setItem("pdata",JSON.stringify(data));
+ alert("Saved");
+}
 
+/* ===== CSV ===== */
 csv.onchange=e=>{
  let fr=new FileReader();
- fr.onload=()=>{ data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm)); draw(); };
+ fr.onload=()=>{
+  data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm));
+  draw();
+ };
  fr.readAsText(e.target.files[0]);
 };
 
-/* ================= PATTERN SYSTEM ================= */
+/* ===== PATTERN ===== */
 let lastMatches=[];
-
-/* ----- Advanced base shape (unchanged logic) ----- */
-function buildAdvancedShape(rows){
- let shape=[];
- for(let i=0;i<rows.length;i++){
-  let famCount={}, colCount={};
-  rows[i].forEach((v,ci)=>{
-   if(v!="**"){
-    let f=fam(v);
-    famCount[f]=(famCount[f]||0)+1;
-    colCount[ci]=(colCount[ci]||0)+1;
-   }
-  });
-  let rowShape=[];
-  rows[i].forEach((v,ci)=>{
-   if(v=="**"){ rowShape.push(0); return; }
-   let f=fam(v);
-   let rule1=famCount[f]>1;
-   let rule2=colCount[ci]>1;
-   let rule3=(i>0 && rows[i-1][ci]==v);
-   rowShape.push((rule1||rule2||rule3)?1:0);
-  });
-  shape.push(rowShape);
- }
- return shape;
-}
-
-/* ================== NEW: COLUMN-WISE AI LOGIC ================== */
-let colClickMap = {};   // har column ka apna click cycle
-
-function scoreFamiliesForColumn(col, rows){
- let scores={};
- let famSet=new Set();
-
- // niche ke pattern me jo families aayi
- rows.forEach(r=>{
-   let v=r[col];
-   if(v!="**") famSet.add(fam(v));
- });
-
- // har family ko history me score do
- famSet.forEach(f=>{
-   scores[f]=0;
-   data.forEach(r=>{
-     if(r[col]!="**" && fam(r[col])==f) scores[f]++;
-   });
- });
-
- // top 2 family nikaalo
- return Object.entries(scores)
-   .sort((a,b)=>b[1]-a[1])
-   .slice(0,2)
-   .map(x=>x[0]);
-}
-
-/* ================== PATTERN CLICK (CHANGED PART) ================== */
 function makePattern(r,c){
- // har column ka apna cycle
- if(!colClickMap[c]) colClickMap[c]=0;
- colClickMap[c]++;
- let mode = colClickMap[c] % 3;   // 0,1,2 rotate per column
-
  let len=5;
  let start=Math.max(0,r-len+1);
  let rows=data.slice(start,r+1);
 
- // AI-style best families for this column
- let bestFamilies = scoreFamiliesForColumn(c, rows);
-
  let shape=[];
  for(let i=0;i<rows.length;i++){
-   let rowShape=[];
-   rows[i].forEach((v,ci)=>{
-     if(v=="**"){ rowShape.push(0); return; }
-     let f=fam(v);
-
-     let mark=false;
-     if(mode==0){
-       // sirf best families
-       mark = bestFamilies.includes(f);
-     }else if(mode==1){
-       // column focus + family
-       mark = (ci==c && bestFamilies.includes(f));
-     }else{
-       // vertical + family
-       mark = (i>0 && rows[i-1][ci]==v) || bestFamilies.includes(f);
-     }
-     rowShape.push(mark?1:0);
-   });
-   shape.push(rowShape);
+  let fams={};
+  rows[i].forEach(v=>{
+   if(v!="**"){
+    let f=fam(v);
+    fams[f]=(fams[f]||0)+1;
+   }
+  });
+  let rowShape=[];
+  rows[i].forEach(v=>{
+   if(v=="**") rowShape.push(0);
+   else rowShape.push(fams[fam(v)]>1?1:0);
+  });
+  shape.push(rowShape);
  }
-
  searchPattern(shape);
 }
 
-/* ================= COMPARE ================= */
 function sameShape(a,b){
  for(let i=0;i<a.length;i++)
   for(let j=0;j<6;j++)
@@ -226,22 +167,41 @@ function sameFamilyShape(a,b){
  return true;
 }
 
-/* ================= SEARCH ================= */
 function searchPattern(shape){
  lastMatches=[];
  let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
-  let test = buildAdvancedShape(data.slice(i,i+h));
-  if(sameShape(shape,test)) lastMatches.push({index:i,type:"exact"});
-  else if(sameFamilyShape(shape,test)) lastMatches.push({index:i,type:"family"});
+  let test=[];
+  for(let k=0;k<h;k++){
+   let fams={};
+   data[i+k].forEach(v=>{
+    if(v!="**"){
+     let f=fam(v);
+     fams[f]=(fams[f]||0)+1;
+    }
+   });
+   let row=[];
+   data[i+k].forEach(v=>{
+    if(v=="**") row.push(0);
+    else row.push(fams[fam(v)]>1?1:0);
+   });
+   test.push(row);
+  }
+  if(sameShape(shape,test)){
+   lastMatches.push({index:i,type:"exact"});
+  }else if(sameFamilyShape(shape,test)){
+   lastMatches.push({index:i,type:"family"});
+  }
  }
  showChecks(shape);
 }
 
-/* ================= CHECK LINES ================= */
 function showChecks(shape){
  checks.innerHTML="";
- if(lastMatches.length==0){ checks.innerHTML="<i>No match</i>"; return; }
+ if(lastMatches.length==0){
+  checks.innerHTML="<i>No match</i>";
+  return;
+ }
  lastMatches.forEach((m,idx)=>{
   let d=document.createElement("div");
   d.innerText=(idx+1)+". "+m.type+" match (click)";
@@ -250,7 +210,7 @@ function showChecks(shape){
  });
 }
 
-/* ================= POPUP ================= */
+/* ===== POPUP ===== */
 function showOne(shape,n){
  let idx=lastMatches[n].index;
  let h=shape.length;
