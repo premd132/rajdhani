@@ -2,15 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Auto Pattern</title>
+<title>Auto Pattern System</title>
 <style>
 body{font-family:Arial}
-table{border-collapse:collapse;font-size:14px}
+table{border-collapse:collapse;font-size:13px}
 td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
+#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
+border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
 </style>
 </head>
 <body>
@@ -18,7 +19,7 @@ td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 <h2>Auto Pattern System</h2>
 <table id="tbl"></table>
 
-<h3>Check Lines (Top 3)</h3>
+<h3>✔ Check Lines (Top 3)</h3>
 <div id="checks"></div>
 
 <div id="popup">
@@ -28,7 +29,7 @@ td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 
 <script>
 /* ===== FAMILY ===== */
-const Families={
+const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
 "14":["14","19","41","46","64","69","91","96"],
@@ -42,22 +43,54 @@ const Families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-
 function fam(v){
- for(let k in Families) if(Families[k].includes(v)) return k;
+ for(let k in families) if(families[k].includes(v)) return k;
  return "NA";
 }
-function palti(v){return v[1]+v[0];}
 
-/* ===== DATA ===== */
+/* ===== REAL STYLE DATA ===== */
 let data=[
- ["91","69","60","71","85","20"],
- ["95","28","11","29","28","18"],
- ["47","83","45","80","33","18"],
- ["96","25","78","59","30","94"],
- ["08","55","04","14","55","51"],
- ["71","27","21","23","95","29"],
- ["**","**","**","**","**","**"]
+["91","69","60","71","85","20"],
+["95","28","11","29","28","18"],
+["47","83","45","80","33","18"],
+["96","25","78","59","30","94"],
+["08","55","04","14","55","51"],
+["71","27","21","23","95","29"],
+["57","65","06","97","93","53"],
+["21","01","80","39","20","01"],
+["49","89","83","29","**","44"],
+["82","01","14","33","70","13"],
+["33","00","10","79","41","96"],
+["12","04","66","61","62","02"],
+["91","31","44","63","23","93"],
+["40","96","62","80","15","76"],
+["35","91","44","08","34","46"],
+["43","14","25","69","05","00"],
+["98","04","03","62","47","45"],
+["82","00","74","83","08","57"],
+["99","00","47","21","72","26"],
+["30","61","16","81","65","38"],
+["34","62","21","02","23","24"],
+["11","89","40","76","44","75"],
+["07","42","48","33","72","34"],
+["53","81","81","48","31","64"],
+["06","14","02","15","89","75"],
+["81","88","88","41","48","77"],
+["44","85","28","72","36","13"],
+["68","10","05","71","82","61"],
+["05","08","76","67","03","58"],
+["06","11","09","09","68","69"],
+["83","91","75","42","**","72"],
+["54","75","14","39","68","43"],
+["68","73","20","05","40","38"],
+["25","75","61","43","17","24"],
+["14","63","87","01","51","58"],
+["99","42","44","16","56","38"],
+["52","58","49","69","79","71"],
+["71","79","73","87","80","19"],
+["12","96","79","36","84","97"],
+["40","85","95","31","15","**"],
+["**","**","**","**","**","**"]
 ];
 
 /* ===== DRAW ===== */
@@ -66,8 +99,8 @@ function draw(){
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   if(c=="**") h+=`<td class="blank" onclick="blankClick(${ri},${ci})">**</td>`;
-   else h+=`<td onclick="baseClick(${ri},${ci})">${c}</td>`;
+   if(c=="**") h+=`<td class='blank' onclick="makePattern(${ri},${ci})">**</td>`;
+   else h+=`<td>${c}</td>`;
   });
   h+="</tr>";
  });
@@ -76,75 +109,72 @@ function draw(){
 draw();
 
 /* ===== PATTERN ===== */
-let currentShape=null;
-let matches=[];
-
-function blankClick(r,c){
- let len=5;
- let start=Math.max(0,r-len+1);
- let rows=data.slice(start,r+1);
+let lastMatches=[];
+function makePattern(r,c){
  let shape=[];
- rows.forEach(row=>{
+ let start=Math.max(0,r-4);
+ for(let i=start;i<=r;i++){
   let fams={};
-  row.forEach(v=>{if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}});
-  shape.push(row.map(v=>v=="**"?0:(fams[fam(v)]>1?1:0)));
- });
- currentShape=shape;
- search();
+  data[i].forEach(v=>{
+   if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
+  });
+  let row=[];
+  data[i].forEach(v=>{
+   if(v=="**") row.push(0);
+   else row.push(fams[fam(v)]>1?1:0);
+  });
+  shape.push(row);
+ }
+ searchPattern(shape);
 }
-
-function baseClick(r,c){
- if(!currentShape) return;
- let base=data[r][c];
- let bf=fam(base);
- let newShape=currentShape.map(row=>row.slice());
- newShape[newShape.length-1][c]=1;
- currentShape=newShape;
- search();
-}
-
 function sameShape(a,b){
  for(let i=0;i<a.length;i++)
   for(let j=0;j<6;j++)
    if(a[i][j]!=b[i][j]) return false;
  return true;
 }
-
-function search(){
- matches=[];
- let h=currentShape.length;
+function searchPattern(shape){
+ lastMatches=[];
+ let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
   let test=[];
   for(let k=0;k<h;k++){
    let fams={};
-   data[i+k].forEach(v=>{if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}});
-   test.push(data[i+k].map(v=>v=="**"?0:(fams[fam(v)]>1?1:0)));
+   data[i+k].forEach(v=>{
+    if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
+   });
+   let row=[];
+   data[i+k].forEach(v=>{
+    if(v=="**") row.push(0);
+    else row.push(fams[fam(v)]>1?1:0);
+   });
+   test.push(row);
   }
-  if(sameShape(currentShape,test)) matches.push(i);
+  if(sameShape(shape,test)) lastMatches.push(i);
  }
- showChecks();
+ showChecks(shape);
 }
 
 /* ===== CHECK LINES ===== */
-function showChecks(){
+function showChecks(shape){
  checks.innerHTML="";
- matches.slice(0,3).forEach((idx,i)=>{
+ if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";return;}
+ lastMatches.slice(0,3).forEach((idx,n)=>{
   let d=document.createElement("div");
-  d.innerText=(i+1)+". Match (click)";
-  d.onclick=()=>showMatch(idx);
+  d.innerText=(n+1)+". Match (click)";
+  d.onclick=()=>showOne(shape,idx);
   checks.appendChild(d);
  });
- if(matches.length==0) checks.innerHTML="<i>No match</i>";
 }
 
 /* ===== POPUP ===== */
-function showMatch(idx){
- let h=currentShape.length;
+function showOne(shape,idx){
+ let h=shape.length;
  let html="<table>";
  for(let i=0;i<h;i++){
   html+="<tr>";
   data[idx+i].forEach((v,j)=>{
-   let cls=currentShape[i][j]?"class='circle'":"";
+   let cls=shape[i][j]?"class='circle'":"";
    html+=`<td ${cls}>${v}</td>`;
   });
   html+="</tr>";
