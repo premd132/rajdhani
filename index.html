@@ -61,7 +61,12 @@ function fam(v){for(let k in families) if(families[k].includes(v)) return k; ret
 function famClass(v){let f=fam(v);return f=="NA"?"":"f"+f;}
 function palti(v){return v[1]+v[0];}
 function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
-
+function isFamilyOrPaltiMatch(v1, v2){
+  if(v1=="**"||v2=="**") return false;
+  if(v1===v2) return true;
+  if(v1[0]+v1[1]===v2 || v1[1]+v1[0]===v2) return true;
+  return fam(v1)===fam(v2);
+  }
 /* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("pdata")||"null");
 if(!data){
@@ -150,9 +155,9 @@ function searchPattern(shape,base){
     if(need===0) continue;
     let v=data[i+k][j];
     if(v=="**"){ok=false;break;}
-    if(need===1 && v!==base) ok=false;
-    if(need===2 && v!==basePalti) ok=false;
-    if(need===3 && fam(v)!==baseFam) ok=false;
+    if(need>0){
+  if(!isFamilyOrPaltiMatch(v, base)) ok=false;
+    }
    }
    if(!ok) break;
   }
@@ -179,7 +184,35 @@ function showOne(shape,n){
  let idx=topMatches[n].index;
  activeMark={start:idx,shape:shape};
  draw();
+function aiSuggest(){
+ let singles={}, jodis={};
 
+ topMatches.forEach(m=>{
+   let nextRow = data[m.index + activeMark.shape.length];
+   if(!nextRow) return;
+   nextRow.forEach(v=>{
+     if(v=="**") return;
+     jodis[v]=(jodis[v]||0)+1;
+     singles[v[0]]=(singles[v[0]]||0)+1;
+     singles[v[1]]=(singles[v[1]]||0)+1;
+   });
+ });
+
+ let topSingles = Object.entries(singles)
+   .sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
+
+ let topJodi = Object.entries(jodis)
+   .sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
+
+ let box=document.createElement("div");
+ box.style.background="#fff3cd";
+ box.style.padding="8px";
+ box.innerHTML=
+   "<b>AI Suggestion</b><br>"+
+   "Single Ank: "+topSingles.join(", ")+"<br>"+
+   "Jodi: "+topJodi.join(", ");
+ checks.appendChild(box);
+}
  let h=shape.length,html="<table>";
  for(let i=0;i<h;i++){
   html+="<tr>";
@@ -194,6 +227,35 @@ function showOne(shape,n){
  popData.innerHTML=html;
  popup.style.display="block";
 }
+  function aiSuggest(){
+ let singles={}, jodis={};
+
+ topMatches.forEach(m=>{
+   let nextRow = data[m.index + activeMark.shape.length];
+   if(!nextRow) return;
+   nextRow.forEach(v=>{
+     if(v=="**") return;
+     jodis[v]=(jodis[v]||0)+1;
+     singles[v[0]]=(singles[v[0]]||0)+1;
+     singles[v[1]]=(singles[v[1]]||0)+1;
+   });
+ });
+
+ let topSingles = Object.entries(singles)
+   .sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
+
+ let topJodi = Object.entries(jodis)
+   .sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
+
+ let box=document.createElement("div");
+ box.style.background="#fff3cd";
+ box.style.padding="8px";
+ box.innerHTML=
+   "<b>AI Suggestion</b><br>"+
+   "Single Ank: "+topSingles.join(", ")+"<br>"+
+   "Jodi: "+topJodi.join(", ");
+ checks.appendChild(box);
+  }
 </script>
 </body>
 </html>
