@@ -2,58 +2,26 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Auto Pattern AI System</title>
+<title>Advance Pattern System</title>
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
-td[contenteditable]{background:#fffbe6}
+td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 .blank{background:#eee;cursor:pointer}
-.circle{border:3px solid red;border-radius:50%}
-.anchor{background:#ffeaa7;font-weight:bold}
-
-/* family colors */
-.f12{border-color:#e74c3c}
-.f13{border-color:#9b59b6}
-.f14{border-color:#3498db}
-.f15{border-color:#16a085}
-.f23{border-color:#f39c12}
-.f24{border-color:#d35400}
-.f25{border-color:#1abc9c}
-.f34{border-color:#2c3e50}
-.f35{border-color:#27ae60}
-.f45{border-color:#8e44ad}
-.fHR{border-color:#c0392b}
-.fFR{border-color:#000}
-
-#checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:45%;overflow:auto}
-#aiBox{background:#f3f0ff;padding:10px;margin-top:10px}
-button{margin:4px}
+#ai{background:#eef;padding:10px;margin-top:10px;font-weight:600}
+button{margin:5px}
 </style>
 </head>
 <body>
 
-<h2>Auto Pattern AI System</h2>
-
-<input type="file" id="csvFile">
+<h2>Advance Pattern System (Mon–Sat)</h2>
+<input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
-
 <table id="tbl"></table>
 
-<h3>✔ Check Lines (Top 3)</h3>
-<div id="checks"></div>
-
-<div id="aiBox">
-<h3>🤖 AI Suggestions</h3>
-<div id="aiOut">Click blank to generate AI</div>
-</div>
-
-<div id="popup">
-<button onclick="popup.style.display='none'">Close</button>
-<div id="popData"></div>
-</div>
+<h3>🤖 Advance AI Suggestion</h3>
+<div id="ai">Blank cell par click karo</div>
 
 <script>
 /* ===== FAMILY ===== */
@@ -71,56 +39,33 @@ const families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-
-function fam(v){
- for(let k in families) if(families[k].includes(v)) return k;
- return "NA";
-}
-function famClass(v){
- let f=fam(v);
- if(f=="NA") return "";
- return "f"+f;
-}
-function palti(v){ return v[1]+v[0]; }
-function norm(v){
- if(v==""||v=="**") return "**";
- v=String(v);
- return v.length==1?"0"+v:v;
-}
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
 
 /* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("pdata")||"null");
 if(!data){
  data=[
- ["91","69","60","71","85","20"],
- ["95","28","11","29","28","18"],
- ["47","83","45","80","33","18"],
- ["96","25","78","59","30","94"],
- ["08","55","04","14","55","51"],
- ["71","27","21","23","95","29"],
+ ["51","91","41","57","19","22"],
+ ["05","90","74","06","19","88"],
+ ["90","34","82","09","28","15"],
+ ["46","33","91","15","22","67"],
  ["**","**","**","**","**","**"]
  ];
 }
+data=data.map(r=>r.map(norm));
+let targetCol=null;
 
 /* ===== DRAW ===== */
-let activeMark=null;
 function draw(){
  let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls="";
-   if(activeMark){
-     let {start,shape}=activeMark;
-     let i=ri-start;
-     if(i>=0 && i<shape.length && shape[i][ci]){
-       cls="circle "+famClass(c);
-     }
-   }
    if(c=="**")
-     h+=`<td class="blank ${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="makePattern(${ri},${ci})">**</td>`;
+    h+=`<td class="blank" onclick="makeAdvance(${ri},${ci})" contenteditable oninput="edit(${ri},${ci},this)">**</td>`;
    else
-     h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
+    h+=`<td contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -128,139 +73,71 @@ function draw(){
 }
 draw();
 
-function edit(r,c,el){
- data[r][c]=norm(el.innerText.trim());
-}
+function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
+function addRow(){data.push(["","","","","",""].map(norm));draw();}
+function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
 
-/* ===== ADD / SAVE / CSV ===== */
-function addRow(){
- data.push(["","","","","",""].map(norm));
- draw();
-}
-function saveData(){
- localStorage.setItem("pdata",JSON.stringify(data));
- alert("Saved");
-}
-csvFile.onchange=e=>{
+csv.onchange=e=>{
  let fr=new FileReader();
  fr.onload=()=>{
-  data=fr.result.trim().split("\n")
-   .map(r=>r.split(",").map(norm));
+  data=fr.result.trim().split("\n").map(r=>r.split(",").map(v=>{
+   v=v.trim(); if(v==""||v=="*"||v=="**") return "**"; return norm(v);
+  }));
   draw();
  };
  fr.readAsText(e.target.files[0]);
 };
 
-/* ===== PATTERN ===== */
-let lastMatches=[];
-function makePattern(r,c){
- let shape=[];
- let start=Math.max(0,r-4);
- for(let i=start;i<=r;i++){
-  let fams={};
-  data[i].forEach(v=>{
-   if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
-  });
-  let row=[];
-  data[i].forEach(v=>{
-   if(v=="**") row.push(0);
-   else row.push(fams[fam(v)]>1?1:0);
-  });
-  shape.push(row);
- }
- searchPattern(shape);
- buildAI(shape);
-}
+/* ===== ADVANCE PATTERN ===== */
+/*
+ Template:
+ A = (r-4, Mon=0)
+ B = (r-2, Wed=2)
+ C = (r-2, Tue=1)  // left of B
+ Result = next row same column as blank
+*/
+function makeAdvance(r,c){
+ targetCol=c;
+ if(r<4){ ai.innerHTML="Kam data hai"; return; }
 
-function sameShape(a,b){
- for(let i=0;i<a.length;i++)
-  for(let j=0;j<6;j++)
-   if(a[i][j]!=b[i][j]) return false;
- return true;
-}
+ let A=data[r-4][0];
+ let B=data[r-2][2];
+ let C=data[r-2][1];
+ if(A=="**"||B=="**"||C=="**"){ ai.innerHTML="Reference blank hai"; return; }
 
-function searchPattern(shape){
- lastMatches=[];
- let h=shape.length;
- for(let i=0;i<=data.length-h;i++){
-  let test=[];
-  for(let k=0;k<h;k++){
-   let fams={};
-   data[i+k].forEach(v=>{
-    if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
-   });
-   let row=[];
-   data[i+k].forEach(v=>{
-    if(v=="**") row.push(0);
-    else row.push(fams[fam(v)]>1?1:0);
-   });
-   test.push(row);
+ let key=fam(A)+"-"+fam(B)+"-"+fam(C);
+
+ // Mine old data
+ let results=[];
+ for(let i=4;i<data.length-1;i++){
+  let A1=data[i-4][0];
+  let B1=data[i-2][2];
+  let C1=data[i-2][1];
+  if(A1=="**"||B1=="**"||C1=="**") continue;
+  let k1=fam(A1)+"-"+fam(B1)+"-"+fam(C1);
+  if(k1==key){
+   let v=data[i+1][targetCol];
+   if(v!="**") results.push(v);
   }
-  if(sameShape(shape,test)) lastMatches.push(i);
  }
- showChecks(shape);
-}
 
-/* ===== CHECK LINES ===== */
-function showChecks(shape){
- checks.innerHTML="";
- if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";return;}
- lastMatches.slice(0,3).forEach((idx,n)=>{
-  let d=document.createElement("div");
-  d.innerText=(n+1)+". Match (click)";
-  d.onclick=()=>showOne(shape,idx);
-  checks.appendChild(d);
+ if(results.length==0){
+  ai.innerHTML="Is structure ka purana record nahi mila";
+  return;
+ }
+
+ // Count
+ let count={};
+ results.forEach(v=>count[v]=(count[v]||0)+1);
+ let sorted=Object.entries(count).sort((a,b)=>b[1]-a[1]);
+
+ let html="Advance Structure Match<br>";
+ html+="Key: "+key+"<br><br>";
+ html+="Top Guess:<br>";
+ sorted.slice(0,3).forEach(x=>{
+  html+=x[0]+" ("+x[1]+" baar)<br>";
  });
-}
-
-/* ===== POPUP ===== */
-function showOne(shape,idx){
- activeMark={start:idx,shape:shape};
- draw();
- let h=shape.length;
- let html="<table>";
- for(let i=0;i<h;i++){
-  html+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   let cls="";
-   if(shape[i][j]) cls="circle "+famClass(v);
-   html+=`<td class="${cls}">${v}</td>`;
-  });
-  html+="</tr>";
- }
- html+="</table>";
- popData.innerHTML=html;
- popup.style.display="block";
-}
-
-/* ===== AI SUGGESTION ===== */
-function buildAI(shape){
- let singles={}, jodis={};
- lastMatches.forEach(idx=>{
-  let r=idx+shape.length;
-  if(data[r]){
-    data[r].forEach(v=>{
-      if(v!="**"){
-        let a=v[0], b=v[1];
-        singles[a]=(singles[a]||0)+1;
-        singles[b]=(singles[b]||0)+1;
-        jodis[v]=(jodis[v]||0)+1;
-      }
-    });
-  }
- });
-
- function top(obj,n){
-  return Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,n);
- }
-
- let s=top(singles,2), j=top(jodis,2);
- let html="<b>Blank Column Based Guess</b><br><br>";
- html+="Top 2 Single Ank:<br>";
- s.forEach(x=>html+=x[0]+" ("+x[1]+") &nbsp; ");
- html+="<br><br>Top 2 Jodi:<br>";
- j.forEach(x=>html+=x[0]+" ("+x[1]+") &nbsp; ");
- aiOut.innerHTML=html;
+ ai.innerHTML=html;
 }
 </script>
 </body>
