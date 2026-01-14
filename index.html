@@ -10,17 +10,9 @@ td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 td[contenteditable]{background:#fffbe6}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
-
-/* family colors */
-.f12{border-color:#e74c3c}.f13{border-color:#9b59b6}.f14{border-color:#3498db}
-.f15{border-color:#16a085}.f23{border-color:#f39c12}.f24{border-color:#d35400}
-.f25{border-color:#1abc9c}.f34{border-color:#2c3e50}.f35{border-color:#27ae60}
-.f45{border-color:#8e44ad}.fHR{border-color:#c0392b}.fFR{border-color:#000}
-
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
-border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
 #ai,#future{background:#eef;padding:8px;margin-top:6px;font-weight:600}
+#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
 button{margin:4px}
 </style>
 </head>
@@ -43,12 +35,21 @@ button{margin:4px}
 <div id="future"></div>
 
 <div id="popup">
-  <button onclick="popup.style.display='none'">Close</button>
-  <div id="popData"></div>
+ <button onclick="popup.style.display='none'">Close</button>
+ <div id="popData"></div>
 </div>
 
 <script>
-/* ===== FAMILY ===== */
+const tbl=document.getElementById("tbl");
+const checks=document.getElementById("checks");
+const ai=document.getElementById("ai");
+const future=document.getElementById("future");
+const popup=document.getElementById("popup");
+const popData=document.getElementById("popData");
+
+let targetCol=null;
+
+/* FAMILY */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -74,7 +75,7 @@ function smartMatch(a,b){
  return fam(a)===fam(b);
 }
 
-/* ===== DATA ===== */
+/* DATA */
 let data=JSON.parse(localStorage.getItem("pdata")||"null");
 if(!data){
  data=[
@@ -86,15 +87,8 @@ if(!data){
 }
 data=data.map(r=>r.map(norm));
 
-/* ===== DRAW ===== */
+/* DRAW */
 let activeMark=null;
-const tbl=document.getElementById("tbl");
-const checks=document.getElementById("checks");
-const ai=document.getElementById("ai");
-const future=document.getElementById("future");
-const popup=document.getElementById("popup");
-const popData=document.getElementById("popData");
-
 function draw(){
  let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
  data.forEach((r,ri)=>{
@@ -127,9 +121,10 @@ csv.onchange=e=>{
  fr.readAsText(e.target.files[0]);
 };
 
-/* ===== PATTERN FROM BLANK ===== */
+/* PATTERN */
 let lastMatches=[],topMatches=[];
 function makePattern(r,c){
+ targetCol=c;   // save blank column
  let base="**";
  for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c];break;}}
  if(base=="**") return;
@@ -146,7 +141,7 @@ function makePattern(r,c){
  searchPattern(shape,base);
 }
 
-/* ===== SEARCH ===== */
+/* SEARCH */
 function searchPattern(shape,base){
  lastMatches=[];
  let h=shape.length;
@@ -163,7 +158,7 @@ function searchPattern(shape,base){
  showChecks(shape);
 }
 
-/* ===== CHECK LINES ===== */
+/* CHECK LINES */
 function showChecks(shape){
  checks.innerHTML="";
  if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";ai.innerHTML="";future.innerHTML="";return;}
@@ -177,7 +172,7 @@ function showChecks(shape){
  showAISuggestions(shape);
 }
 
-/* ===== POPUP + MARKING ===== */
+/* POPUP */
 function showOne(shape,n){
  let idx=topMatches[n].index;
  activeMark={start:idx,shape:shape};
@@ -196,9 +191,11 @@ function showOne(shape,n){
  popup.style.display="block";
 }
 
-/* ===== AI + FUTURE AI ===== */
+/* AI + FUTURE AI */
 function showAISuggestions(shape){
  let digitCount={},jodiCount={};
+
+ /* OLD AI = same-window logic */
  topMatches.forEach(m=>{
   let idx=m.index;
   for(let i=0;i<shape.length;i++){
@@ -218,19 +215,34 @@ function showAISuggestions(shape){
  let topD=Object.entries(digitCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
  let topJ=Object.entries(jodiCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
 
- /* Normal AI */
- let html="Top 2 Single Ank:<br>";
- topD.forEach(d=>html+=d[0]+" ("+d[1]+") &nbsp; ");
- html+="<br><br>Top 2 Jodi:<br>";
- topJ.forEach(j=>html+=j[0]+" ("+j[1]+") &nbsp; ");
- ai.innerHTML=html;
+ ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
+              "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
 
- /* Future AI */
- let jodiList = topJ.map(x=>x[0]).join(",");
- let ankList = topD.map(x=>x[0]).join(",");
+ /* ===== FUTURE AI = NEXT ROW BASED ===== */
+ let pool=[],h=shape.length;
+ topMatches.forEach(m=>{
+  let nr=m.index+h;   // next row after pattern
+  if(nr<data.length){
+   let v=data[nr][targetCol];
+   if(v!="**") pool.push(v);
+  }
+ });
+
+ if(pool.length==0){future.innerHTML="No future data";return;}
+
+ let jc={},dc={};
+ pool.forEach(v=>{
+  jc[v]=(jc[v]||0)+1;
+  dc[v[0]]=(dc[v[0]]||0)+1;
+  dc[v[1]]=(dc[v[1]]||0)+1;
+ });
+
+ let fJ=Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
+ let fD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
+
  future.innerHTML=
-  "Strong 2 Jodi:<br>"+jodiList+
-  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+ankList;
+  "Strong 2 Jodi:<br>"+fJ+
+  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+fD;
 }
 </script>
 </body>
