@@ -2,16 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Pattern System</title>
+<title>Auto Pattern AI System</title>
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
-.blank{background:#eee;cursor:pointer}
+td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 td[contenteditable]{background:#fffbe6}
-
+.blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
-.bold{font-weight:900;font-size:15px}
+.anchor{background:#ffeaa7;font-weight:bold}
 
 /* family colors */
 .f12{border-color:#e74c3c}
@@ -28,37 +27,32 @@ td[contenteditable]{background:#fffbe6}
 .fFR{border-color:#000}
 
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
-border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
-#aiBox{background:#eef;padding:10px;margin-top:10px}
-
-svg{position:absolute;left:0;top:0;pointer-events:none}
-line{stroke:red;stroke-width:2}
+#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:45%;overflow:auto}
+#aiBox{background:#f3f0ff;padding:10px;margin-top:10px}
+button{margin:4px}
 </style>
 </head>
 <body>
 
-<h2>AI Pattern System</h2>
+<h2>Auto Pattern AI System</h2>
 
+<input type="file" id="csvFile">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
 
-<div style="position:relative">
-<svg id="lines"></svg>
 <table id="tbl"></table>
-</div>
 
 <h3>✔ Check Lines (Top 3)</h3>
 <div id="checks"></div>
 
 <div id="aiBox">
-<b>🤖 AI Suggestions</b>
-<div id="aiResult"></div>
+<h3>🤖 AI Suggestions</h3>
+<div id="aiOut">Click blank to generate AI</div>
 </div>
 
 <div id="popup">
-  <button onclick="popup.style.display='none'">Close</button>
-  <div id="popData"></div>
+<button onclick="popup.style.display='none'">Close</button>
+<div id="popData"></div>
 </div>
 
 <script>
@@ -77,189 +71,196 @@ const families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
-function famClass(v){let f=fam(v); return f=="NA"?"":"f"+f;}
-function palti(v){return v[1]+v[0];}
-function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
+
+function fam(v){
+ for(let k in families) if(families[k].includes(v)) return k;
+ return "NA";
+}
+function famClass(v){
+ let f=fam(v);
+ if(f=="NA") return "";
+ return "f"+f;
+}
+function palti(v){ return v[1]+v[0]; }
+function norm(v){
+ if(v==""||v=="**") return "**";
+ v=String(v);
+ return v.length==1?"0"+v:v;
+}
 
 /* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("pdata")||"null");
 if(!data){
-data=[
-["91","69","60","71","85","20"],
-["95","28","11","29","28","18"],
-["47","83","45","80","33","18"],
-["96","25","78","59","30","94"],
-["08","55","04","14","55","51"],
-["71","27","21","23","95","29"],
-["**","**","**","**","**","**"]
-];
+ data=[
+ ["91","69","60","71","85","20"],
+ ["95","28","11","29","28","18"],
+ ["47","83","45","80","33","18"],
+ ["96","25","78","59","30","94"],
+ ["08","55","04","14","55","51"],
+ ["71","27","21","23","95","29"],
+ ["**","**","**","**","**","**"]
+ ];
 }
 
 /* ===== DRAW ===== */
-let activeMark=null,anchor=null,blankPos=null,possibleLinks=[];
+let activeMark=null;
 function draw(){
-let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
-data.forEach((r,ri)=>{
-h+="<tr>";
-r.forEach((c,ci)=>{
-let cls="";
-if(activeMark){
-let i=ri-activeMark.start;
-if(i>=0 && i<activeMark.shape.length && activeMark.shape[i][ci])
-cls="circle "+famClass(c);
-}
-if(c=="**")
-h+=`<td class="blank" contenteditable oninput="edit(${ri},${ci},this)" onclick="selectBlank(${ri},${ci})">**</td>`;
-else
-h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="selectBase(${ri},${ci})">${c}</td>`;
-});
-h+="</tr>";
-});
-tbl.innerHTML=h;
-drawLines();
+ let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls="";
+   if(activeMark){
+     let {start,shape}=activeMark;
+     let i=ri-start;
+     if(i>=0 && i<shape.length && shape[i][ci]){
+       cls="circle "+famClass(c);
+     }
+   }
+   if(c=="**")
+     h+=`<td class="blank ${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="makePattern(${ri},${ci})">**</td>`;
+   else
+     h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ tbl.innerHTML=h;
 }
 draw();
 
-function edit(r,c,el){data[r][c]=norm(el.innerText);}
-
-/* ===== SAVE / ADD ===== */
-function addRow(){data.push(["","","","","",""].map(norm));draw();}
-function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
-
-/* ===== BLANK SELECT ===== */
-function selectBlank(r,c){
-blankPos={r,c};
-activeMark=null;
-possibleLinks=[];
-draw();
+function edit(r,c,el){
+ data[r][c]=norm(el.innerText.trim());
 }
 
-/* ===== BASE SELECT ===== */
-function selectBase(r,c){
-if(!blankPos) return;
-let base=data[r][c];
-let baseFam=fam(base);
-let shape=[];
-for(let i=Math.max(0,r-4);i<=r;i++){
-shape.push(data[i].map(v=>{
-if(v=="**") return 0;
-let f=fam(v);
-return (f==baseFam||f==fam(palti(v)))?1:0;
-}));
+/* ===== ADD / SAVE / CSV ===== */
+function addRow(){
+ data.push(["","","","","",""].map(norm));
+ draw();
 }
-searchPattern(shape,baseFam);
+function saveData(){
+ localStorage.setItem("pdata",JSON.stringify(data));
+ alert("Saved");
 }
+csvFile.onchange=e=>{
+ let fr=new FileReader();
+ fr.onload=()=>{
+  data=fr.result.trim().split("\n")
+   .map(r=>r.split(",").map(norm));
+  draw();
+ };
+ fr.readAsText(e.target.files[0]);
+};
 
-/* ===== SEARCH ===== */
+/* ===== PATTERN ===== */
 let lastMatches=[];
-function searchPattern(shape,baseFam){
-lastMatches=[];
-let h=shape.length;
-for(let i=0;i<=data.length-h;i++){
-let ok=true;
-for(let k=0;k<h;k++){
-for(let j=0;j<6;j++){
-if(shape[k][j]){
-let v=data[i+k][j];
-if(v=="**") ok=false;
-else{
-let f=fam(v);
-if(!(f==baseFam||f==fam(palti(v)))) ok=false;
+function makePattern(r,c){
+ let shape=[];
+ let start=Math.max(0,r-4);
+ for(let i=start;i<=r;i++){
+  let fams={};
+  data[i].forEach(v=>{
+   if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
+  });
+  let row=[];
+  data[i].forEach(v=>{
+   if(v=="**") row.push(0);
+   else row.push(fams[fam(v)]>1?1:0);
+  });
+  shape.push(row);
+ }
+ searchPattern(shape);
+ buildAI(shape);
 }
+
+function sameShape(a,b){
+ for(let i=0;i<a.length;i++)
+  for(let j=0;j<6;j++)
+   if(a[i][j]!=b[i][j]) return false;
+ return true;
 }
-}
-}
-if(ok) lastMatches.push(i);
-}
-showChecks(shape,baseFam);
+
+function searchPattern(shape){
+ lastMatches=[];
+ let h=shape.length;
+ for(let i=0;i<=data.length-h;i++){
+  let test=[];
+  for(let k=0;k<h;k++){
+   let fams={};
+   data[i+k].forEach(v=>{
+    if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
+   });
+   let row=[];
+   data[i+k].forEach(v=>{
+    if(v=="**") row.push(0);
+    else row.push(fams[fam(v)]>1?1:0);
+   });
+   test.push(row);
+  }
+  if(sameShape(shape,test)) lastMatches.push(i);
+ }
+ showChecks(shape);
 }
 
 /* ===== CHECK LINES ===== */
-let topMatches=[];
-function showChecks(shape,baseFam){
-checks.innerHTML="";
-if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";return;}
-topMatches=lastMatches.slice(0,3);
-topMatches.forEach((idx,n)=>{
-let d=document.createElement("div");
-d.innerText=(n+1)+". Match (click)";
-d.onclick=()=>showOne(shape,idx,baseFam);
-checks.appendChild(d);
-});
-aiSuggest();
+function showChecks(shape){
+ checks.innerHTML="";
+ if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";return;}
+ lastMatches.slice(0,3).forEach((idx,n)=>{
+  let d=document.createElement("div");
+  d.innerText=(n+1)+". Match (click)";
+  d.onclick=()=>showOne(shape,idx);
+  checks.appendChild(d);
+ });
 }
 
-/* ===== POPUP + MAIN MARK ===== */
-function showOne(shape,idx,baseFam){
-activeMark={start:idx,shape};
-draw();
-let h=shape.length,html="<table>";
-for(let i=0;i<h;i++){
-html+="<tr>";
-data[idx+i].forEach((v,j)=>{
-let cls="";
-if(shape[i][j]) cls="circle "+famClass(v);
-html+=`<td class="${cls}">${v}</td>`;
-});
-html+="</tr>";
-}
-html+="</table>";
-popData.innerHTML=html;
-popup.style.display="block";
-
-/* possible jodi lines */
-possibleLinks=[];
-let blankC=blankPos.c;
-let nextRow=idx+h;
-if(data[nextRow] && data[nextRow][blankC]!="**"){
-possibleLinks.push({from:{r:nextRow,c:blankC},to:blankPos});
-}
-drawLines();
+/* ===== POPUP ===== */
+function showOne(shape,idx){
+ activeMark={start:idx,shape:shape};
+ draw();
+ let h=shape.length;
+ let html="<table>";
+ for(let i=0;i<h;i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls="";
+   if(shape[i][j]) cls="circle "+famClass(v);
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ html+="</table>";
+ popData.innerHTML=html;
+ popup.style.display="block";
 }
 
-/* ===== LINES ===== */
-function drawLines(){
-let svg=document.getElementById("lines");
-svg.innerHTML="";
-if(!possibleLinks.length) return;
-let rect=tbl.getBoundingClientRect();
-svg.setAttribute("width",rect.width);
-svg.setAttribute("height",rect.height);
-possibleLinks.forEach(l=>{
-let a=cellCenter(l.from.r,l.from.c);
-let b=cellCenter(l.to.r,l.to.c);
-svg.innerHTML+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
-});
-}
-function cellCenter(r,c){
-let td=tbl.rows[r+1].cells[c];
-let r1=td.getBoundingClientRect();
-let r2=tbl.getBoundingClientRect();
-return {x:r1.left-r2.left+r1.width/2,y:r1.top-r2.top+r1.height/2};
-}
+/* ===== AI SUGGESTION ===== */
+function buildAI(shape){
+ let singles={}, jodis={};
+ lastMatches.forEach(idx=>{
+  let r=idx+shape.length;
+  if(data[r]){
+    data[r].forEach(v=>{
+      if(v!="**"){
+        let a=v[0], b=v[1];
+        singles[a]=(singles[a]||0)+1;
+        singles[b]=(singles[b]||0)+1;
+        jodis[v]=(jodis[v]||0)+1;
+      }
+    });
+  }
+ });
 
-/* ===== AI SUGGEST ===== */
-function aiSuggest(){
-let singles={},jodis={};
-topMatches.forEach(idx=>{
-let row=data[idx+5];
-if(!row) return;
-row.forEach(v=>{
-if(v!="**"){
-let a=v[0],b=v[1];
-singles[a]=(singles[a]||0)+1;
-singles[b]=(singles[b]||0)+1;
-jodis[v]=(jodis[v]||0)+1;
-}
-});
-});
-let sTop=Object.entries(singles).sort((a,b)=>b[1]-a[1]).slice(0,2);
-let jTop=Object.entries(jodis).sort((a,b)=>b[1]-a[1]).slice(0,2);
-aiResult.innerHTML=`
-Top 2 Single Ank: ${sTop.map(x=>x[0]+"("+x[1]+")").join(" , ")}<br>
-Top 2 Jodi: ${jTop.map(x=>x[0]+"("+x[1]+")").join(" , ")}
-`;
+ function top(obj,n){
+  return Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,n);
+ }
+
+ let s=top(singles,2), j=top(jodis,2);
+ let html="<b>Blank Column Based Guess</b><br><br>";
+ html+="Top 2 Single Ank:<br>";
+ s.forEach(x=>html+=x[0]+" ("+x[1]+") &nbsp; ");
+ html+="<br><br>Top 2 Jodi:<br>";
+ j.forEach(x=>html+=x[0]+" ("+x[1]+") &nbsp; ");
+ aiOut.innerHTML=html;
 }
 </script>
 </body>
