@@ -10,20 +10,13 @@ td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600}
 td[contenteditable]{background:#fffbe6}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
+.bold{font-weight:900;font-size:15px}
 
 /* family colors */
-.f12{border-color:#e74c3c}
-.f13{border-color:#9b59b6}
-.f14{border-color:#3498db}
-.f15{border-color:#16a085}
-.f23{border-color:#f39c12}
-.f24{border-color:#d35400}
-.f25{border-color:#1abc9c}
-.f34{border-color:#2c3e50}
-.f35{border-color:#27ae60}
-.f45{border-color:#8e44ad}
-.fHR{border-color:#c0392b}
-.fFR{border-color:#000}
+.f12{border-color:#e74c3c}.f13{border-color:#9b59b6}.f14{border-color:#3498db}
+.f15{border-color:#16a085}.f23{border-color:#f39c12}.f24{border-color:#d35400}
+.f25{border-color:#1abc9c}.f34{border-color:#2c3e50}.f35{border-color:#27ae60}
+.f45{border-color:#8e44ad}.fHR{border-color:#c0392b}.fFR{border-color:#000}
 
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
 #popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
@@ -34,7 +27,6 @@ button{margin:4px}
 <body>
 
 <h2>Auto Pattern System</h2>
-
 <input type="file" id="csvFile">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
@@ -65,21 +57,11 @@ const families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-function fam(v){
- for(let k in families) if(families[k].includes(v)) return k;
- return "NA";
-}
-function famClass(v){
- let f=fam(v);
- if(f=="NA") return "";
- return "f"+f;
-}
-function palti(v){ return v[1]+v[0]; }
-function norm(v){
- if(v==""||v=="**") return "**";
- v=String(v);
- return v.length==1?"0"+v:v;
-}
+function fam(v){for(let k in families) if(families[k].includes(v)) return k;return "NA";}
+function famClass(v){let f=fam(v);return f=="NA"?"":"f"+f;}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
+function rand(p=0.3){return Math.random()<p}
 
 /* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("pdata")||"null");
@@ -112,26 +94,15 @@ function draw(){
 }
 draw();
 
-function edit(r,c,el){
- data[r][c]=norm(el.innerText.trim());
-}
-
-/* ===== ADD / SAVE ===== */
-function addRow(){
- data.push(["","","","","",""].map(norm));
- draw();
-}
-function saveData(){
- localStorage.setItem("pdata",JSON.stringify(data));
- alert("Data Saved");
-}
+function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
+function addRow(){data.push(["","","","","",""].map(norm));draw();}
+function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
 
 /* ===== CSV ===== */
 csvFile.onchange=e=>{
  let fr=new FileReader();
  fr.onload=()=>{
-  data=fr.result.trim().split("\n")
-   .map(r=>r.split(",").map(norm));
+  data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm));
   draw();
  };
  fr.readAsText(e.target.files[0]);
@@ -139,65 +110,70 @@ csvFile.onchange=e=>{
 
 /* ===== PATTERN ===== */
 let lastMatches=[];
+let base="",basePalti="",baseFam="";
+
 function makePattern(r,c){
+ base=data[r][c];
+ if(base=="**") base="00";
+ basePalti=palti(base);
+ baseFam=fam(base);
+
  let shape=[];
  let start=Math.max(0,r-4);
  for(let i=start;i<=r;i++){
-  let fams={};
-  data[i].forEach(v=>{
-   if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
-  });
-  let row=[];
-  data[i].forEach(v=>{
-   if(v=="**") row.push(0);
-   else row.push(fams[fam(v)]>1?1:0);
+  let row=[0,0,0,0,0,0];
+  data[i].forEach((v,j)=>{
+   if(v=="**") return;
+   if(v==base || v==basePalti || fam(v)==baseFam || rand(0.3)){
+     row[j]=1;
+   }
   });
   shape.push(row);
  }
- searchPattern(shape);
+ searchPattern(shape,r,c);
 }
+
 function sameShape(a,b){
  for(let i=0;i<a.length;i++)
   for(let j=0;j<6;j++)
    if(a[i][j]!=b[i][j]) return false;
  return true;
 }
-function searchPattern(shape){
+
+function searchPattern(shape,cr,cc){
  lastMatches=[];
  let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
   let test=[];
   for(let k=0;k<h;k++){
-   let fams={};
-   data[i+k].forEach(v=>{
-    if(v!="**"){let f=fam(v);fams[f]=(fams[f]||0)+1;}
-   });
-   let row=[];
-   data[i+k].forEach(v=>{
-    if(v=="**") row.push(0);
-    else row.push(fams[fam(v)]>1?1:0);
+   let row=[0,0,0,0,0,0];
+   data[i+k].forEach((v,j)=>{
+    if(v=="**") return;
+    if(v==base || v==basePalti || fam(v)==baseFam || rand(0.3)){
+      row[j]=1;
+    }
    });
    test.push(row);
   }
   if(sameShape(shape,test)) lastMatches.push(i);
  }
- showChecks(shape);
+ showChecks(shape,cr,cc);
 }
 
-/* ===== CHECK LINES (Top 3) ===== */
-function showChecks(shape){
+/* ===== CHECK LINES ===== */
+function showChecks(shape,cr,cc){
  checks.innerHTML="";
  if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";return;}
  lastMatches.slice(0,3).forEach((idx,n)=>{
   let d=document.createElement("div");
   d.innerText=(n+1)+". Match (click)";
-  d.onclick=()=>showOne(shape,idx);
+  d.onclick=()=>showOne(shape,idx,cr,cc);
   checks.appendChild(d);
  });
 }
 
 /* ===== POPUP ===== */
-function showOne(shape,idx){
+function showOne(shape,idx,cr,cc){
  let h=shape.length;
  let html="<table>";
  for(let i=0;i<h;i++){
@@ -205,6 +181,7 @@ function showOne(shape,idx){
   data[idx+i].forEach((v,j)=>{
    let cls="";
    if(shape[i][j]) cls="circle "+famClass(v);
+   if(idx+i==cr && j==cc) cls+=" bold";
    html+=`<td class="${cls}">${v}</td>`;
   });
   html+="</tr>";
