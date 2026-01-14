@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Super Advance Pattern System</title>
+<title>Pattern + AI System</title>
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
@@ -11,20 +11,19 @@ td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
 #ai,#super{background:#eef;padding:8px;margin-top:6px;font-weight:600}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
 button{margin:5px}
 </style>
 </head>
 <body>
 
-<h2>Super Advance Pattern System</h2>
+<h2>Pattern System</h2>
 <input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
 
 <table id="tbl"></table>
 
-<h3>✔ Auto Check Lines (Top 3)</h3>
+<h3>✔ Check Lines (Top 3)</h3>
 <div id="checks"></div>
 
 <h3>🤖 AI Result</h3>
@@ -33,18 +32,12 @@ button{margin:5px}
 <h3>🚀 Super Advance Final</h3>
 <div id="super"></div>
 
-<div id="popup">
- <button onclick="popup.style.display='none'">Close</button>
- <div id="popData"></div>
-</div>
-
 <script>
 const tbl=document.getElementById("tbl");
 const checks=document.getElementById("checks");
 const ai=document.getElementById("ai");
 const superBox=document.getElementById("super");
-const popup=document.getElementById("popup");
-const popData=document.getElementById("popData");
+
 function pad2(d){return String(d).length==1?"0"+d:d;}
 
 /* FAMILY */
@@ -94,8 +87,9 @@ function draw(){
   r.forEach((c,ci)=>{
    let cls="";
    if(activeMark){
-    let i=ri-activeMark.start;
-    if(i>=0 && i<activeMark.height && activeMark.cols.includes(ci)) cls="circle";
+    let {start,shape}=activeMark;
+    let i=ri-start;
+    if(i>=0 && i<shape.length && shape[i][ci]) cls="circle";
    }
    if(c=="**")
     h+=`<td class="blank ${cls}" contenteditable onclick="autoPattern(${ri},${ci})" oninput="edit(${ri},${ci},this)">**</td>`;
@@ -196,34 +190,13 @@ function showChecks(){
  });
 }
 
-/* SHOW ONE – REAL DATA CIRCLE */
+/* SHOW ONE */
 function showOne(p){
- let first=p.matches[0].index;
- let h=p.shape.length;
- let cols=[];
- for(let i=0;i<h;i++){
-  for(let j=0;j<6;j++) if(p.shape[i][j] && !cols.includes(j)) cols.push(j);
- }
- activeMark={start:first,height:h,cols:cols};
+ let idx=p.matches[0].index;
+ activeMark={start:idx,shape:p.shape};
  draw();
-
- // popup
- let html="<table>";
- for(let i=0;i<h;i++){
-  html+="<tr>";
-  for(let j=0;j<6;j++){
-   let v=data[first+i][j];
-   let cls=cols.includes(j)?"circle":"";
-   html+=`<td class="${cls}">${v}</td>`;
-  }
-  html+="</tr>";
- }
- html+="</table>";
- popData.innerHTML=html;
- popup.style.display="block";
-
- // AI Result = niche wali row ka real data
- let out="Next Row Result:<br>";
+ let out="Results after pattern:<br>";
+ let h=p.shape.length;
  p.matches.forEach(m=>{
   let nr=m.index+h;
   if(nr<data.length){
@@ -234,7 +207,7 @@ function showOne(p){
  ai.innerHTML=out;
 }
 
-/* SUPER ADVANCE FINAL */
+/* SUPER ADVANCE FINAL – SIMPLE FORMAT */
 function superAdvance(){
  let pool=[];
  bestPatterns.forEach(p=>{
@@ -248,22 +221,23 @@ function superAdvance(){
   });
  });
  if(!pool.length){superBox.innerHTML="No final data";return;}
- let jc={},fc={},dc={};
+
+ let jc={},dc={};
  pool.forEach(v=>{
   jc[v]=(jc[v]||0)+1;
-  fc[fam(v)]=(fc[fam(v)]||0)+1;
-  dc[pad2(v[0])] = (dc[pad2(v[0])]||0)+1;
-  dc[pad2(v[1])] = (dc[pad2(v[1])]||0)+1;
+  dc[v[0]]=(dc[v[0]]||0)+1;
+  dc[v[1]]=(dc[v[1]]||0)+1;
  });
- let topJ=Object.entries(jc).sort((a,b)=>b[1]-a[1])[0];
- let topF=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0];
- let topD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,3);
- let html="Total: "+pool.length+
- "<br>Top Jodi: "+topJ[0]+" ("+topJ[1]+")"+
- "<br>Top Family: "+topF[0]+" ("+topF[1]+")"+
- "<br>Single Ank:<br>";
- topD.forEach(d=>html+=d[0]+" ("+d[1]+") ");
- superBox.innerHTML=html;
+
+ let topJ=Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,2);
+ let topD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2);
+
+ let jodiText=topJ.map(x=>x[0]).join(",");
+ let ankText=topD.map(x=>x[0]).join(",");
+
+ superBox.innerHTML=
+  "Strong 2 Jodi:<br>"+jodiText+
+  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+ankText;
 }
 </script>
 </body>
