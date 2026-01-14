@@ -2,16 +2,26 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Pattern + AI System</title>
+<title>Pattern System</title>
 <style>
 body{font-family:Arial}
 table{border-collapse:collapse;font-size:13px}
 td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
+td[contenteditable]{background:#fffbe6}
 .blank{background:#eee;cursor:pointer}
 .circle{border:3px solid red;border-radius:50%}
+
+/* family colors */
+.f12{border-color:#e74c3c}.f13{border-color:#9b59b6}.f14{border-color:#3498db}
+.f15{border-color:#16a085}.f23{border-color:#f39c12}.f24{border-color:#d35400}
+.f25{border-color:#1abc9c}.f34{border-color:#2c3e50}.f35{border-color:#27ae60}
+.f45{border-color:#8e44ad}.fHR{border-color:#c0392b}.fFR{border-color:#000}
+
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#ai,#super{background:#eef;padding:8px;margin-top:6px;font-weight:600}
-button{margin:5px}
+#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;
+border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
+#ai,#future{background:#eef;padding:8px;margin-top:6px;font-weight:600}
+button{margin:4px}
 </style>
 </head>
 <body>
@@ -26,21 +36,19 @@ button{margin:5px}
 <h3>✔ Check Lines (Top 3)</h3>
 <div id="checks"></div>
 
-<h3>🤖 AI Result</h3>
+<h3>🤖 AI Suggestions</h3>
 <div id="ai"></div>
 
-<h3>🚀 Super Advance Final</h3>
-<div id="super"></div>
+<h3>🔮 Future AI</h3>
+<div id="future"></div>
+
+<div id="popup">
+  <button onclick="popup.style.display='none'">Close</button>
+  <div id="popData"></div>
+</div>
 
 <script>
-const tbl=document.getElementById("tbl");
-const checks=document.getElementById("checks");
-const ai=document.getElementById("ai");
-const superBox=document.getElementById("super");
-
-function pad2(d){return String(d).length==1?"0"+d:d;}
-
-/* FAMILY */
+/* ===== FAMILY ===== */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -56,30 +64,37 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function famClass(v){let f=fam(v);return f=="NA"?"":"f"+f;}
+function palti(v){return v[1]+v[0];}
 function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
 function smartMatch(a,b){
  if(a=="**"||b=="**") return false;
  if(a===b) return true;
- if(a[1]+a[0]===b||b[1]+b[0]===a) return true;
+ if(palti(a)===b||palti(b)===a) return true;
  return fam(a)===fam(b);
 }
 
-/* DATA */
-let data=JSON.parse(localStorage.getItem("pdata"));
+/* ===== DATA ===== */
+let data=JSON.parse(localStorage.getItem("pdata")||"null");
 if(!data){
  data=[
- ["51","91","41","57","19","22"],
- ["05","90","74","06","19","88"],
- ["90","34","82","09","28","15"],
- ["46","33","91","15","22","67"],
- ["11","72","48","35","64","93"],
+ ["51","91","41","57","19","95"],
+ ["05","90","74","06","19","63"],
+ ["90","34","82","09","28","19"],
  ["**","**","**","**","**","**"]
  ];
 }
 data=data.map(r=>r.map(norm));
 
-/* DRAW */
+/* ===== DRAW ===== */
 let activeMark=null;
+const tbl=document.getElementById("tbl");
+const checks=document.getElementById("checks");
+const ai=document.getElementById("ai");
+const future=document.getElementById("future");
+const popup=document.getElementById("popup");
+const popData=document.getElementById("popData");
+
 function draw(){
  let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
  data.forEach((r,ri)=>{
@@ -89,10 +104,10 @@ function draw(){
    if(activeMark){
     let {start,shape}=activeMark;
     let i=ri-start;
-    if(i>=0 && i<shape.length && shape[i][ci]) cls="circle";
+    if(i>=0&&i<shape.length&&shape[i][ci]) cls="circle "+famClass(c);
    }
    if(c=="**")
-    h+=`<td class="blank ${cls}" contenteditable onclick="autoPattern(${ri},${ci})" oninput="edit(${ri},${ci},this)">**</td>`;
+    h+=`<td class="blank" contenteditable oninput="edit(${ri},${ci},this)" onclick="makePattern(${ri},${ci})">**</td>`;
    else
     h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
   });
@@ -102,69 +117,39 @@ function draw(){
 }
 draw();
 
-function edit(r,c,el){data[r][c]=norm(el.innerText.trim());autoSave();}
-function addRow(){data.push(["","","","","",""].map(norm));draw();autoSave();}
+function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
+function addRow(){data.push(["","","","","",""].map(norm));draw();}
 function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
-function autoSave(){localStorage.setItem("pdata",JSON.stringify(data));}
 
-/* CSV */
 csv.onchange=e=>{
  let fr=new FileReader();
- fr.onload=()=>{
-  let text=fr.result.replace(/\r/g,"").trim();
-  let rows=text.split("\n");
-  if(rows[0].toLowerCase().includes("mon")) rows.shift();
-  data=rows.map(r=>r.split(",").map(v=>{
-    v=v.trim(); if(v==""||v=="*"||v=="**") return "**"; return norm(v);
-  }));
-  data.push(["**","**","**","**","**","**"]);
-  autoSave();draw();
- };
+ fr.onload=()=>{data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm));draw();};
  fr.readAsText(e.target.files[0]);
 };
 
-/* BASE */
-function findBase(r,c){
- for(let i=r-1;i>=0;i--) if(data[i][c]!="**") return data[i][c];
- return "**";
+/* ===== PATTERN FROM BLANK ===== */
+let lastMatches=[],topMatches=[];
+function makePattern(r,c){
+ let base="**";
+ for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c];break;}}
+ if(base=="**") return;
+
+ let shape=[];
+ for(let i=Math.max(0,r-4);i<=r;i++){
+  let row=[];
+  for(let j=0;j<6;j++){
+   let v=data[i][j];
+   row.push(v!="**" && smartMatch(v,base)?1:0);
+  }
+  shape.push(row);
+ }
+ searchPattern(shape,base);
 }
 
-/* AUTO PATTERN */
-let bestPatterns=[],targetCol=null;
-function autoPattern(r,c){
- targetCol=c;bestPatterns=[];
- let base=findBase(r,c);
- if(base=="**"){ai.innerHTML="Upar base nahi mila";return;}
- let templates=[
-  [[0,0],[1,1],[2,2],[3,3]],
-  [[0,5],[1,4],[2,3],[3,2]],
-  [[0,0],[1,0],[2,0],[3,0]],
-  [[0,1],[1,1],[2,1],[3,1]],
-  [[0,2],[1,2],[2,2],[3,2]]
- ];
- templates.forEach(t=>{
-  let shape=[];
-  for(let k=0;k<t.length;k++){
-   let rr=r-4+k;if(rr<0) continue;
-   let row=new Array(6).fill(0);
-   let cc=t[k][1];
-   let v=data[rr][cc];
-   if(v!="**"&&smartMatch(v,base)) row[cc]=1;
-   shape.push(row);
-  }
-  if(shape.length){
-   let matches=search(shape,base);
-   if(matches.length>=3) bestPatterns.push({shape,matches});
-  }
- });
- bestPatterns.sort((a,b)=>b.matches.length-a.matches.length);
- bestPatterns=bestPatterns.slice(0,3);
- showChecks();superAdvance();
-}
-
-/* SEARCH */
-function search(shape,base){
- let res=[],h=shape.length;
+/* ===== SEARCH ===== */
+function searchPattern(shape,base){
+ lastMatches=[];
+ let h=shape.length;
  for(let i=0;i<=data.length-h;i++){
   let ok=true;
   for(let k=0;k<h;k++){
@@ -173,71 +158,79 @@ function search(shape,base){
    }
    if(!ok) break;
   }
-  if(ok) res.push({index:i});
+  if(ok) lastMatches.push({index:i});
  }
- return res;
+ showChecks(shape);
 }
 
-/* CHECK LINES */
-function showChecks(){
- checks.innerHTML="";ai.innerHTML="";
- if(!bestPatterns.length){checks.innerHTML="No strong pattern";return;}
- bestPatterns.forEach((p,i)=>{
+/* ===== CHECK LINES ===== */
+function showChecks(shape){
+ checks.innerHTML="";
+ if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";ai.innerHTML="";future.innerHTML="";return;}
+ topMatches=lastMatches.slice(0,3);
+ topMatches.forEach((m,i)=>{
   let d=document.createElement("div");
-  d.innerText=(i+1)+". Match ("+p.matches.length+")";
-  d.onclick=()=>showOne(p);
+  d.innerText=(i+1)+". Match (click)";
+  d.onclick=()=>showOne(shape,i);
   checks.appendChild(d);
  });
+ showAISuggestions(shape);
 }
 
-/* SHOW ONE */
-function showOne(p){
- let idx=p.matches[0].index;
- activeMark={start:idx,shape:p.shape};
+/* ===== POPUP + MARKING ===== */
+function showOne(shape,n){
+ let idx=topMatches[n].index;
+ activeMark={start:idx,shape:shape};
  draw();
- let out="Results after pattern:<br>";
- let h=p.shape.length;
- p.matches.forEach(m=>{
-  let nr=m.index+h;
-  if(nr<data.length){
-   let v=data[nr][targetCol];
-   if(v!="**") out+=v+" ";
+ let h=shape.length,html="<table>";
+ for(let i=0;i<h;i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls=shape[i][j]?"circle "+famClass(v):"";
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ html+="</table>";
+ popData.innerHTML=html;
+ popup.style.display="block";
+}
+
+/* ===== AI + FUTURE AI ===== */
+function showAISuggestions(shape){
+ let digitCount={},jodiCount={};
+ topMatches.forEach(m=>{
+  let idx=m.index;
+  for(let i=0;i<shape.length;i++){
+   for(let j=0;j<6;j++){
+    if(shape[i][j]){
+     let v=data[idx+i][j];
+     if(v!="**"){
+      jodiCount[v]=(jodiCount[v]||0)+1;
+      digitCount[v[0]]=(digitCount[v[0]]||0)+1;
+      digitCount[v[1]]=(digitCount[v[1]]||0)+1;
+     }
+    }
+   }
   }
  });
- ai.innerHTML=out;
-}
 
-/* SUPER ADVANCE FINAL – SIMPLE FORMAT */
-function superAdvance(){
- let pool=[];
- bestPatterns.forEach(p=>{
-  let h=p.shape.length;
-  p.matches.forEach(m=>{
-   let nr=m.index+h;
-   if(nr<data.length){
-    let v=data[nr][targetCol];
-    if(v!="**") pool.push(v);
-   }
-  });
- });
- if(!pool.length){superBox.innerHTML="No final data";return;}
+ let topD=Object.entries(digitCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
+ let topJ=Object.entries(jodiCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
 
- let jc={},dc={};
- pool.forEach(v=>{
-  jc[v]=(jc[v]||0)+1;
-  dc[v[0]]=(dc[v[0]]||0)+1;
-  dc[v[1]]=(dc[v[1]]||0)+1;
- });
+ /* Normal AI */
+ let html="Top 2 Single Ank:<br>";
+ topD.forEach(d=>html+=d[0]+" ("+d[1]+") &nbsp; ");
+ html+="<br><br>Top 2 Jodi:<br>";
+ topJ.forEach(j=>html+=j[0]+" ("+j[1]+") &nbsp; ");
+ ai.innerHTML=html;
 
- let topJ=Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,2);
- let topD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2);
-
- let jodiText=topJ.map(x=>x[0]).join(",");
- let ankText=topD.map(x=>x[0]).join(",");
-
- superBox.innerHTML=
-  "Strong 2 Jodi:<br>"+jodiText+
-  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+ankText;
+ /* Future AI */
+ let jodiList = topJ.map(x=>x[0]).join(",");
+ let ankList = topD.map(x=>x[0]).join(",");
+ future.innerHTML=
+  "Strong 2 Jodi:<br>"+jodiList+
+  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+ankList;
 }
 </script>
 </body>
