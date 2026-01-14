@@ -11,11 +11,16 @@ td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 .circle{border:3px solid red;border-radius:50%}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
 #ai,#super{background:#eef;padding:8px;margin-top:6px;font-weight:600}
+button{margin:5px}
 </style>
 </head>
 <body>
 
 <h2>Super Advance Pattern System</h2>
+<input type="file" id="csv">
+<button onclick="addRow()">Add Row</button>
+<button onclick="saveData()">Save</button>
+
 <table id="tbl"></table>
 
 <h3>✔ Auto Check Lines (Top 3)</h3>
@@ -28,6 +33,9 @@ td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
 <div id="super"></div>
 
 <script>
+/* ===== HELPERS ===== */
+function pad2(d){ return String(d).length==1 ? "0"+d : d; }
+
 /* ===== FAMILY ===== */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
@@ -48,19 +56,23 @@ function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0
 function smartMatch(a,b){
  if(a=="**"||b=="**") return false;
  if(a===b) return true;
- if(a[0]+a[1]===b||b[0]+b[1]===a) return true;
+ if(a[1]+a[0]===b||b[1]+b[0]===a) return true;
  return fam(a)===fam(b);
 }
 
 /* ===== DATA ===== */
-let data=[
+let data=JSON.parse(localStorage.getItem("pdata")||"null");
+if(!data){
+ data=[
  ["51","91","41","57","19","22"],
  ["05","90","74","06","19","88"],
  ["90","34","82","09","28","15"],
  ["46","33","91","15","22","67"],
  ["11","72","48","35","64","93"],
  ["**","**","**","**","**","**"]
-].map(r=>r.map(norm));
+ ];
+}
+data=data.map(r=>r.map(norm));
 
 /* ===== DRAW ===== */
 let activeMark=null;
@@ -76,9 +88,9 @@ function draw(){
     if(i>=0 && i<shape.length && shape[i][ci]) cls="circle";
    }
    if(c=="**")
-    h+=`<td class="blank ${cls}" onclick="autoPattern(${ri},${ci})">${c}</td>`;
+    h+=`<td class="blank ${cls}" contenteditable onclick="autoPattern(${ri},${ci})" oninput="edit(${ri},${ci},this)">**</td>`;
    else
-    h+=`<td class="${cls}">${c}</td>`;
+    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -86,12 +98,41 @@ function draw(){
 }
 draw();
 
+function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
+function addRow(){data.push(["","","","","",""].map(norm));draw();}
+function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
+
+/* ===== CSV ===== */
+csv.onchange=e=>{
+ let fr=new FileReader();
+ fr.onload=()=>{
+  data=fr.result.trim().split("\n").map(r=>
+   r.split(",").map(v=>{
+    v=v.trim(); if(v==""||v=="*"||v=="**") return "**"; return norm(v);
+   })
+  );
+  draw();
+ };
+ fr.readAsText(e.target.files[0]);
+};
+
+/* ===== BASE ===== */
+function findBase(r,c){
+ for(let i=r-1;i>=0;i--){
+  if(data[i][c]!="**") return data[i][c];
+ }
+ return "**";
+}
+
 /* ===== AUTO PATTERN ===== */
 let bestPatterns=[],targetCol=null;
 
 function autoPattern(r,c){
  targetCol=c;
  bestPatterns=[];
+ let base=findBase(r,c);
+ if(base=="**"){ ai.innerHTML="Upar base jodi nahi mili"; return; }
+
  let templates=[
   [[0,0],[1,1],[2,2],[3,3]],
   [[0,5],[1,4],[2,3],[3,2]],
@@ -104,15 +145,15 @@ function autoPattern(r,c){
   let shape=[];
   for(let k=0;k<t.length;k++){
    let rr=r-4+k;
-   if(rr<0) return;
+   if(rr<0) continue;
    let row=new Array(6).fill(0);
    let cc=t[k][1];
-   let base=data[r-1][c];
    let v=data[rr][cc];
    if(v!="**" && smartMatch(v,base)) row[cc]=1;
    shape.push(row);
   }
-  let matches=search(shape,data[r-1][c]);
+  if(shape.length==0) return;
+  let matches=search(shape,base);
   if(matches.length>=3) bestPatterns.push({shape,matches});
  });
 
@@ -152,7 +193,7 @@ function showChecks(){
  });
 }
 
-/* ===== DRAW ONE ===== */
+/* ===== SHOW ONE ===== */
 function showOne(p){
  activeMark={start:p.matches[0].index,shape:p.shape};
  draw();
@@ -182,17 +223,23 @@ function superAdvance(){
   });
  });
  if(pool.length==0){super.innerHTML="No final data";return;}
- let jc={},fc={};
+ let jc={},fc={},dc={};
  pool.forEach(v=>{
   jc[v]=(jc[v]||0)+1;
   let f=fam(v); fc[f]=(fc[f]||0)+1;
+  dc[pad2(v[0])] = (dc[pad2(v[0])]||0)+1;
+  dc[pad2(v[1])] = (dc[pad2(v[1])]||0)+1;
  });
  let topJ=Object.entries(jc).sort((a,b)=>b[1]-a[1])[0];
  let topF=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0];
- super.innerHTML=
- "Total Samples: "+pool.length+"<br>"+
- "Top Jodi: "+topJ[0]+" ("+topJ[1]+")<br>"+
- "Top Family: "+topF[0]+" ("+topF[1]+")";
+ let topD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+ let html="Total Samples: "+pool.length+"<br>";
+ html+="Top Jodi: "+topJ[0]+" ("+topJ[1]+")<br>";
+ html+="Top Family: "+topF[0]+" ("+topF[1]+")<br><br>";
+ html+="Top Single Ank:<br>";
+ topD.forEach(d=>html+=d[0]+" ("+d[1]+") ");
+ super.innerHTML=html;
 }
 </script>
 </body>
