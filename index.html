@@ -31,7 +31,7 @@ button{margin:4px}
 <h3>🤖 AI Suggestions</h3>
 <div id="ai"></div>
 
-<h3>🔮 Future AI</h3>
+<h3>🔮 Future AI (Table Trick)</h3>
 <div id="future"></div>
 
 <div id="popup">
@@ -124,7 +124,7 @@ csv.onchange=e=>{
 /* PATTERN */
 let lastMatches=[],topMatches=[];
 function makePattern(r,c){
- targetCol=c;   // save blank column
+ targetCol=c;
  let base="**";
  for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c];break;}}
  if(base=="**") return;
@@ -195,7 +195,7 @@ function showOne(shape,n){
 function showAISuggestions(shape){
  let digitCount={},jodiCount={};
 
- /* OLD AI = same-window logic */
+ // Normal AI (same window)
  topMatches.forEach(m=>{
   let idx=m.index;
   for(let i=0;i<shape.length;i++){
@@ -218,13 +218,19 @@ function showAISuggestions(shape){
  ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
               "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
 
- /* ===== FUTURE AI = NEXT ROW BASED ===== */
- let pool=[],h=shape.length;
+ // ===== FUTURE AI = TABLE TRICK =====
+ let pool=[];
+ let h=shape.length;
  topMatches.forEach(m=>{
-  let nr=m.index+h;   // next row after pattern
+  let nr=m.index+h;  // next row
   if(nr<data.length){
-   let v=data[nr][targetCol];
-   if(v!="**") pool.push(v);
+   let cols=[targetCol, targetCol-1, targetCol+1];
+   cols.forEach(c=>{
+    if(c>=0 && c<6){
+     let v=data[nr][c];
+     if(v!="**") pool.push(v);
+    }
+   });
   }
  });
 
