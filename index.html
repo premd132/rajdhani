@@ -134,15 +134,21 @@ function makePattern(r,c){
  searchPattern(shape,base);
 }
 
-/* SEARCH */
+/* SEARCH — FAMILY FLOW FIX */
 function searchPattern(shape,base){
  lastMatches=[];
  let h=shape.length;
+ let baseFam=fam(base);
+
  for(let i=0;i<=data.length-h;i++){
   let ok=true;
   for(let k=0;k<h;k++){
    for(let j=0;j<6;j++){
-    if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false;break;}
+    if(shape[k][j]){
+      if(data[i+k][j]=="**" || fam(data[i+k][j])!==baseFam){
+        ok=false;break;
+      }
+    }
    }
    if(!ok) break;
   }
@@ -188,7 +194,6 @@ function showOne(shape,n){
 function showAISuggestions(shape){
  let digitCount={},jodiCount={};
 
- // Normal AI
  topMatches.forEach(m=>{
   let idx=m.index;
   for(let i=0;i<shape.length;i++){
@@ -209,22 +214,16 @@ function showAISuggestions(shape){
  ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
               "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
 
- // ===== FIXED FUTURE AI =====
- let pool=[];
- let h=shape.length;
+ // FUTURE AI SAME AS PEHLE
+ let pool=[],h=shape.length;
  topMatches.forEach(m=>{
   let nr=m.index+h;
   while(nr<data.length){
-   let row=data[nr];
-   let hasReal=false;
-   row.forEach(v=>{ if(v!="**") hasReal=true; });
+   let row=data[nr],hasReal=false;
+   row.forEach(v=>{if(v!="**")hasReal=true});
    if(hasReal){
-    let cols=[targetCol,targetCol-1,targetCol+1];
-    cols.forEach(c=>{
-     if(c>=0 && c<6){
-      let v=row[c];
-      if(v!="**") pool.push(v);
-     }
+    [targetCol,targetCol-1,targetCol+1].forEach(c=>{
+     if(c>=0&&c<6&&row[c]!="**") pool.push(row[c]);
     });
     break;
    }
@@ -233,7 +232,6 @@ function showAISuggestions(shape){
  });
 
  if(pool.length==0){future.innerHTML="No future data";return;}
-
  let jc={},dc={};
  pool.forEach(v=>{
   jc[v]=(jc[v]||0)+1;
@@ -244,7 +242,7 @@ function showAISuggestions(shape){
  let fD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
 
  future.innerHTML="Strong 2 Jodi:<br>"+fJ+
-                  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+fD;
+                  "<br><br>Strong 2 Single Ank:<br>"+fD;
 }
 </script>
 </body>
