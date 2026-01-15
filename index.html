@@ -40,14 +40,13 @@ button{margin:4px}
 </div>
 
 <script>
+let targetCol=null;
 const tbl=document.getElementById("tbl");
 const checks=document.getElementById("checks");
 const ai=document.getElementById("ai");
 const future=document.getElementById("future");
 const popup=document.getElementById("popup");
 const popData=document.getElementById("popData");
-
-let targetCol=null;
 
 /* FAMILY */
 const families={
@@ -114,12 +113,6 @@ draw();
 function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
 function addRow(){data.push(["","","","","",""].map(norm));draw();}
 function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
-
-csv.onchange=e=>{
- let fr=new FileReader();
- fr.onload=()=>{data=fr.result.trim().split("\n").map(r=>r.split(",").map(norm));draw();};
- fr.readAsText(e.target.files[0]);
-};
 
 /* PATTERN */
 let lastMatches=[],topMatches=[];
@@ -195,7 +188,7 @@ function showOne(shape,n){
 function showAISuggestions(shape){
  let digitCount={},jodiCount={};
 
- // Normal AI (same window)
+ // Normal AI
  topMatches.forEach(m=>{
   let idx=m.index;
   for(let i=0;i<shape.length;i++){
@@ -211,26 +204,31 @@ function showAISuggestions(shape){
    }
   }
  });
-
  let topD=Object.entries(digitCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
  let topJ=Object.entries(jodiCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
-
  ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
               "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
 
- // ===== FUTURE AI = TABLE TRICK =====
+ // ===== FIXED FUTURE AI =====
  let pool=[];
  let h=shape.length;
  topMatches.forEach(m=>{
-  let nr=m.index+h;  // next row
-  if(nr<data.length){
-   let cols=[targetCol, targetCol-1, targetCol+1];
-   cols.forEach(c=>{
-    if(c>=0 && c<6){
-     let v=data[nr][c];
-     if(v!="**") pool.push(v);
-    }
-   });
+  let nr=m.index+h;
+  while(nr<data.length){
+   let row=data[nr];
+   let hasReal=false;
+   row.forEach(v=>{ if(v!="**") hasReal=true; });
+   if(hasReal){
+    let cols=[targetCol,targetCol-1,targetCol+1];
+    cols.forEach(c=>{
+     if(c>=0 && c<6){
+      let v=row[c];
+      if(v!="**") pool.push(v);
+     }
+    });
+    break;
+   }
+   nr++;
   }
  });
 
@@ -242,13 +240,11 @@ function showAISuggestions(shape){
   dc[v[0]]=(dc[v[0]]||0)+1;
   dc[v[1]]=(dc[v[1]]||0)+1;
  });
-
  let fJ=Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
  let fD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
 
- future.innerHTML=
-  "Strong 2 Jodi:<br>"+fJ+
-  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+fD;
+ future.innerHTML="Strong 2 Jodi:<br>"+fJ+
+                  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+fD;
 }
 </script>
 </body>
