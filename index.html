@@ -40,6 +40,9 @@ button{margin:4px}
 </div>
 
 <script>
+/* ===== PAGE-SPECIFIC KEY ===== */
+const PAGE_KEY = "pdata_" + location.pathname.replace(/[^a-z0-9]/gi,"_");
+
 let targetCol=null;
 const tbl=document.getElementById("tbl");
 const checks=document.getElementById("checks");
@@ -75,8 +78,8 @@ function smartMatch(a,b){
  return fam(a)===fam(b);
 }
 
-/* DATA */
-let data=JSON.parse(localStorage.getItem("pdata")||"null");
+/* DATA LOAD (page-wise) */
+let data=JSON.parse(localStorage.getItem(PAGE_KEY)||"null");
 if(!data){
  data=[
  ["51","91","41","57","19"],
@@ -113,10 +116,13 @@ draw();
 
 function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
 function addRow(){data.push(["","","","",""].map(norm));draw();}
-function saveData(){localStorage.setItem("pdata",JSON.stringify(data));alert("Saved");}
+function saveData(){
+ localStorage.setItem(PAGE_KEY,JSON.stringify(data));
+ alert("Saved for this page only");
+}
 
 /* CSV UPLOAD */
-csv.onchange = e => {
+csv.onchange=e=>{
  let file=e.target.files[0];
  if(!file) return;
  let fr=new FileReader();
@@ -133,7 +139,7 @@ csv.onchange = e => {
    while(arr.length<5) arr.push("**");
    return arr.slice(0,5);
   });
-  localStorage.setItem("pdata",JSON.stringify(data));
+  localStorage.setItem(PAGE_KEY,JSON.stringify(data));
   draw();
  };
  fr.readAsText(file);
