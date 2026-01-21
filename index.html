@@ -231,6 +231,7 @@ function showAISuggestions(shape){
  });
  let topD=Object.entries(digitCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
  let topJ=Object.entries(jodiCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
+
  ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
               "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
 
