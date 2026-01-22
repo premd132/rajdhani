@@ -2,46 +2,37 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Pattern Engine – LEVEL 3</title>
-
+<title>Record Pattern AI System</title>
 <style>
-body{font-family:Arial}
-table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
+body{font-family:Arial;background:#f7f7f7}
+table{border-collapse:collapse;font-size:13px;margin-top:10px}
+td,th{border:1px solid #999;padding:6px;text-align:center;font-weight:600;min-width:40px}
 td[contenteditable]{background:#fffbe6}
 .blank{background:#eee;cursor:pointer}
-.circle{border:3px solid red;border-radius:50%}
-.activeRow td{background:#e6f2ff}
-#checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#ai,#future{background:#eef;padding:8px;margin-top:6px;font-weight:600}
-#popup{
- position:fixed;left:0;right:0;bottom:0;
- background:#fff;border-top:3px solid #000;
- display:none;max-height:55%;overflow:auto
-}
+.hit{border:3px solid red;border-radius:50%}
+.flow{background:#dff}
+#panel div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
+#ai,#popup{background:#eef;padding:10px;margin-top:10px;font-weight:600}
+#popup{position:fixed;left:0;right:0;bottom:0;display:none;max-height:55%;overflow:auto;border-top:4px solid #000}
 button{margin:4px}
 </style>
 </head>
-
 <body>
 
-<h2>🧠 Pattern Engine – LEVEL 3</h2>
+<h2>🧠 Record Based Pattern + AI</h2>
 
 <input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
-<button onclick="deleteRow()">Delete Row</button>
-<button onclick="saveData()">Save</button>
+<button onclick="deleteRow()">Delete Selected Row</button>
+<button onclick="save()">Save</button>
 
 <table id="tbl"></table>
 
-<h3>✔ Check Lines (Min 3)</h3>
-<div id="checks"></div>
+<h3>✔ Strong Check Lines</h3>
+<div id="panel"></div>
 
-<h3>🤖 AI (Pattern Logic)</h3>
+<h3>🤖 AI Prediction (For Today)</h3>
 <div id="ai"></div>
-
-<h3>🔮 Future AI – STRONG</h3>
-<div id="future"></div>
 
 <div id="popup">
 <button onclick="popup.style.display='none'">Close</button>
@@ -50,8 +41,8 @@ button{margin:4px}
 
 <script>
 /* ================= CONFIG ================= */
-const COLS = 5; // Milan = 5 | Kalyan/Rajdhani = 6
-const PAGE_KEY="pdata_"+location.pathname.replace(/[^a-z0-9]/gi,"_");
+const COLS = 5; // Mon–Fri (change to 6 if needed)
+const STORAGE_KEY = "record_ai_"+location.pathname;
 
 /* ================= FAMILY ================= */
 const families={
@@ -71,10 +62,10 @@ const families={
 const fam=v=>{for(let k in families) if(families[k].includes(v)) return k; return "NA";}
 const palti=v=>v[1]+v[0];
 const norm=v=>(!v||v=="**")?"**":(v.length==1?"0"+v:v);
-const smartMatch=(a,b)=>a!="**"&&b!="**"&&(a===b||palti(a)===b||fam(a)===fam(b));
+const smart=(a,b)=>a!="**"&&b!="**"&&(a==b||palti(a)==b||fam(a)==fam(b));
 
 /* ================= DATA ================= */
-let data=JSON.parse(localStorage.getItem(PAGE_KEY)||"null");
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
 if(!data){
  data=[
   ["51","91","41","57","19"],
@@ -85,28 +76,24 @@ if(!data){
 }
 data=data.map(r=>r.map(norm));
 
-/* ================= STATE ================= */
-let activeRow=null;
-let targetCol=null;
-let activeMark=null;
-let lastMatches=[];
-
 /* ================= DRAW ================= */
+let selectedRow=null;
+let active=null;
 const tbl=document.getElementById("tbl");
 function draw(){
  let h="<tr>"+["Mon","Tue","Wed","Thu","Fri","Sat"].slice(0,COLS).map(d=>"<th>"+d+"</th>").join("")+"</tr>";
- data.forEach((r,ri)=>{
-  let rowCls=(ri===activeRow)?"activeRow":"";
-  h+=`<tr class="${rowCls}">`;
-  r.forEach((c,ci)=>{
-   let cls=(c=="**")?"blank":"";
-   if(activeMark){
-    let i=ri-activeMark.start;
-    if(i>=0 && i<activeMark.shape.length && activeMark.shape[i][ci]) cls="circle";
+ data.forEach((r,i)=>{
+  h+="<tr onclick='selectedRow="+i+"'>";
+  r.forEach((c,j)=>{
+   let cls="";
+   if(active){
+    let k=i-active.start;
+    if(k>=0&&k<active.shape.length&&active.shape[k][j]) cls="hit";
    }
-   h+=`<td class="${cls}" contenteditable
-        onclick="cellClick(${ri},${ci})"
-        oninput="edit(${ri},${ci},this)">${c}</td>`;
+   h+=`<td class="${c=="**"?"blank":cls}" contenteditable
+        onclick="analyze(${i},${j})"
+        oninput="data[${i}][${j}]=norm(this.innerText)">
+        ${c}</td>`;
   });
   h+="</tr>";
  });
@@ -114,148 +101,104 @@ function draw(){
 }
 draw();
 
-/* ================= BASIC ================= */
-function edit(r,c,e){data[r][c]=norm(e.innerText.trim());}
+/* ================= ROW OPS ================= */
 function addRow(){data.push(Array(COLS).fill("**"));draw();}
 function deleteRow(){
- if(activeRow===null){alert("Row select karo");return;}
- data.splice(activeRow,1);
- activeRow=null;
- draw();
+ if(selectedRow==null) return alert("Row select karo");
+ data.splice(selectedRow,1);selectedRow=null;draw();
 }
-function saveData(){
- localStorage.setItem(PAGE_KEY,JSON.stringify(data));
- alert("Saved");
-}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
 
 /* ================= CSV ================= */
 csv.onchange=e=>{
- let f=e.target.files[0]; if(!f) return;
+ let f=e.target.files[0];if(!f)return;
  let fr=new FileReader();
  fr.onload=()=>{
   let rows=fr.result.replace(/\r/g,"").trim().split("\n");
   if(rows[0].toLowerCase().includes("mon")) rows.shift();
   data=rows.map(r=>{
-   let a=r.split(",").map(v=>norm(v.trim()));
-   while(a.length<COLS) a.push("**");
+   let a=r.split(",").map(x=>norm(x.trim()));
+   while(a.length<COLS)a.push("**");
    return a.slice(0,COLS);
   });
-  saveData(); draw();
+  save();draw();
  };
  fr.readAsText(f);
 };
 
-/* ================= CLICK ================= */
-function cellClick(r,c){
- activeRow=r;
- if(data[r][c]=="**"){
-  targetCol=c;
-  makePattern(r,c);
- }
- draw();
-}
+/* ================= AI CORE ================= */
+const panel=document.getElementById("panel");
+const ai=document.getElementById("ai");
+const popup=document.getElementById("popup");
+const popData=document.getElementById("popData");
 
-/* ================= PATTERN ================= */
-function makePattern(r,c){
+function analyze(r,c){
+ if(data[r][c]!="**") return;
  let base="**";
- for(let i=r;i>=0;i--) if(data[i][c]!="**"){base=data[i][c];break;}
+ for(let i=r-1;i>=0;i--) if(data[i][c]!="**"){base=data[i][c];break;}
  if(base=="**") return;
 
+ /* 1️⃣ Build pattern (last 7 rows) */
  let shape=[];
- let start=Math.max(0,r-8);
- for(let i=start;i<=r;i++){
-  shape.push(data[i].map(v=>smartMatch(v,base)?1:0));
+ let start=Math.max(0,r-7);
+ for(let i=start;i<r;i++){
+  shape.push(data[i].map(v=>smart(v,base)?1:0));
  }
- searchPattern(shape,start,base);
-}
 
-function searchPattern(shape,start,base){
- lastMatches=[];
- for(let i=0;i<=data.length-shape.length;i++){
+ /* 2️⃣ Search in full record */
+ let matches=[];
+ for(let i=0;i<=data.length-shape.length-1;i++){
   let ok=true;
   for(let k=0;k<shape.length;k++){
    for(let j=0;j<COLS;j++){
-    if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false;break;}
+    if(shape[k][j] && !smart(data[i+k][j],base)){ok=false;break;}
    }
    if(!ok) break;
   }
-  if(ok) lastMatches.push({index:i});
+  if(ok) matches.push(i);
  }
- showChecks(shape,start);
-}
 
-/* ================= CHECK LINES ================= */
-function showChecks(shape,start){
- checks.innerHTML="";
- if(lastMatches.length<3){
-  ai.innerHTML="Pattern weak – no trade";
-  future.innerHTML="";
+ /* 3️⃣ Collect future jodi */
+ let pool=[];
+ matches.forEach(i=>{
+  let n=i+shape.length;
+  if(n<data.length && data[n][c]!="**") pool.push(data[n][c]);
+ });
+
+ if(!pool.length){
+  ai.innerHTML="No strong history for this pattern";
   return;
  }
- lastMatches.slice(0,4).forEach((m,i)=>{
-  let d=document.createElement("div");
-  d.innerText=(i+1)+". Match @ Row "+(m.index+1);
-  d.onclick=()=>showPopup(shape,m.index);
-  checks.appendChild(d);
- });
- runAI(shape);
-}
 
-/* ================= POPUP ================= */
-const popup=document.getElementById("popup");
-const popData=document.getElementById("popData");
-function showPopup(shape,idx){
- activeMark={start:idx,shape};
- draw();
- let h="<table>";
- for(let i=0;i<shape.length;i++){
-  h+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   let cls=shape[i][j]?"circle":"";
-   h+=`<td class="${cls}">${v}</td>`;
-  });
-  h+="</tr>";
- }
- h+="</table>";
- popData.innerHTML=h;
- popup.style.display="block";
-}
-
-/* ================= SUPER AI ================= */
-function runAI(shape){
- let score={},digit={};
-
- lastMatches.forEach(m=>{
-  let r=m.index+shape.length;
-  if(r<data.length){
-   let v=data[r][targetCol];
-   if(v!="**"){
-    score[v]=(score[v]||0)+3;
-    score[palti(v)]=(score[palti(v)]||0)+2;
-    families[fam(v)]?.forEach(j=>score[j]=(score[j]||0)+1);
-    digit[v[0]]=(digit[v[0]]||0)+1;
-    digit[v[1]]=(digit[v[1]]||0)+1;
-   }
-  }
+ /* 4️⃣ Weighting */
+ let score={};
+ pool.forEach(v=>{
+  score[v]=(score[v]||0)+4;
+  score[palti(v)]=(score[palti(v)]||0)+2;
+  families[fam(v)]?.forEach(j=>score[j]=(score[j]||0)+1);
  });
 
- let strongJodi=Object.entries(score)
-  .sort((a,b)=>b[1]-a[1])
-  .slice(0,4).map(x=>x[0]);
-
- let strongDigit=Object.entries(digit)
-  .sort((a,b)=>b[1]-a[1])
-  .slice(0,2).map(x=>x[0]);
+ let final=Object.entries(score).sort((a,b)=>b[1]-a[1]).slice(0,4);
 
  ai.innerHTML=
-  "Pattern CONFIRMED<br><br>"+
-  "Strong Jodi:<br>"+strongJodi.join(", ");
+  "🔹 Strong Jodi Today:<br>"+final.map(x=>x[0]).join(", ");
 
- future.innerHTML=
-  "Strong Single Ank (Open → Close):<br>"+
-  strongDigit.join(", ");
+ /* Popup */
+ active={start:start,shape:shape};
+ draw();
+ panel.innerHTML="";
+ matches.slice(0,3).forEach((m,i)=>{
+  let d=document.createElement("div");
+  d.innerText="Check Line "+(i+1);
+  d.onclick=()=>{
+   active={start:m,shape};
+   draw();
+   popup.style.display="block";
+   popData.innerHTML="<b>Real Record Source (Index "+m+")</b>";
+  };
+  panel.appendChild(d);
+ });
 }
 </script>
-
 </body>
 </html>
