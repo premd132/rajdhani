@@ -2,31 +2,47 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani – AI Strong Trick (Jodi Pattern Mode)</title>
+<title>AI Jodi Pattern System – FINAL</title>
+
 <style>
-body{font-family:Arial}
+body{font-family:Arial;background:#fafafa}
 table{border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600}
+td,th{border:1px solid #999;padding:5px;text-align:center;font-weight:600;min-width:42px}
 td[contenteditable]{background:#fffbe6}
 .blank{background:#eee;cursor:pointer}
+
 .circle{border:3px solid red;border-radius:50%}
-#line{background:#ff0000}
+.double{border:4px double darkred;border-radius:50%}
+
+svg{position:absolute;left:0;top:0;pointer-events:none}
+
+#controls button{margin:4px}
 #checks div{background:#e8ffe8;margin:4px;padding:6px;cursor:pointer}
-#ai,#future,#jodiResult{background:#eef;padding:8px;margin-top:6px;font-weight:600}
-#popup{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid #000;display:none;max-height:50%;overflow:auto}
-button{margin:4px}
-input{padding:4px}
+#ai,#future{background:#eef;padding:8px;margin-top:6px;font-weight:600}
+
+#popup{
+ position:fixed;left:0;right:0;bottom:0;
+ background:#fff;border-top:3px solid #000;
+ display:none;max-height:55%;overflow:auto
+}
 </style>
 </head>
+
 <body>
 
-<h2>Rajdhani – AI Strong Trick</h2>
+<h2>🔥 AI Jodi Pattern System (FINAL)</h2>
 
+<div id="controls">
 <input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
+<button onclick="deleteRow()">Delete Selected Row</button>
 <button onclick="saveData()">Save</button>
+</div>
 
+<div style="position:relative">
+<svg id="arrows"></svg>
 <table id="tbl"></table>
+</div>
 
 <h3>✔ Check Lines (Top 4)</h3>
 <div id="checks"></div>
@@ -38,42 +54,34 @@ input{padding:4px}
 <div id="future"></div>
 
 <hr>
-
-<h3>🔍 JODI PATTERN MODE (Only Jodi Based)</h3>
+<h3>🔎 JODI PATTERN MODE (Only Jodi Based)</h3>
 Base Jodi:
-<input id="baseJodi" maxlength="2" style="width:60px">
-
+<input id="baseJodi" value="33" size="4">
 Top Rows:
-<input id="topRows" type="number" value="8" style="width:50px">
-
+<input id="topRows" value="8" size="3">
 Bottom Rows:
-<input id="bottomRows" type="number" value="6" style="width:50px">
-
-<button onclick="runJodiPattern()">Run Jodi Pattern</button>
+<input id="bottomRows" value="5" size="3">
+<button onclick="runJodiMode()">Run Jodi Pattern Mode</button>
 
 <div id="jodiResult"></div>
 
 <div id="popup">
- <button onclick="popup.style.display='none'">Close</button>
- <div id="popData"></div>
+<button onclick="popup.style.display='none'">Close</button>
+<div id="popData"></div>
 </div>
 
 <script>
 /* ================= STORAGE ================= */
-const STORAGE_KEY="pdata_Rajdhani";
-
-/* ================= ELEMENTS ================= */
-const tbl=document.getElementById("tbl");
-const checks=document.getElementById("checks");
-const ai=document.getElementById("ai");
-const future=document.getElementById("future");
-const popup=document.getElementById("popup");
-const popData=document.getElementById("popData");
-const csv=document.getElementById("csv");
-const jodiResult=document.getElementById("jodiResult");
-
-let activeMark=null;
-let targetCol=null;
+const KEY="AI_JODI_FINAL";
+let data=JSON.parse(localStorage.getItem(KEY)||"null");
+if(!data){
+ data=[
+ ["51","91","41","57","19"],
+ ["05","90","74","06","19"],
+ ["90","34","82","09","28"],
+ ["**","**","**","**","**"]
+ ];
+}
 
 /* ================= FAMILY ================= */
 const families={
@@ -90,42 +98,24 @@ const families={
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
-function palti(v){return v[1]+v[0];}
-function norm(v){if(!v||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
-function smartMatch(a,b){
- if(a=="**"||b=="**") return false;
- if(a===b) return true;
- if(palti(a)===b||palti(b)===a) return true;
- return fam(a)===fam(b);
-}
+const fam=v=>{for(let k in families) if(families[k].includes(v)) return k;return"NA"}
+const palti=v=>v[1]+v[0]
+const norm=v=>(!v||v=="**")?"**":(v.length==1?"0"+v:v)
 
-/* ================= DATA ================= */
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-if(!data){
- data=[
-  ["51","91","41","57","19"],
-  ["05","90","74","06","19"],
-  ["90","34","82","09","28"],
-  ["**","**","**","**","**"]
- ];
-}
-data=data.map(r=>r.map(norm));
+/* ================= DRAW TABLE ================= */
+const tbl=document.getElementById("tbl");
+const arrows=document.getElementById("arrows");
+let selectedRow=null;
 
-/* ================= DRAW ================= */
 function draw(){
+ arrows.innerHTML="";
  let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>";
- data.forEach((r,ri)=>{
+ data.forEach((r,i)=>{
   h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls="";
-   if(activeMark){
-    let i=ri-activeMark.start;
-    if(i>=0 && i<activeMark.shape.length && activeMark.shape[i][ci]) cls="circle";
-   }
-   h+=`<td class="${c=="**"?"blank":cls}" contenteditable
-        oninput="edit(${ri},${ci},this)"
-        onclick="makePattern(${ri},${ci})">${c}</td>`;
+  r.forEach((c,j)=>{
+   let cls=c=="**"?"blank":"";
+   h+=`<td class="${cls}" onclick="selectRow(${i})" contenteditable
+        oninput="edit(${i},${j},this)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -133,124 +123,100 @@ function draw(){
 }
 draw();
 
-function edit(r,c,e){data[r][c]=norm(e.innerText.trim());}
-function addRow(){data.push(["**","**","**","**","**"]);draw();}
+function edit(r,c,e){data[r][c]=norm(e.innerText.trim())}
+function selectRow(r){selectedRow=r}
+function addRow(){data.push(["**","**","**","**","**"]);draw()}
+function deleteRow(){
+ if(selectedRow!=null){data.splice(selectedRow,1);selectedRow=null;draw()}
+}
 function saveData(){
- localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ localStorage.setItem(KEY,JSON.stringify(data));
  alert("Saved");
 }
 
 /* ================= CSV ================= */
 csv.onchange=e=>{
- let f=e.target.files[0]; if(!f) return;
  let fr=new FileReader();
  fr.onload=()=>{
-  let rows=fr.result.replace(/\r/g,"").trim().split("\n");
-  if(rows[0].toLowerCase().includes("mon")) rows.shift();
-  data=rows.map(r=>{
-   let a=r.split(",").map(v=>norm(v.trim()));
-   while(a.length<5) a.push("**");
-   return a.slice(0,5);
-  });
-  saveData(); draw();
+  data=fr.result.trim().split("\n").map(r=>r.split(",").map(v=>norm(v.trim())));
+  saveData();draw();
  };
- fr.readAsText(f);
-};
-
-/* ================= ORIGINAL PATTERN SYSTEM (UNCHANGED) ================= */
-let lastMatches=[],topMatches=[];
-function makePattern(r,c){
- targetCol=c;
- let base="**";
- for(let i=r;i>=0;i--) if(data[i][c]!="**"){base=data[i][c];break;}
- if(base=="**") return;
-
- let shape=[];
- for(let i=Math.max(0,r-4);i<=r;i++){
-  shape.push(data[i].map(v=>smartMatch(v,base)?1:0));
- }
- searchPattern(shape,base);
+ fr.readAsText(e.target.files[0]);
 }
-function searchPattern(shape,base){
- lastMatches=[];
- for(let i=0;i<=data.length-shape.length;i++){
-  let ok=true;
-  for(let k=0;k<shape.length;k++){
-   for(let j=0;j<5;j++){
-    if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false;break;}
+
+/* ================= JODI MODE ================= */
+function runJodiMode(){
+ let base=norm(baseJodi.value);
+ let top=+topRows.value;
+ let bottom=+bottomRows.value;
+
+ let hits=[];
+ data.forEach((r,i)=>{
+  r.forEach((v,j)=>{
+   if(v==base){
+    hits.push({r:i,c:j});
    }
-   if(!ok) break;
-  }
-  if(ok) lastMatches.push({index:i});
- }
- showChecks(shape);
-}
-function showChecks(shape){
- checks.innerHTML="";
- topMatches=lastMatches.slice(0,4);
- topMatches.forEach((m,i)=>{
-  let d=document.createElement("div");
-  d.innerText=(i+1)+". Match (click)";
-  d.onclick=()=>{activeMark={start:m.index,shape};draw();}
-  checks.appendChild(d);
+  });
  });
-}
 
-/* ================= JODI PATTERN MODE (NEW – SAFE ADDITION) ================= */
-function runJodiPattern(){
- let base=norm(document.getElementById("baseJodi").value);
- if(base=="**"){alert("Base jodi likho");return;}
-
- let up=+document.getElementById("topRows").value;
- let down=+document.getElementById("bottomRows").value;
-
- let pool={},paths=[];
- for(let r=0;r<data.length;r++){
-  for(let c=0;c<5;c++){
-   if(smartMatch(data[r][c],base)){
-    let trace=[];
-    for(let i=Math.max(0,r-up);i<=Math.min(data.length-1,r+down);i++){
-     for(let j=0;j<5;j++){
-      if(smartMatch(data[i][j],base)){
-       trace.push({r:i,c:j,v:data[i][j]});
-       pool[data[i][j]]=(pool[data[i][j]]||0)+1;
-      }
-     }
-    }
-    if(trace.length>=3) paths.push(trace);
+ let score={};
+ hits.forEach(h=>{
+  for(let i=h.r+1;i<=h.r+bottom && i<data.length;i++){
+   let v=data[i][h.c];
+   if(v!="**"){
+    score[v]=(score[v]||0)+2;
+    score[palti(v)]=(score[palti(v)]||0)+1;
+    families[fam(v)]?.forEach(j=>score[j]=(score[j]||0)+1);
    }
   }
- }
-
- if(!paths.length){
-  jodiResult.innerHTML="❌ No strong pattern found";
-  return;
- }
-
- let strong=Object.entries(pool)
-  .sort((a,b)=>b[1]-a[1])
-  .slice(0,4)
-  .map(x=>x[0]);
-
- jodiResult.innerHTML="🔥 Strong Jodi (Pattern Based):<br>"+strong.join(", ");
-
- // VISUAL MARKING
- let shape=[];
- paths[0].forEach(p=>{
-  if(!shape[p.r]) shape[p.r]=[];
-  shape[p.r][p.c]=1;
  });
- activeMark={start:0,shape};
+
+ let strong=Object.entries(score)
+ .sort((a,b)=>b[1]-a[1])
+ .slice(0,4)
+ .map(x=>x[0]);
+
+ jodiResult.innerHTML=
+ "<b>🔥 Strong Jodi (Pattern Based):</b><br>"+strong.join(", ");
+
+ highlightFlow(hits,base);
+}
+
+/* ================= VISUAL FLOW ================= */
+function highlightFlow(hits,base){
  draw();
+ hits.forEach(h=>{
+  let cell=tbl.rows[h.r+1].cells[h.c];
+  cell.classList.add("double");
 
- // POPUP SOURCE
- let html="<h4>Pattern Source (Proof)</h4><table>";
- paths[0].forEach(p=>{
-  html+=`<tr><td>Row ${p.r+1}</td><td>Col ${p.c+1}</td><td>${p.v}</td></tr>`;
+  for(let i=h.r+1;i<data.length;i++){
+   let v=data[i][h.c];
+   if(v!="**"){
+    let c2=tbl.rows[i+1].cells[h.c];
+    c2.classList.add("circle");
+    drawArrow(cell,c2);
+    break;
+   }
+  }
  });
- html+="</table>";
- popData.innerHTML=html;
- popup.style.display="block";
+}
+
+function drawArrow(a,b){
+ let r1=a.getBoundingClientRect();
+ let r2=b.getBoundingClientRect();
+ let x1=r1.left+r1.width/2;
+ let y1=r1.top+r1.height/2;
+ let x2=r2.left+r2.width/2;
+ let y2=r2.top+r2.height/2;
+
+ let line=document.createElementNS("http://www.w3.org/2000/svg","line");
+ line.setAttribute("x1",x1);
+ line.setAttribute("y1",y1);
+ line.setAttribute("x2",x2);
+ line.setAttribute("y2",y2);
+ line.setAttribute("stroke","blue");
+ line.setAttribute("stroke-width","3");
+ arrows.appendChild(line);
 }
 </script>
 </body>
