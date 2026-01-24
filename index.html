@@ -23,7 +23,27 @@ button{margin:4px}
 <input type="file" id="csv">
 <button onclick="addRow()">Add Row</button>
 <button onclick="saveData()">Save</button>
+<hr>
+<h3>🔍 Base Jodi Pattern Mode</h3>
 
+Base Jodi:
+<input id="baseJodiInput" placeholder="29" maxlength="2">
+
+Rows:
+<select id="rowCount">
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="10" selected>10</option>
+</select>
+
+Mode:
+<select id="patternMode">
+  <option value="JODI">Jodi</option>
+  <option value="STRAIGHT">Straight</option>
+</select>
+
+<button onclick="runBaseJodiPattern()">Run Pattern</button>
+<hr>
 <table id="tbl"></table>
 
 <h3>✔ Check Lines (Top 3)</h3>
@@ -68,6 +88,14 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
+ // ===== BASE JODI SYSTEM (NEW) =====
+let BJ_ACTIVE = false;
+let BJ_BASE = "";
+let BJ_ROWS = 10;
+let BJ_MODE = "JODI";
+let BJ_BASE_ROW = -1;
+let BJ_PATTERN = null;
+ 
 function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
 function famClass(v){let f=fam(v);return f=="NA"?"":"f"+f;}
 function palti(v){return v[1]+v[0];}
@@ -78,7 +106,18 @@ function smartMatch(a,b){
  if(palti(a)===b||palti(b)===a) return true;
  return fam(a)===fam(b);
 }
+// --- BASE JODI MARKING (SAFE ADD) ---
+if(BJ_ACTIVE && BJ_PATTERN){
+  let cellKey = ri + "-" + ci;
 
+  if(BJ_PATTERN.baseCell === cellKey){
+    cls += " baseSquare";
+  }
+
+  if(BJ_PATTERN.circles[cellKey]){
+    cls += " circle";
+  }
+}
 /* DATA */
 let data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
 if(!data){
