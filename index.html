@@ -224,11 +224,11 @@ function makePattern(r,c){
  for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c];break;}}  
  if(base=="**") return;  
   
- let shape=[];  
- for(let i=Math.max(0,i-8);r<=i for(let i=Math.max(0,r-6);i<=r;i++){  
-  let row=[];  
-  for(let j=0;j<5;j++){  
-   let v=data[i][j];  
+let shape=[];
+for(let i=Math.max(0,r-8);i<=r;i++){
+let row=[];
+for(let j=0;j<5;j++){
+let v=data[i][j];  
    row.push(v!="**" && smartMatch(v,base)?1:0);  
   }  
   shape.push(row);  
