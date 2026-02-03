@@ -72,11 +72,11 @@ function norm(v){if(!v || v=="" || v=="**") return "**"; v=String(v).trim(); ret
 
 // --- LOCAL STORAGE LOGIC ---
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    ["51","91","41","57","19","95"],
-    ["05","90","74","06","19","63"],
-    ["90","34","82","09","28","19"],
-    ["11","17","86","44","00","25"],
-    ["**","**","**","**","**","**"]
+    ["51","91","41","57","19"],
+    ["05","90","74","06","19"],
+    ["90","34","82","09","28"],
+    ["11","17","86","44","00"],
+    ["**","**","**","**","**"]
 ];
 data = data.map(r => r.map(norm));
 
@@ -98,9 +98,7 @@ function draw(){
     document.getElementById("tbl").innerHTML=h;
     if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
-
-// --- CSV UPLOAD LOGIC ---
-document.getElementById('csvFile').addEventListener('change', function(e) {
+    
 // --- CSV UPLOAD LOGIC (FIXED) ---
 document.getElementById('csvFile').addEventListener('change', function(e) {
     let file = e.target.files[0];
