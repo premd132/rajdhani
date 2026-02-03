@@ -121,39 +121,92 @@ selected.forEach((f,idx)=>{
 famPool[f].forEach(p=>shape[p.ri-topRi][p.ci]=idx+1);
 });
 
-searchHistorical(shape,selected,c);
-}
+function searchHistorical(shape, famList, targetCol) {
 
-function searchHistorical(shape,famList,targetCol){
-let matches=[];
-for(let i=0;i<=data.length-shape.length-1;i++){
-let ok=true;
-for(let k=0;k<shape.length;k++)
-for(let j=0;j<5;j++){
-if(shape[k][j]===1 && fam(data[i+k][j])!==famList[0]) ok=false;
-if(shape[k][j]===2 && fam(data[i+k][j])!==famList[1]) ok=false;
-}
-if(ok) matches.push(i);
-}
+    let results = [];
 
-checks.innerHTML="";
-let preds=[];
+    for (let i = 0; i <= data.length - shape.length - 1; i++) {
 
-matches.slice(0,3).forEach((m,i)=>{
-let res=data[m+shape.length][targetCol];
-preds.push(res);
-let b=document.createElement("button");
-b.style="display:block;width:100%;margin-bottom:6px;background:#333;color:gold";
-b.innerHTML=`🔥 Check Line #${i+1}<br><small>Row ${m+1} → ${res}</small>`;
-b.onclick=()=>{
-activePattern={start:m,shape};
-draw();
-setTimeout(()=>alert("Pattern Found\nRow: "+(m+1)+"\nNext: "+res),200);
-};
-checks.appendChild(b);
-});
+        let totalPoints = 0;
+        let matchedPoints = 0;
 
-future.innerText=preds.length?preds.join(" | "):"-- | -- | --";
+        for (let k = 0; k < shape.length; k++) {
+            for (let j = 0; j < 5; j++) {
+
+                if (shape[k][j] === 0) continue;
+
+                totalPoints++;
+
+                let cell = data[i + k][j];
+                if (cell === "**") continue; // blank ignore
+
+                if (shape[k][j] === 1 && fam(cell) === famList[0]) matchedPoints++;
+                if (shape[k][j] === 2 && fam(cell) === famList[1]) matchedPoints++;
+            }
+        }
+
+        if (totalPoints === 0) continue;
+
+        let strength = Math.round((matchedPoints / totalPoints) * 100);
+
+        // 🔥 minimum 50% match allowed
+        if (strength >= 50) {
+            results.push({
+                start: i,
+                strength,
+                result: data[i + shape.length][targetCol]
+            });
+        }
+    }
+
+    // 🔥 strongest first
+    results.sort((a, b) => b.strength - a.strength);
+
+    checks.innerHTML = "";
+    let predictions = [];
+
+    results.slice(0, 3).forEach((rec, idx) => {
+
+        predictions.push(rec.result);
+
+        let btn = document.createElement("button");
+        btn.style = `
+            display:block;
+            width:100%;
+            margin-bottom:6px;
+            background:#222;
+            color:gold;
+            border:1px solid #444;
+        `;
+
+        btn.innerHTML = `
+            🔥 Check Line #${idx + 1}<br>
+            <small>
+            Row ${rec.start + 1} |
+            Strength: ${rec.strength}% |
+            Next: ${rec.result || "**"}
+            </small>
+        `;
+
+        btn.onclick = () => {
+            activePattern = { start: rec.start, shape: shape };
+            draw();
+            setTimeout(() => {
+                alert(
+                    "Pattern Match Found\n\n" +
+                    "Start Row: " + (rec.start + 1) + "\n" +
+                    "Strength: " + rec.strength + "%\n" +
+                    "Next Result: " + (rec.result || "**")
+                );
+            }, 200);
+        };
+
+        checks.appendChild(btn);
+    });
+
+    future.innerText = predictions.length
+        ? predictions.join(" | ")
+        : "-- | -- | --";
 }
 
 function getPatternClass(ri,ci){
