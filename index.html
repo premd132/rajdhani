@@ -116,8 +116,8 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
         data = rows.map(row => {
             let cols = row.split(',').map(v => norm(v.trim()));
             // Ensure har row mein 6 columns hon
-            while(cols.length < 6) cols.push("**");
-            return cols.slice(0, 6);
+            while(cols.length < 5) cols.push("**");
+            return cols.slice(0, 5);
         });
 
         activeMark = null; // Purani marking hatao
@@ -133,7 +133,7 @@ function makePattern(r, c) {
     let famPositions = {};
     
     // Sirf pichle 6 weeks scan karein
-    let scanStart = Math.max(0, r - 6);
+    let scanStart = Math.max(0, r - 5);
     
     for (let i = scanStart; i <= r; i++) {
         // Priority: Pehle wahi column dekho jahan click kiya gaya hai
