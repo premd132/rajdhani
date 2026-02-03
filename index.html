@@ -3,35 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI Pro – Dynamic</title>
+<title>Rajdhani AI – Triple Match Pro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
+    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #0a0a0a; --panel: #1a1a1a; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 5px 0; font-size: 1.2rem; }
-    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 5px; }
-    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; }
-    td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 40px; height: 35px; }
-    th { background: #800000; color: white; }
-    .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
-    .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
-    .blank { background: #e0e0e0 !important; cursor: pointer; border: 2px dashed #999 !important; }
-    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-top: 10px; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    .toolbar { background: var(--panel); padding: 12px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 8px; padding: 8px; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+    table { border-collapse: collapse; font-size: 13px; position: relative; z-index: 2; color: #000; }
+    td, th { border: 1px solid #bbb; padding: 6px; text-align: center; font-weight: bold; width: 42px; height: 38px; }
+    th { background: #500; color: #fff; }
+    .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.25); box-sizing: border-box; }
+    .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.25); box-sizing: border-box; }
+    .blank { background: #ddd !important; cursor: crosshair; border: 2px dashed #777 !important; }
+    .status-bar { background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
+    .match-card { background: var(--panel); border: 1px solid #444; border-left: 5px solid var(--gold); padding: 15px; border-radius: 8px; }
+    button { background: var(--gold); color: #000; border: none; padding: 10px 18px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+    button:hover { transform: scale(1.05); filter: brightness(1.1); }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
-    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<h2>🏆 Rajdhani AI – Fully Dynamic</h2>
+<center>
+    <h2>🏆 RAJDHANI AI TRIPLE MATCH</h2>
+    <div class="status-bar" id="status">Ready: Click a Blank Cell</div>
+</center>
 
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none">
-    <button onclick="document.getElementById('csvFile').click()" style="background:#6f42c1; color:white;">📂 Upload CSV</button>
-    <button onclick="addRow()">➕ Row</button>
-    <button onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
-    <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Reset</button>
+    <button onclick="document.getElementById('csvFile').click()" style="background:#5c2d91; color:white;">📂 Load CSV Data</button>
+    <button onclick="addRow()">➕ Add Row</button>
+    <button onclick="saveData()" style="background:#1e7e34; color:white;">💾 Save All</button>
+    <button onclick="clearData()" style="background:#bd2130; color:white;">🗑️ Reset</button>
 </div>
 
 <center>
@@ -41,14 +47,12 @@
     </div>
 </center>
 
-<div class="card">
-    <h3>🎯 AI Results (Har Click Par Naya)</h3>
-    <div id="checks">Blank cell par click karein...</div>
-</div>
+<div class="results-grid" id="resultsArea">
+    </div>
 
 <script>
-const STORAGE_KEY="pdata_dynamic_10row";
-const families={  
+const STORAGE_KEY = "rajdhani_triple_pro_v2";
+const families = {
     "22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
     "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
     "15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],
@@ -56,113 +60,120 @@ const families={
     "45":["04","09","40","45","54","59","90","95"]
 };
 
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
-function norm(v){if(!v || v=="" || v=="**") return "**"; v=String(v).trim(); return v.length==1?"0"+v:v;}
-
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["**","**","**","**","**"]];
-data = data.map(r => r.map(norm));
-let activeMark=null;
+let activeMark = null;
 
-function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    data.forEach((r,ri)=>{
-        h+="<tr>";
-        r.forEach((c,ci)=>{
+function fam(v){ for(let k in families) if(families[k].includes(String(v).padStart(2,'0'))) return k; return "NA"; }
+function norm(v){ if(!v || v=="**") return "**"; return String(v).trim().padStart(2,'0'); }
+
+function draw() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((r, ri) => {
+        h += "<tr>";
+        r.forEach((c, ci) => {
             let p = isPartOfPattern(ri, ci);
             let cls = p ? (p === 1 ? "f1" : "f2") : "";
-            if(c=="**") cls += " blank";
-            h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'findDynamicPattern('+ri+','+ci+')':'' }">${c}</td>`;
+            if(c == "**") cls += " blank";
+            h += `<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'tripleScan('+ri+','+ci+')':'' }">${c}</td>`;
         });
-        h+="</tr>";
+        h += "</tr>";
     });
-    document.getElementById("tbl").innerHTML=h;
-    if(activeMark) setTimeout(() => drawLines(), 50);
+    document.getElementById("tbl").innerHTML = h;
+    if(activeMark) setTimeout(drawLines, 50);
 }
 
-function findDynamicPattern(r, c) {
-    activeMark = null; // Clear previous memory
-    let famPositions = {};
-    let scanDepth = 10;
-    let startRow = Math.max(0, r - scanDepth);
+function tripleScan(r, c) {
+    document.getElementById("status").innerText = "Scanning 10 Rows Depth...";
+    activeMark = null;
+    let famPool = {};
+    let depth = 10;
+    let startRow = Math.max(0, r - depth);
 
-    // AI SCAN: Is column (C) aur padosi columns ke patterns pehle uthao
+    // Collect all family positions in last 10 rows
     for (let i = r - 1; i >= startRow; i--) {
-        // Har baar naya scan order taaki pattern unique ho
-        let searchOrder = [c, 0, 1, 2, 3, 4].filter((v, idx, self) => self.indexOf(v) === idx);
-        
-        for (let colIdx of searchOrder) {
-            let val = data[i][colIdx];
+        for (let j = 0; j < 5; j++) {
+            let val = data[i][j];
             if (val !== "**") {
                 let f = fam(val);
-                if (!famPositions[f]) famPositions[f] = [];
-                if (famPositions[f].length < 2) famPositions[f].push({ ri: i, ci: colIdx });
+                if (!famPool[f]) famPool[f] = [];
+                if (famPool[f].length < 2) famPool[f].push({ ri: i, ci: j });
             }
         }
     }
 
-    // Filter families jinke 2 results hain
-    let foundFams = Object.keys(famPositions).filter(k => famPositions[k].length === 2);
-    
-    if (foundFams.length < 2) {
-        alert("⚠️ Is Column ke pichle 10 rows mein 2+2 pattern nahi mila.");
+    let candidates = Object.keys(famPool).filter(f => famPool[f].length === 2);
+    if (candidates.length < 2) {
+        alert("Pattern Error: Need at least 2 families with 2 occurrences each in 10 rows.");
         return;
     }
 
-    // SHUFFLE: Har click par top ki bajaye random candidates le sakte hain
-    let selectedFams = foundFams.sort(() => 0.5 - Math.random()).slice(0, 2);
+    // Sort by proximity to the clicked cell
+    candidates.sort((a, b) => Math.abs(famPool[a][0].ri - r) - Math.abs(famPool[b][0].ri - r));
     
-    let minRow = Math.min(...famPositions[selectedFams[0]].concat(famPositions[selectedFams[1]]).map(p => p.ri));
-    let shapeHeight = r - minRow;
+    let bestFams = candidates.slice(0, 2);
+    let topRi = Math.min(...famPool[bestFams[0]].concat(famPool[bestFams[1]]).map(p => p.ri));
+    let shapeHeight = r - topRi;
     let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
 
-    selectedFams.forEach((f, idx) => {
-        famPositions[f].forEach(p => { shape[p.ri - minRow][p.ci] = (idx + 1); });
+    bestFams.forEach((f, idx) => {
+        famPool[f].forEach(p => { shape[p.ri - topRi][p.ci] = (idx + 1); });
     });
 
-    searchHistoricalMatches(shape, selectedFams, r, c);
+    findTripleMatch(shape, bestFams, r, c);
 }
 
-function searchHistoricalMatches(shape, famList, currentR, currentC) {
+function findTripleMatch(shape, famList, currentR, currentC) {
     let matches = [];
-    // Poore data mein scan karein
-    for(let i=0; i <= data.length - shape.length - 1; i++) {
+    // Extensive History Search
+    for (let i = 0; i <= data.length - shape.length - 1; i++) {
+        let matchCount = 0;
         let ok = true;
-        for(let k=0; k<shape.length; k++) {
-            for(let j=0; j<5; j++) {
-                if(shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
-                if(shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
-                if(!ok) break;
+        for (let k = 0; k < shape.length; k++) {
+            for (let j = 0; j < 5; j++) {
+                if (shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
+                if (shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
+                if (!ok) break;
             }
-            if(!ok) break;
+            if (!ok) break;
         }
-        if(ok) matches.push({index: i});
+        if (ok) matches.push({ index: i });
     }
-    showResults(shape, matches, currentC);
+
+    displayTripleResults(shape, matches, currentC);
 }
 
-function showResults(shape, matches, targetCol) {
-    const box = document.getElementById("checks");
-    box.innerHTML = matches.length ? "" : "No history match found for this 10-row pattern.";
-    
+function displayTripleResults(shape, matches, targetCol) {
+    const area = document.getElementById("resultsArea");
+    area.innerHTML = "";
+    document.getElementById("status").innerText = `Found ${matches.length} Matches in History`;
+
+    if (matches.length === 0) {
+        area.innerHTML = "<div class='match-card'>No historical match found for this 10-week sequence.</div>";
+        return;
+    }
+
     matches.forEach((m, i) => {
-        let btn = document.createElement("button");
-        btn.style = "background:#333; color:gold; border:1px solid #444; width:100%; text-align:left; padding:12px; margin-bottom:5px;";
-        btn.innerText = `🔥 Match #${i+1} Found (Row ${m.index + 1})`;
-        btn.onclick = () => {
-            activeMark = {start: m.index, shape: shape};
-            draw();
-            // Prediction
-            let predRow = m.index + shape.length;
-            if(data[predRow] && data[predRow][targetCol] !== "**") {
-                alert("🔮 AI Prediction for this cell: " + data[predRow][targetCol]);
-            }
-        };
-        box.appendChild(btn);
+        let predVal = (data[m.index + shape.length]) ? data[m.index + shape.length][targetCol] : "??";
+        let card = document.createElement("div");
+        card.className = "match-card";
+        card.innerHTML = `
+            <h4>🔥 Match Case #${i+1}</h4>
+            <p>Found at Historical Row: <b>${m.index + 1}</b></p>
+            <p>History Result: <span style="color:var(--gold); font-size:1.4rem;">${predVal}</span></p>
+            <button onclick="highlightMatch(${m.index}, ${JSON.stringify(shape)})">🔍 View on Chart</button>
+        `;
+        area.appendChild(card);
     });
 }
 
-function isPartOfPattern(ri, ci){
-    if(!activeMark) return null;
+function highlightMatch(idx, shape) {
+    activeMark = { start: idx, shape: shape };
+    draw();
+    window.scrollTo({ top: 150, behavior: 'smooth' });
+}
+
+function isPartOfPattern(ri, ci) {
+    if (!activeMark) return null;
     let i = ri - activeMark.start;
     return (i >= 0 && i < activeMark.shape.length) ? activeMark.shape[i][ci] : null;
 }
@@ -172,36 +183,38 @@ function drawLines() {
     const ctx = cvs.getContext("2d");
     const tbl = document.getElementById("tbl");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
     const tRect = tbl.getBoundingClientRect();
 
     ["f1", "f2"].forEach((cls, idx) => {
-        const els = Array.from(tbl.querySelectorAll("."+cls));
-        if(els.length === 2) {
-            const r1 = els[0].getBoundingClientRect(); const r2 = els[1].getBoundingClientRect();
+        const els = Array.from(tbl.querySelectorAll("." + cls));
+        if (els.length >= 2) {
             ctx.strokeStyle = idx === 0 ? "#3e84ff" : "#ff3e3e";
-            ctx.lineWidth = 3; ctx.beginPath();
-            ctx.moveTo(r1.left-tRect.left+r1.width/2, r1.top-tRect.top+r1.height/2);
-            ctx.lineTo(r2.left-tRect.left+r2.width/2, r2.top-tRect.top+r2.height/2);
+            ctx.lineWidth = 3; ctx.setLineDash([5, 3]); ctx.beginPath();
+            for (let i = 0; i < els.length - 1; i++) {
+                const r1 = els[i].getBoundingClientRect();
+                const r2 = els[i+1].getBoundingClientRect();
+                ctx.moveTo(r1.left - tRect.left + r1.width / 2, r1.top - tRect.top + r1.height / 2);
+                ctx.lineTo(r2.left - tRect.left + r2.width / 2, r2.top - tRect.top + r2.height / 2);
+            }
             ctx.stroke();
         }
     });
 }
 
-// Basic Handlers
-function edit(r,c,el){ data[r][c]=norm(el.innerText); }
+// Handlers
+function edit(r,c,el){ data[r][c] = norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Reset?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("History Database Updated!"); }
+function clearData(){ if(confirm("Clear all data?")) { localStorage.clear(); location.reload(); } }
 
-// CSV Handler
 document.getElementById('csvFile').addEventListener('change', function(e) {
     let reader = new FileReader();
     reader.onload = (ev) => {
         data = ev.target.result.split('\n').filter(l=>l.trim()).map(l => {
             let c = l.split(',').map(v => norm(v));
-            while(c.length<5) c.push("**");
-            return c.slice(0,5);
+            while(c.length < 5) c.push("**");
+            return c.slice(0, 5);
         });
         draw();
     };
