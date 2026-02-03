@@ -81,7 +81,23 @@ function findNewPatterns(r, c) {
     let famPool = {};
     
     // SCAN LAST 10 ROWS
-    for(let i = r-1; i >= Math.max(0, r-10); i--) {
+    let scanIndexes = [];
+
+// upar ke 10 rows
+for(let i = r-1; i >= Math.max(0, r-10); i--) scanIndexes.push(i);
+
+// niche ke 10 rows
+for(let i = r+1; i <= Math.min(data.length-1, r+10); i++) scanIndexes.push(i);
+
+scanIndexes.forEach(i=>{
+    data[i].forEach((v, ci) => {
+        if(v !== "**") {
+            let f = fam(v);
+            if(!famPool[f]) famPool[f] = [];
+            if(famPool[f].length < 2) famPool[f].push({ri:i,ci});
+        }
+    });
+});
         data[i].forEach((v, ci) => {
             if(v !== "**") {
                 let f = fam(v);
@@ -131,8 +147,18 @@ function searchHistorical(shape, famList, targetCol) {
         btn.style = "display:block; width:100%; margin-bottom:5px; padding:10px; background:#333; color:gold; border:1px solid #444;";
         btn.innerHTML = `🔥 Check Line #${i+1} (Found at Row ${mIdx+1}) <br> <small>Historical Result: ${resJodi}</small>`;
         btn.onclick = () => {
-            activePattern = {start: mIdx, shape: shape};
-            draw();
+    activePattern = {start: mIdx, shape: shape};
+    draw();
+
+    // popup info
+    setTimeout(()=>{
+        alert(
+          "Pattern Found!\n\n" +
+          "Start Row: " + (mIdx+1) + "\n" +
+          "Next Result: " + (data[mIdx + shape.length][targetCol] || "**")
+        );
+    },200);
+};
         };
         checksDiv.appendChild(btn);
     });
