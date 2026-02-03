@@ -3,30 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI - Ultimate Vision Tool</title>
+<title>Rajdhani AI - Deep Scanner</title>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #050505; --panel: #151515; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     .toolbar { background: var(--panel); padding: 15px; border-radius: 12px; display: flex; gap: 10px; justify-content: center; border: 1px solid #333; margin-bottom: 20px; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 0 40px rgba(255,215,0,0.15); }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 8px; padding: 15px; }
     table { border-collapse: collapse; font-size: 14px; color: #000; position: relative; z-index: 10; }
-    td, th { border: 1px solid #ccc; width: 48px; height: 45px; text-align: center; font-weight: bold; cursor: cell; transition: 0.2s; }
-    th { background: #600; color: white; border: 1px solid #400; }
+    td, th { border: 1px solid #ccc; width: 48px; height: 45px; text-align: center; font-weight: bold; cursor: cell; }
+    th { background: #600; color: white; }
     
-    /* Marking & Vision */
+    /* Markings */
     .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.25); }
     .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.25); }
-    .f-res { border: 3px solid var(--green) !important; border-radius: 10px; background: rgba(0, 255, 0, 0.2); } /* Result Marking */
-    .blank { background: #f9f9f9 !important; border: 2px dashed #bbb !important; }
-    td:focus { outline: 2px solid var(--gold); background: #fff9c4 !important; }
+    .f-res { border: 3px solid var(--green) !important; border-radius: 8px; background: rgba(0, 255, 0, 0.2); }
+    .blank { background: #f0f0f0 !important; border: 2px dashed #bbb !important; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
     .card { background: var(--panel); padding: 20px; border-radius: 12px; border: 1px solid #333; border-top: 4px solid var(--gold); }
-    .check-btn { display: block; width: 100%; margin-bottom: 10px; padding: 12px; background: #222; color: var(--gold); border: 1px solid #444; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .check-btn:hover { background: #333; border-color: var(--gold); }
+    .check-btn { display: block; width: 100%; margin-bottom: 10px; padding: 12px; background: #222; color: var(--gold); border: 1px solid #444; border-radius: 6px; cursor: pointer; text-align: left; }
     
-    /* Popup Logic */
     #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 25px; border: 6px solid var(--gold); z-index: 1000; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 0 100px #000; }
     .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; }
 </style>
@@ -35,13 +32,13 @@
 
 <div class="toolbar">
     <input type="file" id="csvFile" style="display:none" onchange="loadCSV(this)">
-    <button onclick="document.getElementById('csvFile').click()">📂 Load History</button>
-    <button onclick="addRow()" style="background:#444; color:white;">➕ Add Row</button>
-    <button onclick="saveData()" style="background:var(--green); color:black;">💾 Save Vision</button>
+    <button onclick="document.getElementById('csvFile').click()">📂 Upload Data</button>
+    <button onclick="addRow()">➕ Row</button>
+    <button onclick="saveData()">💾 Save</button>
 </div>
 
 <center>
-    <div class="table-container" id="mainArea">
+    <div class="table-container">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
@@ -49,26 +46,21 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 3 Check Lines (History Patterns)</h3>
-        <div id="checkList" style="color:#aaa;">Click a grey cell to search 1, 2, 3 patterns...</div>
+        <h3>📍 3 Check Lines (History Match)</h3>
+        <div id="checkList" style="color:#aaa;">Click blank cell...</div>
     </div>
     <div class="card">
-        <h3>🔮 Future AI Prediction</h3>
+        <h3>🔮 Future AI 3-Pair</h3>
         <div id="future" style="font-size: 32px; color: var(--gold); font-weight: bold; text-align: center;">-- -- --</div>
-        <p style="text-align:center; color:#666; font-size:12px;">Based on historical 3-pair analysis</p>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <h2 style="text-align:center; color:#600;">Real Record Pattern</h2>
-    <div id="popData" style="overflow-x:auto;"></div>
-    <center><button onclick="closePopup()" style="margin-top:20px; padding:10px 30px; background:#600; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">CLOSE POPUP</button></center>
-</div>
+<div id="popup"><div id="popData"></div><center><button onclick="closePopup()">CLOSE</button></center></div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_ultimate_v1")) || [["**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem("raj_final_v5")) || [["**","**","**","**","**"]];
 let activePattern = null;
 
 function fam(v){ for(let k in families) if(families[k].includes(String(v).padStart(2,'0'))) return k; return "NA"; }
@@ -85,7 +77,7 @@ function draw() {
             }
             if(activePattern && ri === activePattern.resR && ci === activePattern.resC) cls = "f-res";
             if(cell === "**") cls += " blank";
-            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="smartScan(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="deepScan(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -93,75 +85,83 @@ function draw() {
     setTimeout(renderLines, 100);
 }
 
-function updateCell(r, c, v) { 
-    data[r][c] = v.trim().padStart(2,'0').replace(/^00$/, '**'); 
-    if(data[r][c] === '00' || v.trim() === '') data[r][c] = '**';
-    draw(); 
-}
+function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; draw(); }
 
-function smartScan(r, c) {
+function deepScan(r, c) {
     if(data[r][c] !== "**") return;
     let pool = {};
-    // Vision: Pattern formed from last 10 weeks (Memory Rule)
+    // Last 10 week potential patterns
     for(let i = r-1; i >= Math.max(0, r-10); i--) {
         data[i].forEach((v, ci) => {
             if(v !== "**") {
                 let f = fam(v);
                 if(!pool[f]) pool[f] = [];
-                if(pool[f].length < 2) pool[f].push({ri: i, ci: ci});
+                pool[f].push({ri: i, ci: ci});
             }
         });
     }
-    let valid = Object.keys(pool).filter(k => pool[k].length === 2);
-    if(valid.length < 2) return;
 
-    let selected = valid.slice(0, 2);
-    let top = Math.min(...pool[selected[0]].concat(pool[selected[1]]).map(p => p.ri));
-    let shape = Array.from({length: r - top}, () => Array(5).fill(0));
-    selected.forEach((f, idx) => pool[f].forEach(p => shape[p.ri - top][p.ci] = idx + 1));
-
-    let matches = [];
-    for(let i=0; i <= data.length - shape.length - 1; i++) {
-        let ok = true;
-        for(let k=0; k<shape.length; k++) {
-            for(let j=0; j<5; j++) {
-                if(shape[k][j] === 1 && fam(data[i+k][j]) !== selected[0]) ok = false;
-                if(shape[k][j] === 2 && fam(data[i+k][j]) !== selected[1]) ok = false;
-            }
-        }
-        if(ok) matches.push(i);
-    }
+    let validFams = Object.keys(pool).filter(k => pool[k].length >= 2);
+    if(validFams.length < 2) return alert("Pichle 10 weeks mein patterns nahi mile!");
 
     let list = document.getElementById("checkList");
+    list.innerHTML = "Scanning all history...";
+    let foundMatches = [];
+
+    // TRY MULTIPLE COMBINATIONS TO FIND DIFFERENT PATTERNS
+    for(let attempt=0; attempt < 15; attempt++) {
+        let selected = validFams.sort(() => 0.5 - Math.random()).slice(0, 2);
+        let pair1 = pool[selected[0]].sort(() => 0.5 - Math.random()).slice(0, 2);
+        let pair2 = pool[selected[1]].sort(() => 0.5 - Math.random()).slice(0, 2);
+        
+        let top = Math.min(...pair1.concat(pair2).map(p => p.ri));
+        let shape = Array.from({length: r - top}, () => Array(5).fill(0));
+        pair1.forEach(p => shape[p.ri - top][p.ci] = 1);
+        pair2.forEach(p => shape[p.ri - top][p.ci] = 2);
+
+        // SEARCH ENTIRE HISTORY FOR THIS SHAPE
+        for(let i=0; i <= data.length - shape.length - 1; i++) {
+            if(i === top) continue; // Skip current
+            let ok = true;
+            for(let k=0; k<shape.length; k++) {
+                for(let j=0; j<5; j++) {
+                    if(shape[k][j] === 1 && fam(data[i+k][j]) !== selected[0]) ok = false;
+                    if(shape[k][j] === 2 && fam(data[i+k][j]) !== selected[1]) ok = false;
+                }
+            }
+            if(ok) {
+                let resVal = data[i + shape.length][c];
+                if(resVal !== "**") {
+                    foundMatches.push({start: i, shape: shape, resR: i+shape.length, resC: c, val: resVal});
+                    if(foundMatches.length >= 3) break;
+                }
+            }
+        }
+        if(foundMatches.length >= 3) break;
+    }
+
     list.innerHTML = "";
-    let preds = [];
-    matches.slice(0, 3).forEach((mIdx, i) => {
-        let resVal = data[mIdx + shape.length][c];
-        preds.push(resVal);
+    foundMatches.slice(0, 3).forEach((m, i) => {
         let btn = document.createElement("button");
         btn.className = "check-btn";
-        btn.innerHTML = `🔎 Check Line #${i+1} (Row ${mIdx+1}) ➔ Result ${resVal}`;
-        btn.onclick = () => { 
-            activePattern = {start: mIdx, shape: shape, resR: mIdx+shape.length, resC: c}; 
-            draw();
-            showPopup(mIdx, shape, mIdx+shape.length, c);
-        };
+        btn.innerHTML = `🏁 Check Line #${i+1} (History Row ${m.start+1}) Result: ${m.val}`;
+        btn.onclick = () => { activePattern = m; draw(); showPopup(m); };
         list.appendChild(btn);
     });
-    document.getElementById("future").innerText = preds.join(" | ") || "-- -- --";
+    document.getElementById("future").innerText = foundMatches.map(m => m.val).join(" | ") || "-- -- --";
 }
 
-function showPopup(mIdx, shape, resR, resC) {
-    let h = "<table border='1' style='width:100%; border-collapse:collapse; background:white;'>";
-    for(let i=0; i <= shape.length; i++) {
+function showPopup(m) {
+    let h = "<table border='1' style='width:100%; background:white; color:black;'>";
+    for(let i=0; i <= m.shape.length; i++) {
         h += "<tr>";
-        data[mIdx + i].forEach((cell, ci) => {
-            let s = "padding:12px; text-align:center; font-weight:bold; border:1px solid #ddd;";
-            if(i < shape.length) {
-                if(shape[i][ci] === 1) s += "background:rgba(62,132,255,0.3); border-radius:50%;";
-                if(shape[i][ci] === 2) s += "background:rgba(255,62,62,0.3); border-radius:50%;";
+        data[m.start + i].forEach((cell, ci) => {
+            let s = "padding:10px; text-align:center;";
+            if(i < m.shape.length) {
+                if(m.shape[i][ci] === 1) s += "background:rgba(62,132,255,0.3); border-radius:50%;";
+                if(m.shape[i][ci] === 2) s += "background:rgba(255,62,62,0.3); border-radius:50%;";
             }
-            if(mIdx+i === resR && ci === resC) s += "background:rgba(0,255,0,0.3); outline:3px solid green;";
+            if(m.start+i === m.resR && ci === m.resC) s += "background:rgba(0,255,0,0.4); border:2px solid green;";
             h += `<td style='${s}'>${cell}</td>`;
         });
         h += "</tr>";
@@ -178,12 +178,11 @@ function renderLines() {
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const rect = tbl.getBoundingClientRect();
-
     ["f1", "f2", "f-res"].forEach((cls, idx) => {
         let els = Array.from(tbl.querySelectorAll("." + cls));
-        if(els.length >= 2 || (cls==="f-res" && els.length >= 1)) {
-            ctx.strokeStyle = (idx === 0) ? "#3e84ff" : (idx === 1 ? "#ff3e3e" : "#00aa00");
-            ctx.lineWidth = 4; ctx.beginPath();
+        if(els.length >= 1) {
+            ctx.strokeStyle = idx === 0 ? "#3e84ff" : (idx === 1 ? "#ff3e3e" : "#00aa00");
+            ctx.lineWidth = 3; ctx.beginPath();
             els.forEach((el, i) => {
                 let r = el.getBoundingClientRect();
                 let x = r.left - rect.left + r.width/2;
@@ -197,7 +196,7 @@ function renderLines() {
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("raj_ultimate_v1", JSON.stringify(data)); alert("Your vision is saved in AI Memory!"); }
+function saveData(){ localStorage.setItem("raj_final_v5", JSON.stringify(data)); alert("Vision Saved!"); }
 function loadCSV(input){
     let reader = new FileReader();
     reader.onload = () => {
