@@ -130,7 +130,7 @@ function makePattern(r, c) {
     lastTargetCol = c;
     let famPositions = {};
     
-    // Sirf pichle 6 weeks scan karein
+    // Sirf pichle 5 weeks scan karein
     let scanStart = Math.max(0, r - 5);
     
     for (let i = scanStart; i <= r; i++) {
@@ -163,7 +163,7 @@ function makePattern(r, c) {
     // Shape building
     let startRow = scanStart;
     let shapeHeight = r - startRow + 1;
-    let shape = Array.from({ length: shapeHeight }, () => Array(6).fill(0));
+    let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
 
     topFams.forEach((f, idx) => {
         famPositions[f].forEach(p => {
@@ -179,7 +179,7 @@ function searchPattern(shape, famList){
     for(let i=0; i <= data.length-shape.length; i++){
         let ok = true;
         for(let k=0; k<shape.length; k++){
-            for(let j=0; j<6; j++){
+            for(let j=0; j<5; j++){
                 if(shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
                 if(shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
                 if(!ok) break;
