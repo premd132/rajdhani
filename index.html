@@ -3,59 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – 3 Match Fix</title>
+<title>Rajdhani AI - Advance Memory Tool</title>
 <style>
-    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #0d0d0d; --panel: #1a1a1a; }
+    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #0a0a0a; --panel: #1a1a1a; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    .toolbar { background: var(--panel); padding: 12px; border-radius: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 8px; margin-top: 15px; }
-    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; }
-    td, th { border: 1px solid #bbb; width: 42px; height: 38px; text-align: center; font-weight: bold; }
+    .toolbar { background: var(--panel); padding: 15px; border-radius: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 8px; padding: 10px; margin-top: 20px; }
+    table { border-collapse: collapse; font-size: 14px; color: #000; position: relative; z-index: 10; }
+    td, th { border: 1px solid #ccc; width: 45px; height: 42px; text-align: center; font-weight: bold; cursor: pointer; }
     th { background: #800000; color: white; }
     
+    /* Marking Colors */
     .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
     .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
-    .f-res { border: 3px solid #2ecc71 !important; background: rgba(46, 204, 113, 0.3); } /* Result Marking */
-    .blank { background: #eee !important; cursor: pointer; border: 1px dashed #777 !important; }
+    .f-old-result { border: 3px solid var(--green) !important; background: rgba(0, 255, 0, 0.2) !important; } /* Alag Color for Old Record */
+    .blank { background: #f0f0f0 !important; border: 2px dashed #999 !important; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
-    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); }
-    .check-btn { display: block; width: 100%; margin-bottom: 5px; padding: 10px; background: #222; color: var(--gold); border: 1px solid #444; cursor: pointer; text-align: left; border-radius: 4px; }
-    .pred-box { font-size: 24px; color: var(--gold); font-weight: bold; text-align: center; }
+    .results { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .card { background: var(--panel); padding: 15px; border-radius: 10px; border-left: 5px solid var(--gold); }
+    
+    /* Popup Style */
+    #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 20px; border: 5px solid var(--gold); z-index: 100; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 90; }
+    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 5px; }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
     <input type="file" id="csvFile" style="display:none" onchange="loadCSV(this)">
-    <button onclick="document.getElementById('csvFile').click()">📂 Load CSV</button>
+    <button onclick="document.getElementById('csvFile').click()">📂 Load History</button>
     <button onclick="addRow()">➕ Add Row</button>
     <button onclick="saveData()">💾 Save</button>
 </div>
 
 <center>
-    <div class="table-container">
+    <div class="table-container" id="mainDiv">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
 </center>
 
-<div class="dashboard">
+<div class="results">
     <div class="card">
-        <h3>✅ 3 Check Lines</h3>
-        <div id="checkList">Click blank cell...</div>
+        <h3>🔍 1.2.3 Check Lines</h3>
+        <div id="checkList">Click a Blank cell...</div>
     </div>
     <div class="card">
-        <h3>🔮 Future AI (3 Pairs)</h3>
-        <div id="future" class="pred-box">-- -- --</div>
+        <h3>🔮 Future AI (3 Pair Prediction)</h3>
+        <div id="future" style="font-size: 28px; color: var(--gold); font-weight: bold;">-- | -- | --</div>
     </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <h3 style="text-align:center;">Real Record Pattern</h3>
+    <div id="popContent"></div>
+    <center><button onclick="closePopup()" style="background:red; color:#fff;">Close Popup</button></center>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_v12")) || [["**","**","**","**","**"]];
-let activePattern = null;
+let data = JSON.parse(localStorage.getItem("raj_memory_v1")) || [["**","**","**","**","**"]];
+let activeMark = null;
 
 function fam(v){ for(let k in families) if(families[k].includes(String(v).padStart(2,'0'))) return k; return "NA"; }
 
@@ -64,11 +75,14 @@ function draw() {
     data.forEach((row, ri) => {
         h += "<tr>";
         row.forEach((cell, ci) => {
-            let p = (activePattern && ri >= activePattern.start && ri < activePattern.start + activePattern.shape.length) ? activePattern.shape[ri - activePattern.start][ci] : 0;
-            let cls = p === 1 ? "f1" : (p === 2 ? "f2" : "");
-            if(activePattern && ri === activePattern.resR && ci === activePattern.resC) cls = "f-res";
+            let cls = "";
+            if(activeMark && ri >= activeMark.start && ri < activeMark.start + activeMark.shape.length) {
+                let p = activeMark.shape[ri - activeMark.start][ci];
+                if(p === 1) cls = "f1"; if(p === 2) cls = "f2";
+            }
+            if(activeMark && ri === activeMark.resR && ci === activeMark.resC) cls = "f-old-result";
             if(cell === "**") cls += " blank";
-            h += `<td class="${cls}" onclick="scanPatterns(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" onclick="findPatterns(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -76,9 +90,10 @@ function draw() {
     setTimeout(renderLines, 100);
 }
 
-function scanPatterns(r, c) {
+function findPatterns(r, c) {
     if(data[r][c] !== "**") return;
     let pool = {};
+    // Last 10 weeks pattern (Memory Rule #1)
     for(let i = r-1; i >= Math.max(0, r-10); i--) {
         data[i].forEach((v, ci) => {
             if(v !== "**") {
@@ -89,13 +104,14 @@ function scanPatterns(r, c) {
         });
     }
     let valid = Object.keys(pool).filter(k => pool[k].length === 2);
-    if(valid.length < 2) return alert("No 10-week pattern found.");
+    if(valid.length < 2) return alert("10 Weeks data me pattern nahi mila!");
 
     let selected = valid.slice(0, 2);
     let top = Math.min(...pool[selected[0]].concat(pool[selected[1]]).map(p => p.ri));
     let shape = Array.from({length: r - top}, () => Array(5).fill(0));
     selected.forEach((f, idx) => pool[f].forEach(p => shape[p.ri - top][p.ci] = idx + 1));
 
+    // Search History for 3 Matches (Memory Rule #2)
     let matches = [];
     for(let i=0; i <= data.length - shape.length - 1; i++) {
         let ok = true;
@@ -108,19 +124,48 @@ function scanPatterns(r, c) {
         if(ok) matches.push(i);
     }
 
+    displayChecks(shape, matches, c);
+}
+
+function displayChecks(shape, matches, targetCol) {
     let list = document.getElementById("checkList");
     list.innerHTML = "";
     let preds = [];
     matches.slice(0, 3).forEach((mIdx, i) => {
-        let resVal = data[mIdx + shape.length][c];
+        let resVal = data[mIdx + shape.length][targetCol];
         preds.push(resVal);
         let btn = document.createElement("button");
         btn.className = "check-btn";
-        btn.innerHTML = `📍 Check Line #${i+1} (Row ${mIdx+1}) | Result: ${resVal}`;
-        btn.onclick = () => { activePattern = {start: mIdx, shape: shape, resR: mIdx+shape.length, resC: c}; draw(); };
+        btn.style = "display:block; width:100%; text-align:left; margin-bottom:5px; padding:10px; background:#333; color:gold; border:1px solid #555;";
+        btn.innerHTML = `🏁 Check Line #${i+1} (History Row ${mIdx+1}) ➔ Result: ${resVal}`;
+        btn.onclick = () => { 
+            activeMark = {start: mIdx, shape: shape, resR: mIdx+shape.length, resC: targetCol};
+            draw();
+            openPopup(mIdx, shape, mIdx+shape.length, targetCol); // Popup Logic (Memory Rule #2)
+        };
         list.appendChild(btn);
     });
-    document.getElementById("future").innerText = preds.join(" | ") || "-- -- --";
+    document.getElementById("future").innerText = preds.join(" | ") || "-- | -- | --";
+}
+
+function openPopup(mIdx, shape, resR, resC) {
+    let html = "<table border='1' style='width:100%; border-collapse:collapse;'>";
+    for(let i=0; i <= shape.length; i++) {
+        html += "<tr>";
+        data[mIdx + i].forEach((cell, ci) => {
+            let cls = "";
+            if(i < shape.length) {
+                if(shape[i][ci] === 1) cls = "style='background:rgba(62,132,255,0.3); border-radius:50%;'";
+                if(shape[i][ci] === 2) cls = "style='background:rgba(255,62,62,0.3); border-radius:50%;'";
+            }
+            if(mIdx + i === resR && ci === resC) cls = "style='background:rgba(0,255,0,0.4); border:2px solid green;'";
+            html += `<td ${cls} style='padding:8px; text-align:center;'>${cell}</td>`;
+        });
+        html += "</tr>";
+    }
+    document.getElementById("popContent").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
 }
 
 function renderLines() {
@@ -130,10 +175,11 @@ function renderLines() {
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const rect = tbl.getBoundingClientRect();
-    [".f1", ".f2"].forEach((cls, idx) => {
+
+    [".f1", ".f2", ".f-old-result"].forEach((cls, idx) => {
         let els = Array.from(tbl.querySelectorAll(cls));
-        if(els.length >= 2) {
-            ctx.strokeStyle = idx === 0 ? "#3e84ff" : "#ff3e3e";
+        if(els.length >= 2 || (cls===".f-old-result" && els.length >=1)) {
+            ctx.strokeStyle = idx === 0 ? "#3e84ff" : (idx === 1 ? "#ff3e3e" : "#00ff00");
             ctx.lineWidth = 3; ctx.beginPath();
             els.forEach((el, i) => {
                 let r = el.getBoundingClientRect();
@@ -146,8 +192,9 @@ function renderLines() {
     });
 }
 
+function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("raj_v12", JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem("raj_memory_v1", JSON.stringify(data)); alert("Memory Data Saved!"); }
 function loadCSV(input){
     let reader = new FileReader();
     reader.onload = () => {
