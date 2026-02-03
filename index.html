@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI Pro – Mon-Fri</title>
+<title>Rajdhani AI – Unique Patterns</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
@@ -14,25 +14,25 @@
     table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; }
     td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 40px; height: 35px; }
     th { background: #800000; color: white; }
-    .f1 { border: 2.5px solid var(--blue) !important; border-radius: 100%; background: rgba(62, 132, 255, 0.1); }
-    .f2 { border: 2.5px solid var(--red) !important; border-radius: 100%; background: rgba(255, 62, 62, 0.1); }
-    .blank { background: #e0e0e0 !important; cursor: pointer; }
+    .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
+    .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
+    .blank { background: #e0e0e0 !important; cursor: pointer; border: 2px dashed #999 !important; }
     .dashboard { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
     .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 250px; }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
     button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 15px; border-radius: 8px; color: #000; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 15px; border-radius: 8px; color: #000; box-shadow: 0 0 50px rgba(0,0,0,0.9); width: 80%; max-width: 400px; }
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
 </style>
 </head>
 <body>
 
-<h2>🏆 Rajdhani AI – MON to FRI</h2>
+<h2>🏆 Rajdhani AI Pro – Unique Patterns</h2>
 
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none">
-    <button onclick="document.getElementById('csvFile').click()" style="background:#6f42c1; color:white;">📂 Upload CSV (5 Col)</button>
-    <button onclick="addRow()">➕ Row</button>
+    <button onclick="document.getElementById('csvFile').click()" style="background:#6f42c1; color:white;">📂 Upload CSV</button>
+    <button onclick="addRow()">➕ Add Row</button>
     <button onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
     <button onclick="exportImage()" style="background:#17a2b8; color:white;">📸 Screenshot</button>
     <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Reset</button>
@@ -46,19 +46,19 @@
 </center>
 
 <div class="dashboard">
-    <div class="card"><h3>🎯 Matches (Max 3)</h3><div id="checks"></div></div>
-    <div class="card"><h3>🔮 Future AI Prediction</h3><div id="future">Select match...</div></div>
+    <div class="card"><h3>🎯 Patterns Found</h3><div id="checks">Click any blank cell...</div></div>
+    <div class="card"><h3>🔮 AI Prediction</h3><div id="future">...</div></div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#800000; color:white;">X</button>
-    <h3>Connection Detail (Mon-Fri)</h3>
-    <div id="popData"></div>
+    <h3>Pattern Connection</h3>
+    <div id="popData" style="overflow-x:auto"></div>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_Rajdhani_monfri_v1";
+const STORAGE_KEY="pdata_rajdhani_unique_v1";
 const families={  
     "22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
     "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
@@ -92,24 +92,92 @@ function draw(){
     if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-document.getElementById('csvFile').addEventListener('change', function(e) {
-    let file = e.target.files[0];
-    if (!file) return;
-    let reader = new FileReader();
-    reader.onload = function(event) {
-        let text = event.target.result;
-        let rows = text.split(/\r?\n/).filter(row => row.trim() !== '');
-        data = rows.map(row => {
-            let cols = row.split(',').map(v => norm(v.trim()));
-            while(cols.length < 5) cols.push("**"); // Mon-Fri (5 Col)
-            return cols.slice(0, 5);
+// --- UNIQUE PATTERN LOGIC ---
+function makePattern(r, c) {
+    lastTargetCol = c;
+    activeMark = null; // Purana pattern clear karein
+    let famPositions = {};
+    
+    // Look back 8 weeks specifically for this column and surrounding
+    let scanDepth = 8;
+    let startRow = Math.max(0, r - scanDepth);
+    
+    // Scan loop prioritize results near the clicked column 'c'
+    for (let i = r - 1; i >= startRow; i--) {
+        // Search order based on proximity to clicked column
+        let searchCols = [c, c-1, c+1, 0, 1, 2, 3, 4].filter(v => v >= 0 && v < 5);
+        let uniqueSearchCols = [...new Set(searchCols)];
+
+        for (let j of uniqueSearchCols) {
+            let v = data[i][j];
+            if (v !== "**") {
+                let f = fam(v);
+                if (!famPositions[f]) famPositions[f] = [];
+                if (famPositions[f].length < 2) {
+                    famPositions[f].push({ ri: i, ci: j });
+                }
+            }
+        }
+    }
+
+    // Pick top 2 families found closest to the click
+    let foundFams = Object.keys(famPositions).filter(k => famPositions[k].length === 2);
+    
+    if (foundFams.length < 2) {
+        alert("⚠️ Is column ke liye naya pattern nahi mil raha. Thoda data aur bhariye.");
+        return;
+    }
+
+    let topFams = foundFams.slice(0, 2);
+    let patternStartRow = Math.min(...famPositions[topFams[0]].concat(famPositions[topFams[1]]).map(p => p.ri));
+    let shapeHeight = r - patternStartRow;
+    
+    let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
+    topFams.forEach((f, idx) => {
+        famPositions[f].forEach(p => {
+            if (p.ri - patternStartRow < shapeHeight) {
+                shape[p.ri - patternStartRow][p.ci] = (idx + 1);
+            }
         });
-        activeMark = null;
-        draw();
-        alert("✅ Mon-Fri CSV Uploaded!");
-    };
-    reader.readAsText(file);
-});
+    });
+
+    searchPattern(shape, topFams);
+}
+
+function searchPattern(shape, famList){
+    let matches = [];
+    // Pure data mein is shape ko dhoondo
+    for(let i=0; i <= data.length - shape.length - 1; i++){
+        let ok = true;
+        for(let k=0; k<shape.length; k++){
+            for(let j=0; j<5; j++){
+                if(shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
+                if(shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
+                if(!ok) break;
+            }
+            if(!ok) break;
+        }
+        if(ok) matches.push({index: i});
+    }
+    showMatches(shape, matches);
+}
+
+function showMatches(shape, matches){
+    const container = document.getElementById("checks");
+    container.innerHTML = matches.length > 0 ? "" : "No Pattern Matched in History";
+    matches.forEach((m, i) => {
+        let d = document.createElement("button");
+        d.style = "background:#333; color:gold; border:1px solid #444; width:100%; text-align:left; padding:10px; margin-bottom:5px; cursor:pointer;";
+        d.innerText = `Pattern Match #${i+1} (Row ${m.index + 1})`;
+        d.onclick = () => { 
+            activeMark = {start: m.index, shape: shape}; 
+            draw(); 
+            openPopup(m.index, shape);
+            predictFuture(matches);
+        };
+        container.appendChild(d);
+    });
+}
 
 function isPartOfPattern(ri, ci){
     if(!activeMark) return null;
@@ -126,92 +194,37 @@ function drawLines(cvsId, tblEl) {
     const tRect = tblEl.getBoundingClientRect();
     const drawFor = (cls, color) => {
         const els = Array.from(tblEl.querySelectorAll("."+cls));
-        if(els.length === 2) {
-            const r1 = els[0].getBoundingClientRect(); const r2 = els[1].getBoundingClientRect();
-            ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath();
-            ctx.moveTo(r1.left-tRect.left+r1.width/2, r1.top-tRect.top+r1.height/2);
-            ctx.lineTo(r2.left-tRect.left+r2.width/2, r2.top-tRect.top+r2.height/2);
+        if(els.length >= 2) {
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+            for(let i=0; i<els.length-1; i++){
+                const r1 = els[i].getBoundingClientRect(); const r2 = els[i+1].getBoundingClientRect();
+                ctx.moveTo(r1.left-tRect.left+r1.width/2, r1.top-tRect.top+r1.height/2);
+                ctx.lineTo(r2.left-tRect.left+r2.width/2, r2.top-tRect.top+r2.height/2);
+            }
             ctx.stroke();
         }
     };
     drawFor("f1", "#3e84ff"); drawFor("f2", "#ff3e3e");
 }
 
-function makePattern(r, c) {
-    lastTargetCol = c;
-    let famPositions = {};
-    let scanStart = Math.max(0, r - 6);
-    for (let i = scanStart; i <= r; i++) {
-        let checkOrder = [c, 0, 1, 2, 3, 4].filter((v, i, a) => a.indexOf(v) === i);
-        for (let j of checkOrder) {
-            let v = data[i][j];
-            if (v !== "**") {
-                let f = fam(v);
-                if (!famPositions[f]) famPositions[f] = [];
-                if (famPositions[f].length < 2) famPositions[f].push({ ri: i, ci: j });
-            }
-        }
-    }
-    let topFams = Object.keys(famPositions).filter(f => famPositions[f].length === 2).slice(0, 2);
-    if (topFams.length < 2) { alert("⚠️ Mon-Fri pattern (2+2) not found."); return; }
-    let shapeHeight = r - scanStart + 1;
-    let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
-    topFams.forEach((f, idx) => {
-        famPositions[f].forEach(p => { shape[p.ri - scanStart][p.ci] = (idx + 1); });
-    });
-    searchPattern(shape, topFams);
-}
-
-function searchPattern(shape, famList){
-    let matches = [];
-    for(let i=0; i <= data.length-shape.length; i++){
-        let ok = true;
-        for(let k=0; k<shape.length; k++){
-            for(let j=0; j<5; j++){
-                if(shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
-                if(shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
-                if(!ok) break;
-            }
-            if(!ok) break;
-        }
-        if(ok) matches.push({index: i});
-    }
-    showMatches(shape, matches.slice(0, 3));
-}
-
-function showMatches(shape, matches){
-    const container = document.getElementById("checks");
-    container.innerHTML = matches.length ? "" : "No Combo Found";
-    matches.forEach((m, i) => {
-        let d = document.createElement("button");
-        d.style = "background:#333; color:gold; border:1px solid #444; width:100%; text-align:left; padding:10px; margin-bottom:5px; cursor:pointer;";
-        d.innerText = `Match #${i+1} (Row ${m.index + 1})`;
-        d.onclick = () => { 
-            activeMark = {start: m.index, shape: shape}; 
-            draw(); 
-            openPopup(m.index, shape);
-            predictFuture(matches);
-        };
-        container.appendChild(d);
-    });
-}
-
 function predictFuture(matches) {
     let pool = [];
     matches.forEach(m => {
         let nextRow = m.index + activeMark.shape.length;
-        if(nextRow < data.length && data[nextRow][lastTargetCol] !== "**") pool.push(data[nextRow][lastTargetCol]);
+        if(nextRow < data.length && data[nextRow][lastTargetCol] !== "**") {
+            pool.push(data[nextRow][lastTargetCol]);
+        }
     });
-    document.getElementById("future").innerHTML = pool.length ? `<b>AI Recommendation:</b> ${[...new Set(pool)].join(", ")}` : "No future data";
+    document.getElementById("future").innerHTML = pool.length ? `<b>Recommendation for this day:</b> ${[...new Set(pool)].join(", ")}` : "Not enough historical data";
 }
 
 function openPopup(idx, shape) {
-    let html = "<table>";
+    let html = "<table style='width:100%'>";
     for(let i=0; i<shape.length; i++) {
         html += "<tr>";
         data[idx+i].forEach((v, j) => {
             let cls = shape[i][j] === 1 ? "f1" : (shape[i][j] === 2 ? "f2" : "");
-            html += `<td class="${cls}">${v}</td>`;
+            html += `<td class="${cls}" style="color:#000">${v}</td>`;
         });
         html += "</tr>";
     }
@@ -220,20 +233,29 @@ function openPopup(idx, shape) {
     document.getElementById("overlay").style.display = "block";
 }
 
-function exportImage() {
-    html2canvas(document.querySelector("#captureArea")).then(canvas => {
-        let link = document.createElement('a');
-        link.download = 'kalyan_mon_fri.png';
-        link.href = canvas.toDataURL();
-        link.click();
-    });
-}
+document.getElementById('csvFile').addEventListener('change', function(e) {
+    let file = e.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(event) {
+        let text = event.target.result;
+        let rows = text.split(/\r?\n/).filter(row => row.trim() !== '');
+        data = rows.map(row => {
+            let cols = row.split(',').map(v => norm(v.trim()));
+            while(cols.length < 5) cols.push("**");
+            return cols.slice(0, 5);
+        });
+        activeMark = null;
+        draw();
+    };
+    reader.readAsText(file);
+});
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Mon-Fri Data!"); }
-function clearData(){ if(confirm("Clear Mon-Fri storage?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function clearData(){ if(confirm("Clear everything?")){ localStorage.clear(); location.reload(); }}
 
 draw();
 </script>
