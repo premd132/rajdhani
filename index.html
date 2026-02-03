@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Unique Patterns</title>
+<title>Rajdhani AI Pro – 10 Row Scan</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
@@ -21,13 +21,13 @@
     .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 250px; }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
     button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 15px; border-radius: 8px; color: #000; box-shadow: 0 0 50px rgba(0,0,0,0.9); width: 80%; max-width: 400px; }
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 15px; border-radius: 8px; color: #000; box-shadow: 0 0 50px rgba(0,0,0,0.9); width: 85%; }
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
 </style>
 </head>
 <body>
 
-<h2>🏆 Rajdhani AI Pro – Unique Patterns</h2>
+<h2>🏆 Rajdhani AI – 10 Row Scanning</h2>
 
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none">
@@ -46,19 +46,19 @@
 </center>
 
 <div class="dashboard">
-    <div class="card"><h3>🎯 Patterns Found</h3><div id="checks">Click any blank cell...</div></div>
+    <div class="card"><h3>🎯 Unique Patterns</h3><div id="checks">Click any blank cell...</div></div>
     <div class="card"><h3>🔮 AI Prediction</h3><div id="future">...</div></div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#800000; color:white;">X</button>
-    <h3>Pattern Connection</h3>
+    <h3>Pattern Connection Detail</h3>
     <div id="popData" style="overflow-x:auto"></div>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_rajdhani_unique_v1";
+const STORAGE_KEY="pdata_rajdhani_10row_v1";
 const families={  
     "22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
     "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
@@ -92,23 +92,20 @@ function draw(){
     if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-// --- UNIQUE PATTERN LOGIC ---
 function makePattern(r, c) {
     lastTargetCol = c;
-    activeMark = null; // Purana pattern clear karein
+    activeMark = null;
     let famPositions = {};
     
-    // Look back 8 weeks specifically for this column and surrounding
-    let scanDepth = 8;
-    let startRow = Math.max(0, r - scanDepth);
+    // SCANNING DEPTH: 10 ROWS
+    let scanStart = Math.max(0, r - 10);
     
-    // Scan loop prioritize results near the clicked column 'c'
-    for (let i = r - 1; i >= startRow; i--) {
-        // Search order based on proximity to clicked column
-        let searchCols = [c, c-1, c+1, 0, 1, 2, 3, 4].filter(v => v >= 0 && v < 5);
-        let uniqueSearchCols = [...new Set(searchCols)];
-
-        for (let j of uniqueSearchCols) {
+    // Current column aur padosi columns ko scan karna
+    for (let i = r - 1; i >= scanStart; i--) {
+        // Priority order: Current column, then others
+        let order = [c, 0, 1, 2, 3, 4].filter((v, idx, self) => self.indexOf(v) === idx);
+        
+        for (let j of order) {
             let v = data[i][j];
             if (v !== "**") {
                 let f = fam(v);
@@ -120,24 +117,25 @@ function makePattern(r, c) {
         }
     }
 
-    // Pick top 2 families found closest to the click
-    let foundFams = Object.keys(famPositions).filter(k => famPositions[k].length === 2);
+    // Un families ko uthao jinke 2 results mil gaye hain
+    let candidates = Object.keys(famPositions).filter(f => famPositions[f].length === 2);
     
-    if (foundFams.length < 2) {
-        alert("⚠️ Is column ke liye naya pattern nahi mil raha. Thoda data aur bhariye.");
+    if (candidates.length < 2) {
+        alert("⚠️ 10 Rows scan kiye par 2+2 pattern nahi mila. Data badhaiye!");
         return;
     }
 
-    let topFams = foundFams.slice(0, 2);
-    let patternStartRow = Math.min(...famPositions[topFams[0]].concat(famPositions[topFams[1]]).map(p => p.ri));
-    let shapeHeight = r - patternStartRow;
+    // Top 2 Unique Families select karna
+    let topFams = candidates.slice(0, 2);
+    let allPoints = [...famPositions[topFams[0]], ...famPositions[topFams[1]]];
+    let minRi = Math.min(...allPoints.map(p => p.ri));
     
+    let shapeHeight = r - minRi;
     let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
+
     topFams.forEach((f, idx) => {
         famPositions[f].forEach(p => {
-            if (p.ri - patternStartRow < shapeHeight) {
-                shape[p.ri - patternStartRow][p.ci] = (idx + 1);
-            }
+            shape[p.ri - minRi][p.ci] = (idx + 1);
         });
     });
 
@@ -146,7 +144,6 @@ function makePattern(r, c) {
 
 function searchPattern(shape, famList){
     let matches = [];
-    // Pure data mein is shape ko dhoondo
     for(let i=0; i <= data.length - shape.length - 1; i++){
         let ok = true;
         for(let k=0; k<shape.length; k++){
@@ -164,11 +161,11 @@ function searchPattern(shape, famList){
 
 function showMatches(shape, matches){
     const container = document.getElementById("checks");
-    container.innerHTML = matches.length > 0 ? "" : "No Pattern Matched in History";
+    container.innerHTML = matches.length > 0 ? "" : "No Match Found in History";
     matches.forEach((m, i) => {
         let d = document.createElement("button");
         d.style = "background:#333; color:gold; border:1px solid #444; width:100%; text-align:left; padding:10px; margin-bottom:5px; cursor:pointer;";
-        d.innerText = `Pattern Match #${i+1} (Row ${m.index + 1})`;
+        d.innerText = `Match #${i+1} (Row ${m.index + 1})`;
         d.onclick = () => { 
             activeMark = {start: m.index, shape: shape}; 
             draw(); 
@@ -195,7 +192,7 @@ function drawLines(cvsId, tblEl) {
     const drawFor = (cls, color) => {
         const els = Array.from(tblEl.querySelectorAll("."+cls));
         if(els.length >= 2) {
-            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
             for(let i=0; i<els.length-1; i++){
                 const r1 = els[i].getBoundingClientRect(); const r2 = els[i+1].getBoundingClientRect();
                 ctx.moveTo(r1.left-tRect.left+r1.width/2, r1.top-tRect.top+r1.height/2);
@@ -215,7 +212,7 @@ function predictFuture(matches) {
             pool.push(data[nextRow][lastTargetCol]);
         }
     });
-    document.getElementById("future").innerHTML = pool.length ? `<b>Recommendation for this day:</b> ${[...new Set(pool)].join(", ")}` : "Not enough historical data";
+    document.getElementById("future").innerHTML = pool.length ? `<b>AI Prediction:</b> ${[...new Set(pool)].join(", ")}` : "No future data";
 }
 
 function openPopup(idx, shape) {
