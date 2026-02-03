@@ -3,23 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Line Fix Pro</title>
+<title>Rajdhani AI – Unique Column Pro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #0f0f0f; --panel: #1e1e1e; }
+    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --bg: #0d0d0d; --panel: #1a1a1a; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 10px 0; }
-    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin-bottom: 15px; }
+    .toolbar { background: var(--panel); padding: 12px; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 10px; }
     table { border-collapse: collapse; font-size: 13px; position: relative; z-index: 2; color: #000; }
-    td, th { border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold; width: 45px; height: 40px; position: relative; }
+    td, th { border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold; width: 45px; height: 40px; }
     th { background: #800000; color: white; }
-    
-    /* Highlight Circles */
     .f1 { border: 3px solid var(--blue) !important; background: rgba(62, 132, 255, 0.2) !important; border-radius: 50%; }
     .f2 { border: 3px solid var(--red) !important; background: rgba(255, 62, 62, 0.2) !important; border-radius: 50%; }
     .blank { background: #eee !important; cursor: pointer; border: 2px dashed #999 !important; }
-
     .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-top: 15px; }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
     button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
@@ -27,7 +24,7 @@
 </head>
 <body>
 
-<h2>🏆 Rajdhani AI – Line & Triple Match Fix</h2>
+<h2>🏆 Rajdhani AI – Unique Pattern Engine</h2>
 
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none">
@@ -44,13 +41,13 @@
     </div>
 </center>
 
-<div class="card" id="resultsBox">
-    <h3>🎯 Triple Match Analysis</h3>
-    <div id="checks">Click any light-grey blank cell...</div>
+<div class="card">
+    <h3>🎯 Result for Clicked Day</h3>
+    <div id="checks">Click any Blank cell to see unique patterns...</div>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_line_fixed_v3";
+const STORAGE_KEY="pdata_v4_unique";
 const families={  
     "22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
     "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
@@ -73,7 +70,7 @@ function draw(){
             let p = isPartOfPattern(ri, ci);
             let cls = p ? (p === 1 ? "f1" : "f2") : "";
             if(c=="**") cls += " blank";
-            h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'findPattern('+ri+','+ci+')':'' }">${c}</td>`;
+            h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'findUniquePattern('+ri+','+ci+')':'' }">${c}</td>`;
         });
         h+="</tr>";
     });
@@ -81,28 +78,41 @@ function draw(){
     if(activeMark) setTimeout(drawLines, 60);
 }
 
-function findPattern(r, c) {
+function findUniquePattern(r, c) {
     activeMark = null;
     let famPositions = {};
     let depth = 10;
     let startRow = Math.max(0, r - depth);
 
-    // Scan history for families
-    for (let i = r - 1; i >= startRow; i--) {
-        for (let j = 0; j < 5; j++) {
-            let v = data[i][j];
+    // AI SCAN: Is column (c) ko pehle priority do
+    let columnOrder = [c, 0, 1, 2, 3, 4].filter((v, i, a) => a.indexOf(v) === i);
+
+    for (let colIdx of columnOrder) {
+        for (let i = r - 1; i >= startRow; i--) {
+            let v = data[i][colIdx];
             if (v !== "**") {
                 let f = fam(v);
                 if (!famPositions[f]) famPositions[f] = [];
-                if (famPositions[f].length < 2) famPositions[f].push({ ri: i, ci: j });
+                // Sirf 2 position leni hai ek family ki
+                if (famPositions[f].length < 2) {
+                    famPositions[f].push({ ri: i, ci: colIdx });
+                }
             }
         }
     }
 
+    // Ab wahi families uthao jo sirf is column ya iske aas-paas mili hon
     let candidates = Object.keys(famPositions).filter(k => famPositions[k].length === 2);
-    if (candidates.length < 2) { alert("Need more data in last 10 rows!"); return; }
+    
+    if (candidates.length < 2) {
+        alert("Is column ke liye 10 row mein pattern nahi mila. Dusre cell pe click karein.");
+        return;
+    }
 
-    let selected = candidates.slice(0, 2);
+    // YAHAN FIX HAI: Har click par naye candidates select honge
+    // Randomize or pick based on vertical proximity
+    let selected = candidates.sort(() => 0.5 - Math.random()).slice(0, 2);
+
     let minR = Math.min(...famPositions[selected[0]].concat(famPositions[selected[1]]).map(p => p.ri));
     let shapeHeight = r - minR;
     let shape = Array.from({ length: shapeHeight }, () => Array(5).fill(0));
@@ -111,14 +121,17 @@ function findPattern(r, c) {
         famPositions[f].forEach(p => { shape[p.ri - minR][p.ci] = (idx + 1); });
     });
 
-    // Triple Check Search
+    searchHistory(shape, selected, c);
+}
+
+function searchHistory(shape, famList, targetCol) {
     let matches = [];
-    for(let i=0; i <= data.length - shape.length - 1; i++){
+    for(let i=0; i <= data.length - shape.length - 1; i++) {
         let ok = true;
-        for(let k=0; k<shape.length; k++){
-            for(let j=0; j<5; j++){
-                if(shape[k][j] === 1 && fam(data[i+k][j]) !== selected[0]) ok = false;
-                if(shape[k][j] === 2 && fam(data[i+k][j]) !== selected[1]) ok = false;
+        for(let k=0; k<shape.length; k++) {
+            for(let j=0; j<5; j++) {
+                if(shape[k][j] === 1 && fam(data[i+k][j]) !== famList[0]) ok = false;
+                if(shape[k][j] === 2 && fam(data[i+k][j]) !== famList[1]) ok = false;
                 if(!ok) break;
             }
             if(!ok) break;
@@ -126,18 +139,14 @@ function findPattern(r, c) {
         if(ok) matches.push({index: i});
     }
 
-    showResults(shape, matches, c);
-}
-
-function showResults(shape, matches, targetCol) {
     const box = document.getElementById("checks");
-    box.innerHTML = `<h4>Found ${matches.length} Triple Matches</h4>`;
+    box.innerHTML = `<h4>Found ${matches.length} Matches in History</h4>`;
     
     matches.forEach((m, i) => {
         let nextVal = (data[m.index + shape.length]) ? data[m.index + shape.length][targetCol] : "??";
         let div = document.createElement("div");
-        div.style = "background:#333; padding:10px; margin-bottom:8px; border-radius:5px; cursor:pointer;";
-        div.innerHTML = `<b>Match #${i+1}:</b> History Row ${m.index+1} ➔ <b>Result: ${nextVal}</b>`;
+        div.style = "background:#333; padding:12px; margin-bottom:8px; border-radius:5px; border-left: 4px solid var(--blue);";
+        div.innerHTML = `<b>Match Case #${i+1}:</b> Row ${m.index+1} ➔ <b style="color:var(--gold)">Result: ${nextVal}</b>`;
         div.onclick = () => {
             activeMark = {start: m.index, shape: shape};
             draw();
@@ -156,26 +165,21 @@ function drawLines() {
     const cvs = document.getElementById("mainCanvas");
     const ctx = cvs.getContext("2d");
     const tbl = document.getElementById("tbl");
-    cvs.width = tbl.offsetWidth; 
-    cvs.height = tbl.offsetHeight;
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    
     const tRect = tbl.getBoundingClientRect();
 
     ["f1", "f2"].forEach((cls, idx) => {
         const els = Array.from(tbl.querySelectorAll("."+cls));
         if(els.length >= 2) {
             ctx.strokeStyle = idx === 0 ? "#3e84ff" : "#ff3e3e";
-            ctx.lineWidth = 3;
-            ctx.setLineDash([6, 4]); // Dashed line effect
+            ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
             ctx.beginPath();
-            
             els.forEach((el, i) => {
                 const r = el.getBoundingClientRect();
                 const x = r.left - tRect.left + r.width / 2;
                 const y = r.top - tRect.top + r.height / 2;
-                if(i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             });
             ctx.stroke();
         }
@@ -184,10 +188,9 @@ function drawLines() {
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("History Saved!"); }
-function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Reset Everything?")){ localStorage.clear(); location.reload(); }}
 
-// CSV Handler
 document.getElementById('csvFile').addEventListener('change', function(e) {
     let reader = new FileReader();
     reader.onload = (ev) => {
@@ -196,7 +199,6 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
             while(c.length<5) c.push("**");
             return c.slice(0,5);
         });
-        activeMark = null;
         draw();
     };
     reader.readAsText(e.target.files[0]);
