@@ -3,44 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Pro Pattern Scanner</title>
+<title>Rajdhani AI – DPBoss Final Logic</title>
 <style>
-    :root { --gold: #ffd700; --blue: #007bff; --red: #dc3545; --green: #28a745; --bg: #000; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff0000; --green: #28a745; --bg: #000; }
     body { font-family: 'Arial', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 5px; }
     .table-container { position: relative; background: #fff; padding: 5px; border-radius: 2px; overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; color: #000; font-size: 16px; table-layout: fixed; }
-    td, th { border: 1px solid #000; height: 50px; text-align: center; font-weight: 700; position: relative; }
+    td, th { border: 1px solid #ccc; height: 55px; text-align: center; font-weight: 700; position: relative; }
     th { background: #fdfd96; color: #000; font-size: 11px; }
 
-    /* DPBoss Professional Marking */
+    /* Photo Style Marking */
     .f-circle::after {
         content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
-        border: 3.5px solid var(--blue); border-radius: 50%; box-sizing: border-box;
+        border: 2.5px solid var(--blue); border-radius: 50%; box-sizing: border-box;
     }
     .base-box { 
-        background: #ffff00 !important; border: 4.5px solid #000 !important; 
-        color: #000; font-size: 18px; z-index: 6;
+        border: 4px solid var(--red) !important; /* Like Red Box 47 in photo */
+        background: rgba(255, 0, 0, 0.05); color: #000;
     }
-    .cross-circle::after {
+    .cross-mark::after {
         content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
-        border: 3.5px solid var(--red); border-radius: 50%; box-sizing: border-box;
+        border: 2.5px solid var(--red); border-radius: 50%;
     }
-    .prediction-cell { border: 4px solid var(--green) !important; background: #e8f5e9; color: #000; }
-    .blank { background: #eee !important; color: #ccc; cursor: pointer; }
+    .target-cell { border: 3px solid var(--green) !important; background: #e8f5e9; }
+    .blank { background: #f9f9f9 !important; color: #ccc; cursor: pointer; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
     .toolbar { display: flex; gap: 5px; margin-bottom: 10px; }
-    button { flex: 1; padding: 12px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; font-size: 12px; }
-    .card { background: #1a1a1a; padding: 12px; border-left: 5px solid var(--gold); margin-top: 10px; border-radius: 5px; }
-    .check-btn { width: 100%; padding: 15px; background: #2a2a2a; color: var(--gold); border: 1px solid #444; margin-top: 8px; text-align: left; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    button { flex: 1; padding: 12px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; }
+    .card { background: #1a1a1a; padding: 12px; border-left: 5px solid var(--gold); margin-top: 10px; }
+    .check-btn { width: 100%; padding: 15px; background: #2a2a2a; color: var(--gold); border: 1px solid #444; margin-top: 8px; text-align: left; font-weight: bold; border-radius: 6px; }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(this)">
     <button style="background:var(--gold)" onclick="document.getElementById('csvFile').click()">📂 LOAD CSV</button>
-    <button style="background:var(--green); color:#fff" onclick="saveData()">💾 SAVE DATA</button>
+    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(this)">
+    <button style="background:var(--green); color:#fff" onclick="saveData()">💾 SAVE</button>
 </div>
 
 <div class="table-container">
@@ -49,18 +49,13 @@
 </div>
 
 <div class="card">
-    <h3>📍 Check Lines (Shape & Family Cross)</h3>
-    <div id="checkList">Click on (**) to start scan...</div>
-</div>
-
-<div id="futureCard" class="card" style="display:none">
-    <h3>🔮 Future AI Prediction</h3>
-    <div id="future" style="font-size: 26px; color: var(--gold); text-align: center; font-weight: bold;">-- | -- | --</div>
+    <h3>📍 Similarity Check Lines (Base 47 Logic)</h3>
+    <div id="checkList">Blank cell par click karein...</div>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_final_pro")) || Array(25).fill(["**","**","**","**","**","**"]);
+let data = JSON.parse(localStorage.getItem("raj_dp_logic")) || Array(20).fill(["**","**","**","**","**","**"]);
 let activeMatch = null;
 let lastClick = null;
 
@@ -78,15 +73,16 @@ function draw() {
                 let relR = isCur ? ri - (lastClick.r - 10) : (isHist ? ri - activeMatch.start : -1);
 
                 if (relR !== -1) {
+                    // 1. Base Jodi (Red Box)
                     if (relR === activeMatch.baseR && ci === activeMatch.baseC) cls += " base-box";
+                    // 2. Pattern Shape (Blue Circles)
                     else if (activeMatch.points.some(p => p.r === relR && p.c === ci)) cls += " f-circle";
-                    // Cross family marking within the 10 rows
-                    if (isHist && activeMatch.crossPoints && activeMatch.crossPoints.some(p => p.r === ri && p.c === ci)) cls += " cross-circle";
+                    // 3. Internal Family Marking
+                    if (isHist && activeMatch.internalMarking.some(p => p.r === ri && p.c === ci)) cls += " cross-mark";
                 }
-                if (ri === activeMatch.resR && ci === activeMatch.resC) cls += " prediction-cell";
-                if (lastClick && ri === lastClick.r && ci === lastClick.c) cls += " prediction-cell";
+                if (lastClick && ri === lastClick.r && ci === lastClick.c) cls += " target-cell";
             }
-            h += `<td class="${cls}" onclick="process(${ri},${ci})" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)">${cell}</td>`;
+            h += `<td class="${cls}" onclick="analyze(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -94,64 +90,56 @@ function draw() {
     setTimeout(renderLines, 100);
 }
 
-function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; }
-
-function process(r, c) {
+function analyze(r, c) {
     if(data[r][c] !== "**") return;
     lastClick = {r, c}; activeMatch = null;
     
-    // 1. Capture Current Shape & Base (Coordinates Only)
+    // Capture Current Base and Shape Coordinates
+    let baseR = 7, baseC = 0; // Photo ke mutabik Row 8 (index 7) aur Column 1 (index 0)
+    let baseVal = data[r - (10 - baseR)][baseC];
+    let baseFam = getFam(baseVal);
+    
     let shapePoints = [];
-    let baseR = 9, baseC = 0; // Fixed Base Spot (Bottom Left of pattern for example)
-    let currentBaseFamily = getFam(data[r - (10 - baseR)][baseC]);
-
     for(let i=1; i<=10; i++) {
         data[r-i].forEach((v, ci) => {
-            if(v !== "**" && shapePoints.length < 3) {
-                if(!(10-i === baseR && ci === baseC)) shapePoints.push({r: 10-i, c: ci});
-            }
+            if(v !== "**" && shapePoints.length < 4 && !(10-i === baseR && ci === baseC)) 
+                shapePoints.push({r: 10-i, c: ci, f: getFam(v)});
         });
     }
 
-    // 2. Scan History for same "Shape" & "Base Family"
     let matches = [];
     for(let i=0; i < data.length - 11; i++) {
-        if(getFam(data[i + baseR][baseC]) !== currentBaseFamily) continue;
+        // Shart: Base position par family match honi chahiye
+        if(getFam(data[i + baseR][baseC]) !== baseFam) continue;
 
         let coordScore = 0;
         shapePoints.forEach(p => { if(data[i+p.r][p.c] !== "**") coordScore++; });
 
-        if(coordScore >= 2 && data[i+10][c] !== "**") {
-            // Find cross family marking for the result jodi within the 10 rows
-            let resVal = data[i+10][c];
-            let resFam = getFam(resVal);
-            let crossPoints = [];
-            for(let kr=0; kr<10; kr++) {
-                data[i+kr].forEach((v, kc) => {
-                    if(getFam(v) === resFam) crossPoints.push({r: i+kr, c: kc});
-                });
-            }
-
-            matches.push({
-                start: i, points: shapePoints, baseR, baseC,
-                resR: i+10, resC: c, val: resVal, crossPoints
+        if(coordScore >= 2) {
+            // Find internal family marking for jodiyan in the shape
+            let internalMarking = [];
+            shapePoints.forEach(p => {
+                let targetFam = getFam(data[i+p.r][p.c]);
+                for(let kr=0; kr<10; kr++) {
+                    data[i+kr].forEach((v, kc) => {
+                        if(getFam(v) === targetFam && !(kr === p.r && kc === p.c)) 
+                            internalMarking.push({r: i+kr, c: kc});
+                    });
+                }
             });
+
+            matches.push({start: i, points: shapePoints, baseR, baseC, internalMarking, val: data[i+10][c]});
         }
     }
 
     let list = document.getElementById("checkList");
-    list.innerHTML = matches.length ? "" : "Koi match nahi mila.";
+    list.innerHTML = matches.length ? "" : "Koi matching pattern nahi mila.";
     matches.slice(0, 3).forEach((m, idx) => {
         let btn = document.createElement("button"); btn.className = "check-btn";
-        btn.innerHTML = `🚩 Check Line #${idx+1} | Result: ${m.val}`;
+        btn.innerHTML = `🚩 Pattern Line #${idx+1} | Result: ${m.val}`;
         btn.onclick = () => { activeMatch = m; draw(); document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"}); };
         list.appendChild(btn);
     });
-    
-    if(matches.length > 0) {
-        document.getElementById("futureCard").style.display = "block";
-        document.getElementById("future").innerText = matches.slice(0,3).map(m => m.val).join(" | ");
-    }
     draw();
 }
 
@@ -163,10 +151,10 @@ function renderLines() {
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const rect = tbl.getBoundingClientRect();
 
-    const drawLine = (sel, col, width) => {
+    const drawL = (sel, col) => {
         let els = Array.from(tbl.querySelectorAll(sel));
         if(els.length < 2) return;
-        ctx.strokeStyle = col; ctx.lineWidth = width; ctx.beginPath();
+        ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.beginPath();
         els.forEach((el, i) => {
             let r = el.getBoundingClientRect();
             let x = r.left - rect.left + r.width/2;
@@ -175,8 +163,8 @@ function renderLines() {
         });
         ctx.stroke();
     };
-    drawLine(".f-circle, .base-box", "#007bff", 3); // Shape connection
-    drawLine(".cross-circle, .prediction-cell", "#dc3545", 2); // Result Cross connection
+    drawL(".f-circle, .base-box", "#007bff"); // Blue Line for Shape
+    drawL(".cross-mark", "#ff0000"); // Red Line for Internal Family
 }
 
 function importCSV(input) {
@@ -187,11 +175,11 @@ function importCSV(input) {
             while(cols.length < 6) cols.push("**");
             return cols.slice(0, 6);
         });
-        saveData(); draw();
+        draw();
     };
     reader.readAsText(input.files[0]);
 }
-function saveData() { localStorage.setItem("raj_final_pro", JSON.stringify(data)); alert("Memory Saved!"); }
+function saveData() { localStorage.setItem("raj_dp_logic", JSON.stringify(data)); alert("Saved!"); }
 draw();
 </script>
 </body>
