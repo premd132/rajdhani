@@ -72,6 +72,10 @@ const families={
 "35":["03","08","30","35","53","58","80","85"],  
 "45":["04","09","40","45","54","59","90","95"],
 };  
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
 function getFam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
