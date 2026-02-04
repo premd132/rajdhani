@@ -3,202 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Shape Based Pattern (Stable)</title>
-
+<title>Rajdhani AI – Cross Pattern Pro</title>
 <style>
-:root{
- --gold:#ffd700; --blue:#3e84ff; --green:#00ff00;
- --purple:#b84cff; --bg:#0a0a0a;
-}
-body{background:var(--bg);color:#fff;font-family:sans-serif;margin:0;padding:10px}
-.toolbar{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
-button{padding:10px;font-weight:bold;border-radius:6px;border:none;cursor:pointer}
-.table-container{position:relative;background:#fff;padding:10px;border-radius:6px;max-height:55vh;overflow:auto}
-table{border-collapse:collapse;width:100%;color:#000;font-size:13px}
-th,td{border:1px solid #999;height:42px;text-align:center;font-weight:bold}
-th{background:#800;color:#fff;position:sticky;top:0}
+    :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #0a0a0a; }
+    body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; flex-wrap: wrap; }
+    .table-container { position: relative; display: inline-block; background: #fff; padding: 10px; border-radius: 5px; max-height: 60vh; overflow-y: auto; width: 100%; max-width: 700px; }
+    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; width: 100%; }
+    td, th { border: 1px solid #999; width: 16.6%; height: 48px; text-align: center; font-weight: bold; position: relative; }
+    th { background: #800; color: #fff; position: sticky; top: 0; }
+    
+    /* Marking Styles */
+    .f-circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
+    .base-box { border: 3px solid #000 !important; background: rgba(255, 215, 0, 0.3); } /* Chokor Box */
+    .cross-mark { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
+    .predict-mark { border: 3px solid var(--green) !important; border-radius: 50%; background: rgba(0, 255, 0, 0.2); }
+    .blank { background: #f4f4f4 !important; cursor: pointer; color: #ccc; }
 
-.blank{background:#f0f0f0;color:#bbb;cursor:pointer}
-.fam{border-radius:50%;border:3px solid var(--blue);background:rgba(62,132,255,.25)}
-.base{border:3px solid #000!important;background:#ffeaa7!important}
-.cross{border-radius:50%;border:3px solid var(--purple);background:rgba(184,76,255,.3)}
-.res{border-radius:50%;border:3px solid var(--green);background:rgba(0,255,0,.3)}
-
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.card{background:#1a1a1a;padding:10px;border-left:4px solid var(--gold);border-radius:8px}
-.check-btn{background:#252525;color:var(--gold);margin-top:6px;padding:10px;border-radius:6px;border:1px solid #444;text-align:left}
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
+    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .card { background: #1a1a1a; padding: 12px; border-radius: 10px; border-left: 5px solid var(--gold); }
+    .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #252525; color: var(--gold); border: 1px solid #444; text-align: left; border-radius: 5px; cursor: pointer; }
 </style>
 </head>
-
 <body>
 
 <div class="toolbar">
- <input type="file" id="csvFile" accept=".csv" hidden>
- <button style="background:var(--gold)" id="csvBtn">CSV Load</button>
- <button style="background:#3e84ff;color:#fff" id="addBtn">Add Row</button>
- <button style="background:#00ff00" id="saveBtn">Save</button>
+    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(this)">
+    <button onclick="document.getElementById('csvFile').click()" style="background:var(--gold)">📂 CSV Upload</button>
+    <button onclick="addRow()" style="background:var(--blue); color:#fff">➕ Add Row</button>
+    <button onclick="saveToLocal()" style="background:var(--green)">💾 Save Memory</button>
 </div>
 
-<div class="table-container">
- <canvas id="cvs"></canvas>
- <table id="tbl"></table>
-</div>
+<center>
+    <div class="table-container" id="scrollBox">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
+    </div>
+</center>
 
 <div class="dashboard">
- <div class="card">
-  <h3>Analysis Lines</h3>
-  <div id="checkList">Blank cell par click karein</div>
- </div>
- <div class="card">
-  <h3>Prediction</h3>
-  <div id="future" style="font-size:22px;color:var(--gold)">-- | -- | --</div>
- </div>
+    <div class="card">
+        <h3>📍 Check Lines (1.2.3 Patterns)</h3>
+        <div id="checkList">Blank cell par click karein...</div>
+    </div>
+    <div class="card">
+        <h3>🔮 Future AI (3-Pair)</h3>
+        <div id="future" style="font-size: 22px; color: var(--gold); font-weight: bold; text-align: center;">-- | -- | --</div>
+    </div>
 </div>
 
 <script>
-/* ---------- SAFE DOM ---------- */
-const tbl = document.getElementById("tbl");
-const cvs = document.getElementById("cvs");
-const checkList = document.getElementById("checkList");
-const future = document.getElementById("future");
-const csvFile = document.getElementById("csvFile");
+const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+let data = JSON.parse(localStorage.getItem("raj_cross_v1")) || [["**","**","**","**","**","**"]];
+let activePattern = null;
+let currentTarget = null;
 
-/* ---------- DATA ---------- */
-let data = JSON.parse(localStorage.getItem("raj_ai_shape"))
-  || [["**","**","**","**","**","**"]];
+function fam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
-let active = null;
-
-/* ---------- DRAW ---------- */
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = c==="**"?"blank":"";
-   if(active){
-    let v = active.mask?.[ri-active.start]?.[ci];
-    if(v===1)cls+=" fam";
-    if(v===9)cls+=" base";
-    if(v===8)cls+=" cross";
-    if(ri===active.resR && ci===active.resC)cls+=" res";
-   }
-   h+=`<td class="${cls}" contenteditable
-        onclick="scan(${ri},${ci})"
-        onblur="data[${ri}][${ci}]=this.innerText.trim()||'**'">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML = h;
- setTimeout(drawLines,60);
+function draw() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((row, ri) => {
+        h += `<tr id="tr-${ri}">`;
+        row.forEach((cell, ci) => {
+            let cls = cell === "**" ? "blank" : "";
+            
+            if(activePattern) {
+                // Current Pattern Marking
+                let relR = ri - (currentTarget.r - activePattern.height);
+                let histR = ri - activePattern.start;
+                
+                // Base Jodi: Chokor Box
+                if((ri === currentTarget.r - 1 && ci === activePattern.baseCol) || (ri === activePattern.start + activePattern.height - 1 && ci === activePattern.baseCol)) {
+                    cls += " base-box";
+                }
+                
+                // Shape Circles
+                if(relR >= 0 && relR < activePattern.height && activePattern.shape[relR][ci]) cls += " f-circle";
+                if(histR >= 0 && histR < activePattern.height && activePattern.shape[histR][ci]) cls += " f-circle";
+                
+                // Cross Connection Marking (Different Color)
+                if(ri === activePattern.crossR && ci === activePattern.crossC) cls += " cross-mark";
+                if(ri === currentTarget.r && ci === currentTarget.c) cls += " predict-mark";
+            }
+            
+            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="findCrossPatterns(${ri},${ci})">${cell}</td>`;
+        });
+        h += "</tr>";
+    });
+    document.getElementById("tbl").innerHTML = h;
+    setTimeout(renderLines, 100);
 }
 
-/* ---------- SCAN ---------- */
-function scan(r,c){
- if(data[r][c]!=="**") return;
+function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; }
 
- let mask = Array.from({length:10},()=>Array(6).fill(0));
- let base=null, marks=0;
+function findCrossPatterns(r, c) {
+    if(data[r][c] !== "**") return;
+    currentTarget = {r: r, c: c};
+    activePattern = null;
+    
+    // 1. Current Pattern Capture (Up to 10 rows)
+    let lookback = 5; 
+    let currentShape = Array.from({length: lookback}, () => Array(6).fill(0));
+    let baseCol = (c + 1) % 6; // Logic for base jodi position
+    let foundJodiyas = 0;
 
- for(let i=1;i<=10;i++){
-  if(!data[r-i]) break;
-  for(let j=0;j<6;j++){
-   if(data[r-i][j]!=="**"){
-    mask[10-i][j]=1;
-    marks++;
-    if(!base) base={ri:r-i,ci:j};
-   }
-  }
- }
- if(marks<3 || !base) return;
+    for(let i=1; i<=lookback; i++){
+        for(let j=0; j<6; j++){
+            if(data[r-i] && data[r-i][j] !== "**") {
+                currentShape[lookback-i][j] = 1;
+                foundJodiyas++;
+            }
+        }
+    }
 
- let bi = base.ri-(r-10);
- if(bi>=0 && bi<10) mask[bi][base.ci]=9;
+    // 2. Search History for Same Shape
+    let matches = [];
+    for(let i=0; i < data.length - lookback - 1; i++){
+        let score = 0;
+        for(let ki=0; ki<lookback; ki++){
+            for(let kj=0; kj<6; kj++){
+                if(currentShape[ki][kj] && data[i+ki][kj] !== "**") score++;
+            }
+        }
+        
+        if(score >= 3 && data[i+lookback][c] !== "**") {
+            // Finding where this jodi came from (Cross connection)
+            let crossRow = i - 2; // Simple cross logic
+            matches.push({
+                start: i, 
+                height: lookback, 
+                shape: currentShape, 
+                baseCol: baseCol,
+                resR: i+lookback, resC: c, 
+                val: data[i+lookback][c],
+                crossR: Math.max(0, crossRow), crossC: (c + 2) % 6
+            });
+        }
+    }
 
- let matches=[];
- for(let i=0;i<=data.length-11;i++){
-  let hit=0;
-  for(let k=0;k<10;k++){
-   for(let j=0;j<6;j++){
-    if(mask[k][j] && data[i+k][j]!=="**") hit++;
-   }
-  }
-  if(hit>=3 && data[i+10][c]!=="**"){
-   let m=JSON.parse(JSON.stringify(mask));
-   let ci = 10-(r-(i+10));
-   if(ci>=0 && ci<10) m[ci][c]=8;
-   matches.push({start:i,mask:m,resR:i+10,resC:c,val:data[i+10][c],per:hit});
-  }
- }
-
- checkList.innerHTML="";
- matches.slice(0,3).forEach((m,i)=>{
-  let b=document.createElement("button");
-  b.className="check-btn";
-  b.innerHTML=`Pattern ${i+1} | Match ${m.per}`;
-  b.onclick=()=>{active=m;draw();};
-  checkList.appendChild(b);
- });
-
- future.innerText = matches.map(m=>m.val).join(" | ") || "-- | -- | --";
+    let list = document.getElementById("checkList");
+    list.innerHTML = matches.length ? "" : "Same shape pattern nahi mila.";
+    matches.slice(0, 3).forEach((m, idx) => {
+        let btn = document.createElement("button");
+        btn.className = "check-btn";
+        btn.innerHTML = `🚩 <b>Pattern ${idx+1}</b> | Old Rec: ${m.val} <br> Cross-match Row: ${m.crossR + 1}`;
+        btn.onclick = () => { activePattern = m; draw(); document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"}); };
+        list.appendChild(btn);
+    });
+    document.getElementById("future").innerText = matches.slice(0, 3).map(m => m.val).join(" | ") || "-- | -- | --";
 }
 
-/* ---------- LINES ---------- */
-function drawLines(){
- if(!active) return;
- let ctx=cvs.getContext("2d");
- cvs.width=tbl.offsetWidth;
- cvs.height=tbl.offsetHeight;
- ctx.clearRect(0,0,cvs.width,cvs.height);
- let rect=tbl.getBoundingClientRect();
+function renderLines() {
+    const cvs = document.getElementById("mainCanvas");
+    const ctx = cvs.getContext("2d");
+    const tbl = document.getElementById("tbl");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const rect = tbl.getBoundingClientRect();
 
- ["fam","cross","res"].forEach(cls=>{
-  let els=[...tbl.querySelectorAll("."+cls)];
-  if(!els.length) return;
-  ctx.strokeStyle=cls==="fam"?"#3e84ff":cls==="cross"?"#b84cff":"#00ff00";
-  ctx.lineWidth=3;
-  ctx.beginPath();
-  els.forEach((e,i)=>{
-   let r=e.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
- });
+    const drawGroup = (selector, color) => {
+        let els = Array.from(tbl.querySelectorAll(selector));
+        if(els.length < 2) return;
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+        els.forEach((el, i) => {
+            let r = el.getBoundingClientRect();
+            let x = r.left - rect.left + r.width/2;
+            let y = r.top - rect.top + r.height/2;
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+    };
+
+    drawGroup(".f-circle", "#3e84ff");
+    drawGroup(".predict-mark, .cross-mark", "#ff3e3e");
 }
 
-/* ---------- CSV ---------- */
-csvFile.onchange = ()=>{
- const reader=new FileReader();
- reader.onload=e=>{
-  data=e.target.result.split(/\r?\n/).filter(r=>r.trim()).map(r=>{
-   let c=r.split(",").map(v=>{
-    v=v.trim();
-    if(v===""||v==="00") return "**";
-    return v.padStart(2,"0");
-   });
-   while(c.length<6)c.push("**");
-   return c.slice(0,6);
-  });
-  saveToLocal();
-  draw();
- };
- reader.readAsText(csvFile.files[0]);
-};
-
-/* ---------- UTILS ---------- */
-document.getElementById("csvBtn").onclick=()=>csvFile.click();
-document.getElementById("addBtn").onclick=()=>{data.push(["**","**","**","**","**","**"]);draw();};
-document.getElementById("saveBtn").onclick=saveToLocal;
-
-function saveToLocal(){
- localStorage.setItem("raj_ai_shape",JSON.stringify(data));
+function importCSV(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        data = e.target.result.split('\n').filter(r => r.trim()).map(r => {
+            let cols = r.split(',').map(c => c.trim().padStart(2,'0').replace(/^00$/, "**"));
+            while(cols.length < 6) cols.push("**");
+            return cols.slice(0, 6);
+        });
+        saveToLocal(); draw();
+    };
+    reader.readAsText(input.files[0]);
 }
-
+function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
+function saveToLocal() { localStorage.setItem("raj_cross_v1", JSON.stringify(data)); alert("Memory Saved!"); }
 draw();
 </script>
-
 </body>
 </html>
