@@ -3,180 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Pro – Final Fix</title>
+<title>Kalyan AI – Final Correction</title>
 <style>
-    :root { --gold: #ffd700; --blue: #007bff; --red: #ff0000; --bg: #121212; --panel: #1e1e1e; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff0000; --bg: #000; }
+    body { font-family: Arial; background: var(--bg); color: #fff; margin: 0; padding: 5px; }
     
-    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; }
-    
-    .table-container { position: relative; background: #fff; border-radius: 4px; overflow-x: auto; display: inline-block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-    table { border-collapse: collapse; font-size: 14px; color: #000; width: 100%; }
-    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 42px; height: 42px; position: relative; }
-    th { background: #800000; color: white; font-size: 12px; }
+    .table-container { position: relative; background: #fff; padding: 5px; display: inline-block; }
+    table { border-collapse: collapse; color: #000; font-size: 15px; }
+    td, th { border: 1px solid #999; width: 45px; height: 45px; text-align: center; font-weight: bold; position: relative; }
+    th { background: #800000; color: #fff; font-size: 12px; }
 
-    /* DPBoss Style Marking [cite: 2026-02-03] */
-    .f1-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
-    .f2-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--red); border-radius: 50%; box-sizing: border-box; }
-    .base-box { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
-    .target-cell { border: 3px solid #28a745 !important; background: #e8f5e9; }
-    .blank { background: #f0f0f0 !important; cursor: pointer; color: #ccc; }
+    /* Screenshot Styles [cite: 2026-02-03] */
+    .blue-circle::after { content: ""; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 3px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
+    .red-box { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+    .result-cell { border: 3px solid #28a745 !important; background: #e8f5e9; }
+    .blank { background: #eee !important; cursor: pointer; }
 
-    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-top: 15px; }
-    .check-btn { background: #2a2a2a; color: var(--gold); padding: 12px; margin: 6px 0; cursor: pointer; border-radius: 6px; border: 1px solid #444; width: 100%; text-align: left; font-weight: bold; }
-    
+    .card { background: #1e1e1e; padding: 15px; margin-top: 10px; border-left: 5px solid var(--gold); }
+    .match-btn { background: #333; color: var(--gold); padding: 12px; margin: 5px 0; cursor: pointer; border: 1px solid #555; width: 100%; text-align: left; font-weight: bold; }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-    button { padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; border: none; }
 </style>
 </head>
 <body>
 
-<h2 style="text-align:center; color:var(--gold);">🏆 KALYAN PRO AI (2+2 LOGIC)</h2>
+<h2 style="text-align:center; color:var(--gold);">🎯 KALYAN SHAPE MASTER</h2>
 
-<div class="toolbar">
-    <button style="background:var(--gold);" onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
-    <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-    <button style="background:#28a745; color:white;" onclick="saveData()">💾 SAVE DATA</button>
+<div style="text-align:center; margin-bottom:10px;">
+    <button onclick="document.getElementById('csv').click()" style="padding:10px; background:var(--gold); border:none; font-weight:bold;">📂 LOAD CHART</button>
+    <input type="file" id="csv" style="display:none" onchange="loadCSV(this)">
 </div>
 
 <center>
-    <div class="table-container">
-        <canvas id="mainCanvas"></canvas>
-        <table id="tbl"></table>
+    <div class="table-container" id="chartArea">
+        <canvas id="lineCanvas"></canvas>
+        <table id="mainTable"></table>
     </div>
 </center>
 
 <div class="card">
-    <h3>📍 Pattern Match Results</h3>
-    <div id="checks">Blank (**) cell par click karein...</div>
+    <h3>📍 Similarity Check Lines</h3>
+    <div id="results">Khali cell (**) par click karein...</div>
 </div>
 
 <div class="card">
-    <h3>🔮 Future AI (Top 3 Pairs)</h3>
-    <div id="future" style="font-size: 26px; color: var(--gold); text-align: center; font-weight: bold;">-- | -- | --</div>
+    <h3>🔮 Future AI (3-Pair)</h3>
+    <div id="future" style="font-size: 22px; color: var(--gold); text-align: center; letter-spacing: 2px;">-- | -- | --</div>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_final_v3")) || Array(20).fill(["**","**","**","**","**","**"]);
-let activeMatch = null;
-let lastClick = null;
+let chartData = JSON.parse(localStorage.getItem("kalyan_v4")) || Array(25).fill(["**","**","**","**","**","**"]);
+let matchData = null;
 
 function getFam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
-function draw() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((row, ri) => {
-        h += `<tr>`;
+function renderTable() {
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    chartData.forEach((row, ri) => {
+        html += "<tr>";
         row.forEach((cell, ci) => {
             let cls = cell === "**" ? "blank" : "";
-            if(activeMatch) {
-                let isHist = (ri >= activeMatch.start && ri < activeMatch.start + 10);
-                if(isHist) {
-                    let relR = ri - activeMatch.start;
-                    let p = activeMatch.points.find(p => p.r === relR && p.c === ci);
-                    if(p) cls += (p.type === 'f1' ? " f1-circle" : " f2-circle");
-                    if(relR === activeMatch.baseR && ci === activeMatch.baseC) cls += " base-box";
+            if(matchData) {
+                let isPatternArea = (ri >= matchData.start && ri < matchData.start + 10);
+                if(isPatternArea) {
+                    let relR = ri - matchData.start;
+                    if(matchData.coords.some(p => p.r === relR && p.c === ci)) cls += " blue-circle";
+                    if(relR === matchData.basePos.r && ci === matchData.basePos.c) cls += " red-box";
                 }
-                if(ri === activeMatch.resR && ci === activeMatch.resC) cls += " target-cell";
+                if(ri === matchData.resR && ci === matchData.resC) cls += " result-cell";
             }
-            h += `<td class="${cls}" onclick="runScanner(${ri},${ci})" contenteditable="true" onblur="updateData(${ri},${ci},this.innerText)">${cell}</td>`;
+            html += `<td class="${cls}" onclick="scan(${ri},${ci})" contenteditable="true" onblur="chartData[${ri}][${ci}]=this.innerText.trim()">${cell}</td>`;
         });
-        h += "</tr>";
+        html += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
-    if(activeMatch) setTimeout(drawConnections, 100);
+    document.getElementById("mainTable").innerHTML = html;
+    if(matchData) setTimeout(drawLines, 100);
 }
 
-function updateData(r,c,v){ data[r][c] = v.trim() || "**"; }
-
-function runScanner(r, c) {
-    if(data[r][c] !== "**") return;
-    lastClick = {r, c}; activeMatch = null;
-
-    // 1. Capture Patterns in Last 10 Weeks [cite: 2026-02-03]
-    let baseR = 7, baseC = 0; // Fixed Base Spot (example row 8, col 1) [cite: 2026-02-03]
-    let currentBaseFam = getFam(data[r - (10 - baseR)][baseC]);
+function scan(r, c) {
+    if(chartData[r][c] !== "**") return;
     
-    let points = [];
-    let foundFams = [];
+    // 1. Capture Current Shape (Any value except **) [cite: 2026-02-03]
+    let basePos = {r: 8, c: 0}; // Example: Base at row 9, col 1
+    let baseFamily = getFam(chartData[r - (10 - basePos.r)][basePos.c]);
+    let coords = [];
     
     for(let i=1; i<=10; i++) {
-        data[r-i].forEach((v, ci) => {
-            if(v !== "**" && points.length < 4 && !(10-i === baseR && ci === baseC)) {
-                let f = getFam(v);
-                if(!foundFams.includes(f)) foundFams.push(f);
-                points.push({r: 10-i, c: ci, f: f, type: (foundFams.indexOf(f) === 0 ? 'f1' : 'f2')});
+        chartData[r-i].forEach((v, ci) => {
+            if(v !== "**" && coords.length < 5 && !(10-i === basePos.r && ci === basePos.c)) {
+                coords.push({r: 10-i, c: ci});
             }
         });
     }
 
-    // 2. Scan History for Shape + Family Match [cite: 2026-02-03]
+    // 2. Scan History for "Shape Match" + "Base Family" [cite: 2026-02-03]
     let matches = [];
-    for(let i=0; i < data.length - 11; i++) {
-        if(getFam(data[i + baseR][baseC]) !== currentBaseFam) continue;
+    for(let i=0; i < chartData.length - 11; i++) {
+        if(getFam(chartData[i + basePos.r][basePos.c]) !== baseFamily) continue;
 
-        let ok = true;
-        let histF1 = getFam(data[i + points[0].r][points[0].c]);
-        let secondPoint = points.find(p => p.type === 'f2');
-        let histF2 = secondPoint ? getFam(data[i + secondPoint.r][secondPoint.c]) : "NONE";
-
-        points.forEach(p => {
-            let hf = getFam(data[i+p.r][p.c]);
-            if(p.type === 'f1' && hf !== histF1) ok = false;
-            if(p.type === 'f2' && hf !== histF2) ok = false;
-        });
-
-        if(ok && data[i+10][c] !== "**") {
-            matches.push({start: i, points, baseR, baseC, resR: i+10, resC: c, val: data[i+10][c]});
+        let shapeOk = coords.every(p => chartData[i+p.r][p.c] !== "**");
+        if(shapeOk && chartData[i+10][c] !== "**") {
+            matches.push({start: i, coords, basePos, resR: i+10, resC: c, val: chartData[i+10][c]});
         }
     }
 
-    let div = document.getElementById("checks");
-    div.innerHTML = matches.length ? "" : "Koi Match nahi mila. Data check karein.";
+    let resDiv = document.getElementById("results");
+    resDiv.innerHTML = matches.length ? "" : "Shape match nahi mila!";
     matches.slice(0, 3).forEach((m, idx) => {
-        let b = document.createElement("button"); b.className = "check-btn";
-        b.innerHTML = `🚩 Pattern Match #${idx+1} | Result: ${m.val}`;
-        b.onclick = () => { activeMatch = m; draw(); document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"}); };
-        div.appendChild(b);
+        let btn = document.createElement("div"); btn.className = "match-btn";
+        btn.innerHTML = `⭐ Match #${idx+1} (Row ${m.start + 1}) | Result: ${m.val}`;
+        btn.onclick = () => { matchData = m; renderTable(); };
+        resDiv.appendChild(btn);
     });
     document.getElementById("future").innerText = matches.slice(0,3).map(m => m.val).join(" | ") || "-- | -- | --";
-    draw();
+    renderTable();
 }
 
-function drawConnections() {
-    const cvs = document.getElementById("mainCanvas"); const ctx = cvs.getContext("2d");
-    const tbl = document.getElementById("tbl");
+function drawLines() {
+    const cvs = document.getElementById("lineCanvas"); const ctx = cvs.getContext("2d");
+    const tbl = document.getElementById("mainTable");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const rect = tbl.getBoundingClientRect();
 
-    const render = (sel, color) => {
-        let els = Array.from(tbl.querySelectorAll(sel));
-        if(els.length < 2) return;
-        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
-        els.forEach((el, i) => {
-            let r = el.getBoundingClientRect();
-            let x = r.left - rect.left + r.width/2;
-            let y = r.top - rect.top + r.height/2;
-            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        });
-        ctx.stroke();
-    };
-    render(".f1-circle, .base-box", "blue");
-    render(".f2-circle", "red");
+    const points = Array.from(tbl.querySelectorAll(".blue-circle, .red-box"));
+    if(points.length < 2) return;
+    
+    ctx.strokeStyle = "blue"; ctx.lineWidth = 2.5; ctx.beginPath();
+    points.forEach((el, i) => {
+        let r = el.getBoundingClientRect();
+        let x = r.left - rect.left + r.width/2;
+        let y = r.top - rect.top + r.height/2;
+        if(i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
 }
 
-function importCSV(input) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        data = e.target.result.split('\n').filter(r => r.trim()).map(r => r.split(',').map(v => v.trim().padStart(2,'0').replace(/^00$/, "**")));
-        saveData(); draw();
+function loadCSV(input) {
+    let fr = new FileReader();
+    fr.onload = () => {
+        chartData = fr.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => v.trim()));
+        renderTable();
     };
-    reader.readAsText(input.files[0]);
+    fr.readAsText(input.files[0]);
 }
-function saveData() { localStorage.setItem("raj_final_v3", JSON.stringify(data)); alert("Memory Saved!"); }
-draw();
+renderTable();
 </script>
 </body>
 </html>
