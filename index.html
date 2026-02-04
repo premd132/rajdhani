@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Cross Pattern Pro</title>
+<title>Rajdhani AI – Fixed Pattern Logic</title>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #0a0a0a; }
     body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; flex-wrap: wrap; }
-    .table-container { position: relative; display: inline-block; background: #fff; padding: 10px; border-radius: 5px; max-height: 60vh; overflow-y: auto; width: 100%; max-width: 700px; }
-    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; width: 100%; }
-    td, th { border: 1px solid #999; width: 16.6%; height: 48px; text-align: center; font-weight: bold; position: relative; }
+    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
+    .table-container { position: relative; display: inline-block; background: #fff; padding: 10px; border-radius: 5px; max-height: 55vh; overflow-y: auto; width: 100%; }
+    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; width: 100%; table-layout: fixed; }
+    td, th { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; position: relative; }
     th { background: #800; color: #fff; position: sticky; top: 0; }
     
-    /* Marking Styles */
+    /* Strict Marking Styles */
     .f-circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
-    .base-box { border: 3px solid #000 !important; background: rgba(255, 215, 0, 0.3); } /* Chokor Box */
-    .cross-mark { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
-    .predict-mark { border: 3px solid var(--green) !important; border-radius: 50%; background: rgba(0, 255, 0, 0.2); }
-    .blank { background: #f4f4f4 !important; cursor: pointer; color: #ccc; }
+    .base-box { border: 3px solid #000 !important; background: var(--gold) !important; color: #000; box-shadow: inset 0 0 5px #000; } 
+    .cross-mark { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.3); }
+    .target-cell { border: 3px solid var(--green) !important; background: rgba(0, 255, 0, 0.1); }
+    .blank { background: #f0f0f0 !important; cursor: pointer; color: #ccc; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .card { background: #1a1a1a; padding: 12px; border-radius: 10px; border-left: 5px solid var(--gold); }
-    .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #252525; color: var(--gold); border: 1px solid #444; text-align: left; border-radius: 5px; cursor: pointer; }
+    .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #252525; color: var(--gold); border: 1px solid #444; text-align: left; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -31,8 +31,8 @@
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(this)">
     <button onclick="document.getElementById('csvFile').click()" style="background:var(--gold)">📂 CSV Upload</button>
-    <button onclick="addRow()" style="background:var(--blue); color:#fff">➕ Add Row</button>
-    <button onclick="saveToLocal()" style="background:var(--green)">💾 Save Memory</button>
+    <button onclick="addRow()" style="background:var(--blue); color:#fff">➕ Row</button>
+    <button onclick="saveToLocal()" style="background:var(--green)">💾 Save</button>
 </div>
 
 <center>
@@ -44,8 +44,8 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 Check Lines (1.2.3 Patterns)</h3>
-        <div id="checkList">Blank cell par click karein...</div>
+        <h3>📍 Check Lines (Fixed Base)</h3>
+        <div id="checkList">Click (**) for 10-row scan...</div>
     </div>
     <div class="card">
         <h3>🔮 Future AI (3-Pair)</h3>
@@ -55,9 +55,9 @@
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_cross_v1")) || [["**","**","**","**","**","**"]];
-let activePattern = null;
-let currentTarget = null;
+let data = JSON.parse(localStorage.getItem("raj_final_fix")) || Array(20).fill(["**","**","**","**","**","**"]);
+let activeMatch = null;
+let currentClick = null;
 
 function fam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
@@ -67,27 +67,24 @@ function draw() {
         h += `<tr id="tr-${ri}">`;
         row.forEach((cell, ci) => {
             let cls = cell === "**" ? "blank" : "";
-            
-            if(activePattern) {
-                // Current Pattern Marking
-                let relR = ri - (currentTarget.r - activePattern.height);
-                let histR = ri - activePattern.start;
+            if(activeMatch) {
+                const isCurrent = (currentClick && ri > currentClick.r - 11 && ri < currentClick.r);
+                const isHistory = (ri >= activeMatch.start && ri < activeMatch.start + 10);
+                let relR = isCurrent ? ri - (currentClick.r - 10) : (isHistory ? ri - activeMatch.start : -1);
                 
-                // Base Jodi: Chokor Box
-                if((ri === currentTarget.r - 1 && ci === activePattern.baseCol) || (ri === activePattern.start + activePattern.height - 1 && ci === activePattern.baseCol)) {
-                    cls += " base-box";
+                // 1. Fixed Base Jodi (Row 9 of pattern)
+                if (relR === 8 && ci === activeMatch.baseCol) cls += " base-box";
+
+                // 2. Family Marking (Max 2-3 per pattern)
+                if (relR !== -1 && activeMatch.shape[relR][ci]) {
+                    if (cls.indexOf("base-box") === -1) cls += " f-circle";
                 }
-                
-                // Shape Circles
-                if(relR >= 0 && relR < activePattern.height && activePattern.shape[relR][ci]) cls += " f-circle";
-                if(histR >= 0 && histR < activePattern.height && activePattern.shape[histR][ci]) cls += " f-circle";
-                
-                // Cross Connection Marking (Different Color)
-                if(ri === activePattern.crossR && ci === activePattern.crossC) cls += " cross-mark";
-                if(ri === currentTarget.r && ci === currentTarget.c) cls += " predict-mark";
+
+                // 3. Result Marking (Cross Connection)
+                if (ri === activeMatch.resR && ci === activeMatch.resC) cls += " cross-mark";
+                if (currentClick && ri === currentClick.r && ci === currentClick.c) cls += " target-cell";
             }
-            
-            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="findCrossPatterns(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="smartScan(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -97,61 +94,51 @@ function draw() {
 
 function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; }
 
-function findCrossPatterns(r, c) {
+function smartScan(r, c) {
     if(data[r][c] !== "**") return;
-    currentTarget = {r: r, c: c};
-    activePattern = null;
-    
-    // 1. Current Pattern Capture (Up to 10 rows)
-    let lookback = 5; 
-    let currentShape = Array.from({length: lookback}, () => Array(6).fill(0));
-    let baseCol = (c + 1) % 6; // Logic for base jodi position
-    let foundJodiyas = 0;
+    currentClick = {r, c};
+    activeMatch = null;
 
-    for(let i=1; i<=lookback; i++){
-        for(let j=0; j<6; j++){
-            if(data[r-i] && data[r-i][j] !== "**") {
-                currentShape[lookback-i][j] = 1;
-                foundJodiyas++;
-            }
-        }
+    // Capture 10-row Shape
+    let currentShape = Array.from({length: 10}, () => Array(6).fill(0));
+    let baseCol = (c + 1) % 6; // Fixed base jodi position relative to click
+    
+    for(let i=1; i<=10; i++) {
+        if(r-i < 0) break;
+        data[r-i].forEach((v, ci) => { if(v !== "**") currentShape[10-i][ci] = 1; });
     }
 
-    // 2. Search History for Same Shape
     let matches = [];
-    for(let i=0; i < data.length - lookback - 1; i++){
+    // Search history for same base jodi & shape
+    for(let i=0; i < data.length - 11; i++) {
+        if(data[i+10][c] === "**") continue;
+        
         let score = 0;
-        for(let ki=0; ki<lookback; ki++){
-            for(let kj=0; kj<6; kj++){
-                if(currentShape[ki][kj] && data[i+ki][kj] !== "**") score++;
+        for(let kr=0; kr<10; kr++) {
+            for(let kc=0; kc<6; kc++) {
+                if(currentShape[kr][kc] && data[i+kr][kc] !== "**") score++;
             }
         }
-        
-        if(score >= 3 && data[i+lookback][c] !== "**") {
-            // Finding where this jodi came from (Cross connection)
-            let crossRow = i - 2; // Simple cross logic
+
+        if(score >= 3) {
             matches.push({
-                start: i, 
-                height: lookback, 
-                shape: currentShape, 
-                baseCol: baseCol,
-                resR: i+lookback, resC: c, 
-                val: data[i+lookback][c],
-                crossR: Math.max(0, crossRow), crossC: (c + 2) % 6
+                start: i, shape: currentShape, baseCol: baseCol,
+                resR: i+10, resC: c, val: data[i+10][c]
             });
         }
     }
 
     let list = document.getElementById("checkList");
-    list.innerHTML = matches.length ? "" : "Same shape pattern nahi mila.";
+    list.innerHTML = matches.length ? "" : "Same base/shape match nahi mila.";
     matches.slice(0, 3).forEach((m, idx) => {
         let btn = document.createElement("button");
         btn.className = "check-btn";
-        btn.innerHTML = `🚩 <b>Pattern ${idx+1}</b> | Old Rec: ${m.val} <br> Cross-match Row: ${m.crossR + 1}`;
-        btn.onclick = () => { activePattern = m; draw(); document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"}); };
+        btn.innerHTML = `🚩 <b>Check Line ${idx+1}</b> | Fixed Base: Col ${m.baseCol+1} <br> Result Found: ${m.val}`;
+        btn.onclick = () => { activeMatch = m; draw(); document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"}); };
         list.appendChild(btn);
     });
     document.getElementById("future").innerText = matches.slice(0, 3).map(m => m.val).join(" | ") || "-- | -- | --";
+    draw();
 }
 
 function renderLines() {
@@ -162,10 +149,10 @@ function renderLines() {
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const rect = tbl.getBoundingClientRect();
 
-    const drawGroup = (selector, color) => {
+    const drawPath = (selector, color) => {
         let els = Array.from(tbl.querySelectorAll(selector));
         if(els.length < 2) return;
-        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+        ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath();
         els.forEach((el, i) => {
             let r = el.getBoundingClientRect();
             let x = r.left - rect.left + r.width/2;
@@ -175,8 +162,8 @@ function renderLines() {
         ctx.stroke();
     };
 
-    drawGroup(".f-circle", "#3e84ff");
-    drawGroup(".predict-mark, .cross-mark", "#ff3e3e");
+    drawPath(".f-circle, .base-box", "#3e84ff"); // Main Pattern Connection
+    drawPath(".cross-mark, .target-cell", "#ff3e3e"); // Result Cross Connection
 }
 
 function importCSV(input) {
@@ -192,7 +179,7 @@ function importCSV(input) {
     reader.readAsText(input.files[0]);
 }
 function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
-function saveToLocal() { localStorage.setItem("raj_cross_v1", JSON.stringify(data)); alert("Memory Saved!"); }
+function saveToLocal() { localStorage.setItem("raj_final_fix", JSON.stringify(data)); alert("Saved!"); }
 draw();
 </script>
 </body>
