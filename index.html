@@ -3,29 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Ultimate Fix</title>
+<title>Rajdhani AI – Full Vision Fix</title>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #0a0a0a; }
-    body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
-    .table-container { position: relative; display: inline-block; background: #fff; padding: 5px; border-radius: 5px; }
-    table { border-collapse: collapse; font-size: 14px; color: #000; z-index: 10; position: relative; }
-    td, th { border: 1px solid #999; width: 48px; height: 45px; text-align: center; font-weight: bold; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; flex-wrap: wrap; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 10px; }
+    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; }
+    td, th { border: 1px solid #999; width: 45px; height: 42px; text-align: center; font-weight: bold; }
     th { background: #800; color: #fff; }
     
-    .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62,132,255,0.2); }
-    .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255,62,62,0.2); }
-    .f-res { background: rgba(0,255,0,0.3) !important; border: 3px solid var(--green) !important; }
-    .blank { background: #eee !important; cursor: pointer; color: #999; }
+    /* Patterns & Highlights */
+    .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
+    .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
+    .f-res { border: 3px solid var(--green) !important; background: rgba(0, 255, 0, 0.2); }
+    .blank { background: #eee !important; cursor: pointer; border: 1px dashed #777 !important; color: #999; }
 
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-    .card { background: #161616; padding: 15px; border-radius: 10px; border-left: 5px solid var(--gold); }
-    button { padding: 10px 15px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; }
+    .card { background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); }
+    button { padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 5px; border: none; }
     .btn-csv { background: var(--gold); color: #000; }
     .btn-add { background: var(--blue); color: #fff; }
     .btn-save { background: var(--green); color: #000; }
     .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #222; color: var(--gold); border: 1px solid #444; border-radius: 5px; text-align: left; }
+    
+    /* Popup */
+    #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 20px; border: 5px solid var(--gold); z-index: 1000; border-radius: 10px; width: 90%; max-width: 450px; box-shadow: 0 0 100px #000; }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
 </style>
 </head>
 <body>
@@ -35,6 +40,7 @@
     <button class="btn-csv" onclick="document.getElementById('csvFile').click()">📂 Upload CSV</button>
     <button class="btn-add" onclick="addRow()">➕ Add Row</button>
     <button class="btn-save" onclick="saveToLocal()">💾 Save Memory</button>
+    <button onclick="localStorage.clear(); location.reload();" style="background:red; color:white;">🗑️ Reset</button>
 </div>
 
 <center>
@@ -46,13 +52,20 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 Check Lines (80% Match)</h3>
-        <div id="checkList">Click any blank cell to scan...</div>
+        <h3>📍 Check Lines (80% Similarity)</h3>
+        <div id="checkList">Click any blank cell (**) to scan...</div>
     </div>
     <div class="card">
-        <h3>🔮 Future AI</h3>
-        <div id="future" style="font-size: 28px; color: var(--gold); font-weight: bold; text-align: center;">-- | -- | --</div>
+        <h3>🔮 Future AI (3 Pair)</h3>
+        <div id="future" style="font-size: 26px; color: var(--gold); font-weight: bold; text-align: center;">-- | -- | --</div>
     </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <h3 style="text-align:center; color:#800;">Real Record Pattern</h3>
+    <div id="popContent"></div>
+    <center><button onclick="closePopup()" style="margin-top:15px; padding:10px 20px; background:red; color:white; border:none; cursor:pointer;">CLOSE</button></center>
 </div>
 
 <script>
@@ -92,8 +105,7 @@ function importCSV(input) {
             while(cols.length < 5) cols.push("**");
             return cols.slice(0, 5);
         });
-        saveToLocal();
-        draw();
+        saveToLocal(); draw();
     };
     reader.readAsText(input.files[0]);
 }
@@ -102,11 +114,13 @@ function techScan(r, c) {
     if(data[r][c] !== "**") return;
     activePattern = null;
     let pool = [];
+    // 10 weeks depth as per memory
     for(let i=r-1; i>=Math.max(0, r-10); i--) {
         data[i].forEach((v, ci) => { if(v!=="**") pool.push({ri:i, ci:ci, f:fam(v)}); });
     }
-    if(pool.length < 4) return;
+    if(pool.length < 4) return alert("Piche ka data kam hai! Kam se kam 10 rows bhariye.");
 
+    // Pattern creation from blank row
     let selected = [...new Set(pool.map(p => p.f))].sort(() => 0.5 - Math.random()).slice(0, 2);
     let p1 = pool.filter(x => x.f === selected[0]).slice(0, 2);
     let p2 = pool.filter(x => x.f === selected[1]).slice(0, 2);
@@ -129,22 +143,40 @@ function techScan(r, c) {
                 }
             }
         }
+        // 80% Similarity Logic
         if((score/total) >= 0.75 && data[i+shape.length][c] !== "**") {
             matches.push({start: i, shape: shape, resR: i+shape.length, resC: c, val: data[i+shape.length][c], per: Math.round((score/total)*100)});
         }
     }
 
     let list = document.getElementById("checkList");
-    list.innerHTML = "";
+    list.innerHTML = matches.length ? "" : "Koi 80% match nahi mila. Dubara click karein.";
     matches.slice(0, 3).forEach((m, idx) => {
         let btn = document.createElement("button");
         btn.className = "check-btn";
-        btn.innerHTML = `🏁 Line #${idx+1} (${m.per}% Match) | Result: ${m.val}`;
-        btn.onclick = () => { activePattern = m; draw(); };
+        btn.innerHTML = `🏁 Check Line #${idx+1} (${m.per}% Match) | Row: ${m.start+1} | Result: ${m.val}`;
+        btn.onclick = () => { activePattern = m; draw(); showPopup(m); };
         list.appendChild(btn);
     });
     document.getElementById("future").innerText = matches.slice(0, 3).map(m => m.val).join(" | ") || "-- | -- | --";
     draw();
+}
+
+function showPopup(m) {
+    let html = "<table border='1' style='width:100%; border-collapse:collapse; background:white; color:black;'>";
+    for(let i=0; i <= m.shape.length; i++) {
+        html += "<tr>";
+        data[m.start + i].forEach((cell, ci) => {
+            let s = "padding:8px; text-align:center; font-weight:bold;";
+            if(i < m.shape.length && m.shape[i][ci] > 0) s += `background:${m.shape[i][ci]===1?'rgba(62,132,255,0.3)':'rgba(255,62,62,0.3)'}; border-radius:50%;`;
+            if(m.start + i === m.resR && ci === m.resC) s += "background:rgba(0,255,0,0.4); border:2px solid green;";
+            html += `<td style='${s}'>${cell}</td>`;
+        });
+        html += "</tr>";
+    }
+    document.getElementById("popContent").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
 }
 
 function renderLines() {
@@ -170,8 +202,9 @@ function renderLines() {
     });
 }
 
+function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow() { data.push(["**","**","**","**","**"]); draw(); }
-function saveToLocal() { localStorage.setItem("raj_vision_final", JSON.stringify(data)); alert("Vision Saved!"); }
+function saveToLocal() { localStorage.setItem("raj_vision_final", JSON.stringify(data)); alert("Memory Saved!"); }
 draw();
 </script>
 </body>
