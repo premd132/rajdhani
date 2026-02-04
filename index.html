@@ -158,18 +158,32 @@ function drawLines(){
 }
 
 /* ---------------- UTILS ---------------- */
-function importCSV(f){
- let r=new FileReader();
- r.onload=e=>{
-  data=e.target.result.split("\n").filter(x=>x.trim())
-   .map(r=>r.split(",").map(c=>c.trim().padStart(2,"0")));
-  saveToLocal(); draw();
- };
- r.readAsText(f.files[0]);
+function importCSV(input){
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    const rows = e.target.result
+      .split(/\r?\n/)
+      .filter(r => r.trim());
+
+    data = rows.map(row => {
+      let cols = row.split(",").map(c => {
+        c = c.trim();
+        if(c === "" || c === "00") return "**";
+        return c.padStart(2,"0");
+      });
+
+      // force 6 columns (MON–SAT)
+      while(cols.length < 6) cols.push("**");
+      return cols.slice(0,6);
+    });
+
+    saveToLocal();
+    draw();
+  };
+
+  reader.readAsText(input.files[0]);
 }
-function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
-function saveToLocal(){localStorage.setItem("raj_ai_shape",JSON.stringify(data))}
-draw();
 </script>
 
 </body>
