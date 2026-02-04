@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Strict Family Scanner</title>
+<title>Rajdhani AI – Coordinate Master</title>
 <style>
     :root { --gold: #ffd700; --blue: #007bff; --red: #dc3545; --green: #28a745; --bg: #000; }
     body { font-family: 'Arial', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 5px; }
@@ -11,31 +11,32 @@
     .table-container { position: relative; background: #fff; padding: 5px; border-radius: 2px; overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; color: #000; font-size: 16px; table-layout: fixed; }
     td, th { border: 1px solid #000; height: 50px; text-align: center; font-weight: 700; position: relative; }
-    th { background: #fdfd96; color: #000; font-size: 12px; }
+    th { background: #fdfd96; color: #000; font-size: 11px; }
 
-    /* DPBoss Circle & Box Marking */
+    /* DPBoss Professional Marking */
     .f-circle::after {
         content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
-        border: 3px solid var(--blue); border-radius: 50%; box-sizing: border-box;
+        border: 3.5px solid var(--blue); border-radius: 50%; box-sizing: border-box;
     }
     
     .base-box { 
         background: #ffff00 !important; border: 3px solid #000 !important; 
-        color: #000; font-size: 18px; z-index: 6;
+        color: #000; font-size: 18px; z-index: 6; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
     }
 
-    .target-cell { border: 4px solid var(--green) !important; background: #e8f5e9; }
+    .target-cell { border: 4px solid var(--green) !important; background: #e8f5e9; color: #000; }
     .blank { background: #eee !important; color: #ccc; cursor: pointer; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
     
     .toolbar { display: flex; gap: 5px; margin-bottom: 10px; }
-    button { flex: 1; padding: 12px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; }
-    .btn-csv { background: var(--gold); } .btn-save { background: var(--green); color: #fff; }
+    button { flex: 1; padding: 12px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; font-size: 12px; transition: 0.3s; }
+    .btn-csv { background: var(--gold); color: #000; } 
+    .btn-save { background: var(--green); color: #fff; }
+    button:hover { opacity: 0.8; }
 
-    .dashboard { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
-    .card { background: #1a1a1a; padding: 10px; border-left: 4px solid var(--gold); }
-    .check-btn { width: 100%; padding: 15px; background: #333; color: var(--gold); border: 1px solid #444; margin-top: 5px; text-align: left; font-weight: bold;}
+    .card { background: #1a1a1a; padding: 12px; border-left: 5px solid var(--gold); margin-top: 10px; border-radius: 5px; }
+    .check-btn { width: 100%; padding: 15px; background: #2a2a2a; color: var(--gold); border: 1px solid #444; margin-top: 8px; text-align: left; font-weight: bold; border-radius: 6px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -46,25 +47,24 @@
     <button class="btn-save" onclick="saveData()">💾 SAVE DATA</button>
 </div>
 
-<div class="table-container">
+<div class="table-container" id="container">
     <canvas id="mainCanvas"></canvas>
     <table id="tbl"></table>
 </div>
 
-<div class="dashboard">
-    <div class="card">
-        <h3>📍 Check Lines (Strict Family Match)</h3>
-        <div id="checkList">Blank cell par click karein...</div>
-    </div>
-    <div class="card">
-        <h3>🔮 Future AI (3-Pair)</h3>
-        <div id="future" style="font-size: 24px; color: var(--gold); text-align: center; font-weight: bold;">-- | -- | --</div>
-    </div>
+<div class="card">
+    <h3>📍 Check Lines (Fixed Shape & Coordinate)</h3>
+    <div id="checkList">Blank cell click karke shape scan karein...</div>
+</div>
+
+<div class="card">
+    <h3>🔮 Future AI (Top 3 Pairs)</h3>
+    <div id="future" style="font-size: 26px; color: var(--gold); text-align: center; font-weight: bold; padding: 10px; letter-spacing: 2px;">-- | -- | --</div>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_family_v1")) || Array(15).fill(["**","**","**","**","**","**"]);
+let data = JSON.parse(localStorage.getItem("raj_coordinate_v1")) || Array(20).fill(["**","**","**","**","**","**"]);
 let activeMatch = null;
 let lastClick = null;
 
@@ -82,12 +82,16 @@ function draw() {
                 let relR = isCur ? ri - (lastClick.r - 10) : (isHist ? ri - activeMatch.start : -1);
 
                 if (relR !== -1) {
+                    // 1. Base Jodi Spot (Fixed Coordinate)
                     if (relR === activeMatch.baseR && ci === activeMatch.baseC) cls += " base-box";
+                    // 2. Shape Spots (Blue Circles)
                     else if (activeMatch.points.some(p => p.r === relR && p.c === ci)) cls += " f-circle";
                 }
+                // 3. Result Spot
+                if (ri === activeMatch.resR && ci === activeMatch.resC) cls += " target-cell";
                 if (lastClick && ri === lastClick.r && ci === lastClick.c) cls += " target-cell";
             }
-            h += `<td class="${cls}" onclick="analyze(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" onclick="scanShape(${ri},${ci})" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -95,44 +99,48 @@ function draw() {
     setTimeout(renderLines, 100);
 }
 
-function analyze(r, c) {
+function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; }
+
+function scanShape(r, c) {
     if(data[r][c] !== "**") return;
     lastClick = {r, c}; activeMatch = null;
     
-    // 1. Current Pattern Information [cite: 2026-02-03]
-    let baseRowIdx = 7, baseColIdx = (c + 1) % 6; // Fixed Position Logic
-    let baseVal = data[r - (10 - baseRowIdx)][baseColIdx];
-    let baseFamily = fam(baseVal);
-    
-    let patternPoints = [];
+    // 1. Current Shape Capture (Coordinates only)
+    let shapePoints = [];
+    let baseR = 7, baseC = (c === 0) ? 0 : c - 1; // Example: Base 3 rows up, 1 col back
+    let currentBaseFamily = fam(data[r - (10 - baseR)][baseC]);
+
     for(let i=1; i<=10; i++) {
         data[r-i].forEach((v, ci) => {
-            if(v !== "**" && patternPoints.length < 3) patternPoints.push({r: 10-i, c: ci, f: fam(v)});
+            if(v !== "**" && shapePoints.length < 5) {
+                if(!(10-i === baseR && ci === baseC)) shapePoints.push({r: 10-i, c: ci});
+            }
         });
     }
 
+    // 2. Scan History for same "Shape" but any "Value"
     let matches = [];
     for(let i=0; i < data.length - 11; i++) {
-        // Condition: Base jodi MUST be same family [cite: 2026-02-03]
-        let histBaseVal = data[i + baseRowIdx][baseColIdx];
-        if(fam(histBaseVal) !== baseFamily || histBaseVal === "**") continue;
+        // Condition: Base position MUST be same family
+        if(fam(data[i + baseR][baseC]) !== currentBaseFamily) continue;
 
-        // Condition: Nearby 2-3 jodiyas must also be family matches [cite: 2026-02-03]
-        let familyScore = 0;
-        patternPoints.forEach(p => {
-            if(fam(data[i+p.r][p.c]) === p.f) familyScore++;
-        });
+        // Condition: Pattern spots MUST have some value (any value)
+        let coordScore = 0;
+        shapePoints.forEach(p => { if(data[i+p.r][p.c] !== "**") coordScore++; });
 
-        if(familyScore >= 2 && data[i+10][c] !== "**") {
-            matches.push({start: i, points: patternPoints, baseR: baseRowIdx, baseC: baseColIdx, val: data[i+10][c]});
+        if(coordScore >= 2 && data[i+10][c] !== "**") {
+            matches.push({
+                start: i, points: shapePoints, baseR: baseR, baseC: baseC,
+                resR: i+10, resC: c, val: data[i+10][c]
+            });
         }
     }
 
     let list = document.getElementById("checkList");
-    list.innerHTML = matches.length ? "" : "Koi matching family pattern nahi mila.";
+    list.innerHTML = matches.length ? "" : "No coordinate matches found.";
     matches.slice(0, 3).forEach((m, idx) => {
         let btn = document.createElement("button"); btn.className = "check-btn";
-        btn.innerHTML = `✅ Pattern #${idx+1} | Result: ${m.val}`;
+        btn.innerHTML = `📍 Match #${idx+1} | Record: ${m.val} (Base Family Match)`;
         btn.onclick = () => { 
             activeMatch = m; draw(); 
             document.getElementById(`tr-${m.start}`).scrollIntoView({behavior:"smooth", block:"center"});
@@ -163,7 +171,7 @@ function renderLines() {
         });
         ctx.stroke();
     };
-    drawLine(".f-circle, .base-box", "#007bff");
+    drawLine(".f-circle, .base-box", "#007bff"); // Pattern shape connection
 }
 
 function importCSV(input) {
@@ -178,7 +186,7 @@ function importCSV(input) {
     };
     reader.readAsText(input.files[0]);
 }
-function saveData() { localStorage.setItem("raj_family_v1", JSON.stringify(data)); alert("Data Saved!"); }
+function saveData() { localStorage.setItem("raj_coordinate_v1", JSON.stringify(data)); alert("Data Saved!"); }
 draw();
 </script>
 </body>
