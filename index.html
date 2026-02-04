@@ -3,40 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Deep Marking Fix</title>
+<title>Rajdhani AI – Live Analysis Marking</title>
 <style>
     :root { --gold: #ffd700; --blue: #3e84ff; --red: #ff3e3e; --green: #00ff00; --bg: #0a0a0a; }
     body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; padding: 10px; max-height: 500px; overflow-y: auto; }
-    table { border-collapse: collapse; font-size: 13px; color: #000; position: relative; z-index: 10; }
-    td, th { border: 1px solid #999; width: 45px; height: 42px; text-align: center; font-weight: bold; transition: 0.3s; }
+    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
+    .table-container { position: relative; display: inline-block; background: #fff; padding: 10px; border-radius: 5px; max-height: 60vh; overflow-y: auto; }
+    table { border-collapse: collapse; font-size: 14px; color: #000; position: relative; z-index: 10; }
+    td, th { border: 1px solid #999; width: 45px; height: 45px; text-align: center; font-weight: bold; position: relative; }
     th { background: #800; color: #fff; position: sticky; top: 0; }
     
-    /* Marking Styles */
+    /* Live Marking Highlights */
     .f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(62, 132, 255, 0.2); }
     .f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); }
     .f-res { border: 3px solid var(--green) !important; background: rgba(0, 255, 0, 0.3); }
-    .blank { background: #eee !important; cursor: pointer; color: #999; }
-    .match-row { background: #fffde7 !important; } /* Purane record ko highlight karne ke liye */
+    .blank { background: #f0f0f0 !important; cursor: pointer; color: #bbb; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 20; }
-    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-    .card { background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); }
-    .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #222; color: var(--gold); border: 1px solid #444; cursor: pointer; border-radius: 5px; }
+    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .card { background: #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid var(--gold); }
+    button { padding: 10px; cursor: pointer; font-weight: bold; border-radius: 5px; border: none; }
+    .check-btn { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #252525; color: var(--gold); border: 1px solid #444; text-align: left; font-size: 12px; }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
     <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(this)">
-    <button onclick="document.getElementById('csvFile').click()" style="background:var(--gold)">📂 Upload CSV</button>
-    <button onclick="addRow()" style="background:var(--blue); color:#fff">➕ Add Row</button>
-    <button onclick="saveToLocal()" style="background:var(--green)">💾 Save Memory</button>
+    <button onclick="document.getElementById('csvFile').click()" style="background:var(--gold)">📂 CSV</button>
+    <button onclick="addRow()" style="background:var(--blue); color:#fff">➕ Row</button>
+    <button onclick="saveToLocal()" style="background:var(--green)">💾 Save</button>
 </div>
 
 <center>
-    <div class="table-container" id="scrollContainer">
+    <div class="table-container" id="scrollBox">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
@@ -44,8 +44,8 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 Similarity Check Lines</h3>
-        <div id="checkList">Click (**) to scan...</div>
+        <h3>📍 Similarity Marking</h3>
+        <div id="checkList">Click (**) to see old records...</div>
     </div>
     <div class="card">
         <h3>🔮 Future AI</h3>
@@ -55,7 +55,7 @@
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("raj_vision_v3")) || [["**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem("raj_deep_mark")) || [["**","**","**","**","**"]];
 let activePattern = null;
 
 function fam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
@@ -63,7 +63,7 @@ function fam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(fa
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
     data.forEach((row, ri) => {
-        h += `<tr id="row-${ri}">`;
+        h += `<tr id="tr-${ri}">`;
         row.forEach((cell, ci) => {
             let cls = cell === "**" ? "blank" : "";
             if(activePattern && ri >= activePattern.start && ri < activePattern.start + activePattern.shape.length) {
@@ -71,24 +71,24 @@ function draw() {
                 if(p === 1) cls += " f1"; if(p === 2) cls += " f2";
             }
             if(activePattern && ri === activePattern.resR && ci === activePattern.resC) cls += " f-res";
-            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="techScan(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)" onclick="runDeepScan(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("tbl").innerHTML = h;
-    setTimeout(renderLines, 100);
+    setTimeout(renderLines, 150);
 }
 
 function updateCell(r, c, v) { data[r][c] = v.trim() || "**"; }
 
-function techScan(r, c) {
+function runDeepScan(r, c) {
     if(data[r][c] !== "**") return;
     activePattern = null;
     let pool = [];
     for(let i=r-1; i>=Math.max(0, r-10); i--) {
         data[i].forEach((v, ci) => { if(v!=="**") pool.push({ri:i, ci:ci, f:fam(v)}); });
     }
-    if(pool.length < 4) return;
+    if(pool.length < 4) return alert("Piche ka data dalo (min 10 weeks) tabhi niche marking banegi.");
 
     let selected = [...new Set(pool.map(p => p.f))].sort(() => 0.5 - Math.random()).slice(0, 2);
     let p1 = pool.filter(x => x.f === selected[0]).slice(0, 2);
@@ -118,15 +118,16 @@ function techScan(r, c) {
     }
 
     let list = document.getElementById("checkList");
-    list.innerHTML = "";
+    list.innerHTML = matches.length ? "" : "Koi matching record nahi mila.";
     matches.slice(0, 3).forEach((m, idx) => {
         let btn = document.createElement("button");
         btn.className = "check-btn";
-        btn.innerHTML = `🏁 Show Old Record Marking (#${idx+1})`;
+        btn.innerHTML = `⭐ <b>Match #${idx+1} (${m.per}%)</b>: Record Row ${m.start+1} <br> Click to mark in table ↓`;
         btn.onclick = () => { 
             activePattern = m; 
             draw(); 
-            document.getElementById(`row-${m.start}`).scrollIntoView({behavior: "smooth", block: "center"});
+            // Niche purane record tak scroll karega
+            document.getElementById(`tr-${m.start}`).scrollIntoView({behavior: "smooth", block: "center"});
         };
         list.appendChild(btn);
     });
@@ -166,7 +167,7 @@ function importCSV(input) {
     reader.readAsText(input.files[0]);
 }
 function addRow() { data.push(["**","**","**","**","**"]); draw(); }
-function saveToLocal() { localStorage.setItem("raj_vision_v3", JSON.stringify(data)); alert("Saved!"); }
+function saveToLocal() { localStorage.setItem("raj_deep_mark", JSON.stringify(data)); alert("Vision Saved!"); }
 draw();
 </script>
 </body>
