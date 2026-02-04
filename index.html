@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – Shape Based Pattern (Final)</title>
+<title>Rajdhani AI – Shape Based Pattern (Stable)</title>
 
 <style>
 :root{
- --gold:#ffd700; --blue:#3e84ff; --red:#ff3e3e;
- --green:#00ff00; --purple:#b84cff; --bg:#0a0a0a;
+ --gold:#ffd700; --blue:#3e84ff; --green:#00ff00;
+ --purple:#b84cff; --bg:#0a0a0a;
 }
 body{background:var(--bg);color:#fff;font-family:sans-serif;margin:0;padding:10px}
 .toolbar{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
@@ -34,10 +34,10 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 <body>
 
 <div class="toolbar">
- <input type="file" id="csvFile" accept=".csv" hidden onchange="importCSV(this)">
- <button style="background:var(--gold)" onclick="csvFile.click()">CSV Load</button>
- <button style="background:var(--blue);color:#fff" onclick="addRow()">Add Row</button>
- <button style="background:var(--green)" onclick="saveToLocal()">Save</button>
+ <input type="file" id="csvFile" accept=".csv" hidden>
+ <button style="background:var(--gold)" id="csvBtn">CSV Load</button>
+ <button style="background:#3e84ff;color:#fff" id="addBtn">Add Row</button>
+ <button style="background:#00ff00" id="saveBtn">Save</button>
 </div>
 
 <div class="table-container">
@@ -57,25 +57,32 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 </div>
 
 <script>
+/* ---------- SAFE DOM ---------- */
+const tbl = document.getElementById("tbl");
+const cvs = document.getElementById("cvs");
+const checkList = document.getElementById("checkList");
+const future = document.getElementById("future");
+const csvFile = document.getElementById("csvFile");
+
 /* ---------- DATA ---------- */
 let data = JSON.parse(localStorage.getItem("raj_ai_shape"))
   || [["**","**","**","**","**","**"]];
 
 let active = null;
 
-/* ---------- DRAW TABLE ---------- */
+/* ---------- DRAW ---------- */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls = c==="**" ? "blank" : "";
+   let cls = c==="**"?"blank":"";
    if(active){
     let v = active.mask?.[ri-active.start]?.[ci];
-    if(v===1) cls+=" fam";
-    if(v===9) cls+=" base";
-    if(v===8) cls+=" cross";
-    if(ri===active.resR && ci===active.resC) cls+=" res";
+    if(v===1)cls+=" fam";
+    if(v===9)cls+=" base";
+    if(v===8)cls+=" cross";
+    if(ri===active.resR && ci===active.resC)cls+=" res";
    }
    h+=`<td class="${cls}" contenteditable
         onclick="scan(${ri},${ci})"
@@ -87,53 +94,50 @@ function draw(){
  setTimeout(drawLines,60);
 }
 
-/* ---------- SCAN LOGIC ---------- */
+/* ---------- SCAN ---------- */
 function scan(r,c){
- if(data[r][c] !== "**") return;
+ if(data[r][c]!=="**") return;
 
  let mask = Array.from({length:10},()=>Array(6).fill(0));
- let base = null, marks = 0;
+ let base=null, marks=0;
 
  for(let i=1;i<=10;i++){
   if(!data[r-i]) break;
   for(let j=0;j<6;j++){
-   if(data[r-i][j] !== "**"){
-    mask[10-i][j] = 1;
+   if(data[r-i][j]!=="**"){
+    mask[10-i][j]=1;
     marks++;
-    if(!base) base = {ri:r-i, ci:j};
+    if(!base) base={ri:r-i,ci:j};
    }
   }
  }
- if(marks < 3 || !base) return;
+ if(marks<3 || !base) return;
 
- mask[base.ri-(r-10)][base.ci] = 9;
+ let bi = base.ri-(r-10);
+ if(bi>=0 && bi<10) mask[bi][base.ci]=9;
 
- let matches = [];
+ let matches=[];
  for(let i=0;i<=data.length-11;i++){
-  let hit = 0;
+  let hit=0;
   for(let k=0;k<10;k++){
    for(let j=0;j<6;j++){
-    if(mask[k][j] && data[i+k][j] !== "**") hit++;
+    if(mask[k][j] && data[i+k][j]!=="**") hit++;
    }
   }
-  if(hit >= 3 && data[i+10][c] !== "**"){
-   let m = JSON.parse(JSON.stringify(mask));
-   m[10-(r-(i+10))]?.[c] = 8;
-   matches.push({
-     start:i, mask:m,
-     resR:i+10, resC:c,
-     val:data[i+10][c],
-     per:hit
-   });
+  if(hit>=3 && data[i+10][c]!=="**"){
+   let m=JSON.parse(JSON.stringify(mask));
+   let ci = 10-(r-(i+10));
+   if(ci>=0 && ci<10) m[ci][c]=8;
+   matches.push({start:i,mask:m,resR:i+10,resC:c,val:data[i+10][c],per:hit});
   }
  }
 
- checkList.innerHTML = "";
+ checkList.innerHTML="";
  matches.slice(0,3).forEach((m,i)=>{
-  let b = document.createElement("button");
+  let b=document.createElement("button");
   b.className="check-btn";
   b.innerHTML=`Pattern ${i+1} | Match ${m.per}`;
-  b.onclick=()=>{ active=m; draw(); };
+  b.onclick=()=>{active=m;draw();};
   checkList.appendChild(b);
  });
 
@@ -143,60 +147,57 @@ function scan(r,c){
 /* ---------- LINES ---------- */
 function drawLines(){
  if(!active) return;
- let ctx = cvs.getContext("2d");
- cvs.width = tbl.offsetWidth;
- cvs.height = tbl.offsetHeight;
+ let ctx=cvs.getContext("2d");
+ cvs.width=tbl.offsetWidth;
+ cvs.height=tbl.offsetHeight;
  ctx.clearRect(0,0,cvs.width,cvs.height);
-
- let rect = tbl.getBoundingClientRect();
+ let rect=tbl.getBoundingClientRect();
 
  ["fam","cross","res"].forEach(cls=>{
-  let els = [...tbl.querySelectorAll("."+cls)];
+  let els=[...tbl.querySelectorAll("."+cls)];
   if(!els.length) return;
-  ctx.strokeStyle = cls==="fam"?"#3e84ff":cls==="cross"?"#b84cff":"#00ff00";
-  ctx.lineWidth = 3;
+  ctx.strokeStyle=cls==="fam"?"#3e84ff":cls==="cross"?"#b84cff":"#00ff00";
+  ctx.lineWidth=3;
   ctx.beginPath();
   els.forEach((e,i)=>{
-   let r = e.getBoundingClientRect();
-   let x = r.left-rect.left+r.width/2;
-   let y = r.top-rect.top+r.height/2;
-   i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+   let r=e.getBoundingClientRect();
+   let x=r.left-rect.left+r.width/2;
+   let y=r.top-rect.top+r.height/2;
+   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
   });
   ctx.stroke();
  });
 }
 
-/* ---------- CSV IMPORT ---------- */
-function importCSV(input){
- const reader = new FileReader();
- reader.onload = e => {
-  const rows = e.target.result.split(/\r?\n/).filter(r=>r.trim());
-  data = rows.map(row=>{
-   let cols = row.split(",").map(c=>{
-    c = c.trim();
-    if(c==="" || c==="00") return "**";
-    return c.padStart(2,"0");
+/* ---------- CSV ---------- */
+csvFile.onchange = ()=>{
+ const reader=new FileReader();
+ reader.onload=e=>{
+  data=e.target.result.split(/\r?\n/).filter(r=>r.trim()).map(r=>{
+   let c=r.split(",").map(v=>{
+    v=v.trim();
+    if(v===""||v==="00") return "**";
+    return v.padStart(2,"0");
    });
-   while(cols.length < 6) cols.push("**");
-   return cols.slice(0,6);
+   while(c.length<6)c.push("**");
+   return c.slice(0,6);
   });
   saveToLocal();
   draw();
  };
- reader.readAsText(input.files[0]);
-}
+ reader.readAsText(csvFile.files[0]);
+};
 
 /* ---------- UTILS ---------- */
-function addRow(){
- data.push(["**","**","**","**","**","**"]);
- draw();
-}
+document.getElementById("csvBtn").onclick=()=>csvFile.click();
+document.getElementById("addBtn").onclick=()=>{data.push(["**","**","**","**","**","**"]);draw();};
+document.getElementById("saveBtn").onclick=saveToLocal;
 
 function saveToLocal(){
- localStorage.setItem("raj_ai_shape", JSON.stringify(data));
+ localStorage.setItem("raj_ai_shape",JSON.stringify(data));
 }
 
-draw();   // initial render
+draw();
 </script>
 
 </body>
