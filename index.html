@@ -2,170 +2,161 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jodi Family CSV System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Kalyan Pro – Dual Family AI</title>
 <style>
-body{
-  font-family:Arial;
-  background:#f4f4f4;
-  margin:10px;
-}
-h2{text-align:center}
-button,input{padding:6px;margin:5px}
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    
+    /* Layout & Table [cite: 2026-02-03] */
+    .table-container { position: relative; background: #fff; border-radius: 4px; overflow: hidden; display: inline-block; }
+    table { border-collapse: collapse; font-size: 13px; color: #000; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 10px; text-align: center; font-weight: bold; width: 40px; height: 40px; position: relative; }
+    th { background: #800000; color: white; }
+    
+    /* Marking Styles */
+    .f1-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
+    .f2-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--red); border-radius: 50%; box-sizing: border-box; }
+    .base-box { border: 3px solid #000 !important; background: #ffff00 !important; }
+    .blank { background: #eee !important; cursor: pointer; color: #aaa; }
 
-#wrap{
-  background:#fff;
-  padding:10px;
-  overflow:auto;
-}
-
-table{
-  border-collapse:collapse;
-  font-size:14px;
-}
-td,th{
-  border:1px solid #999;
-  padding:6px;
-  text-align:center;
-  min-width:55px;
-}
-td[contenteditable]{
-  background:#fffbe6;
-}
-
-/* family highlight */
-.family{
-  background:#e6f0ff;
-  font-weight:bold;
-}
+    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-top: 15px; }
+    .check-btn { background: #2a2a2a; color: var(--gold); padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 4px; border: 1px solid #444; width: 100%; text-align: left; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
 </style>
 </head>
-
 <body>
 
-<h2>Jodi Family CSV System</h2>
+<h2 style="text-align:center; color:var(--gold);">🏆 DUAL-FAMILY PATTERN SYSTEM</h2>
 
-<input type="file" id="csvFile" accept=".csv">
-<button onclick="addRow()">➕ Add Row</button>
-<button onclick="applyFamily()">🔁 Apply Family</button>
-<button onclick="clearAll()">🗑 Clear</button>
+<center>
+    <div class="table-container">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
+    </div>
+</center>
 
-<div id="wrap">
-  <table id="chart"></table>
+<div class="card">
+    <h3>📍 Similarity Checks (2+2 Family Match)</h3>
+    <div id="checks">Blank (**) par click karke 10-row scan karein...</div>
+</div>
+
+<div class="card">
+    <h3>🔮 Future AI (3-Pair)</h3>
+    <div id="future" style="font-size: 24px; color: var(--gold); text-align: center; font-weight: bold;">-- | -- | --</div>
 </div>
 
 <script>
-// ================= FAMILY DATA =================
-const FAMILY = {
- "22":["22","27","72","77"],
- "11":["11","61","66","16"],
- "33":["33","83","88","38"],
- "99":["99","44","49","94"],
- "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"],  
- "13":["13","18","31","36","63","68","81","86"],  
- "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"],  
- "23":["23","28","32","37","73","78","82","87"],  
- "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"],  
- "34":["34","39","43","48","84","89","93","98"],  
- "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
-};
+const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+let data = JSON.parse(localStorage.getItem("dual_fam_v1")) || Array(20).fill(["36","13","**","70","**","15"]);
+let activeMatch = null;
 
-const table=document.getElementById("chart");
+function getFam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
-// ================= LOAD LOCAL =================
-const saved=localStorage.getItem("jodiData");
-if(saved) buildTable(JSON.parse(saved));
-
-// ================= SAVE =================
-function save(){
-  const data=[];
-  [...table.rows].forEach(r=>{
-    let row=[];
-    [...r.cells].forEach(c=>row.push(c.innerText.trim()));
-    data.push(row);
-  });
-  localStorage.setItem("jodiData",JSON.stringify(data));
-}
-
-// ================= BUILD TABLE =================
-function buildTable(data){
-  table.innerHTML="";
-  data.forEach(row=>{
-    const tr=document.createElement("tr");
-    row.forEach(val=>{
-      const td=document.createElement("td");
-      td.innerText=val;
-      td.contentEditable=true;
-      td.oninput=save;
-      tr.appendChild(td);
+function draw() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((row, ri) => {
+        h += "<tr>";
+        row.forEach((cell, ci) => {
+            let cls = cell === "**" ? "blank" : "";
+            if(activeMatch) {
+                let isHist = (ri >= activeMatch.start && ri < activeMatch.start + 10);
+                if(isHist) {
+                    let relR = ri - activeMatch.start;
+                    let p = activeMatch.points.find(p => p.r === relR && p.c === ci);
+                    if(p) cls += p.fType === 1 ? " f1-circle" : " f2-circle";
+                    if(relR === 9 && ci === activeMatch.targetCol) cls += " base-box";
+                }
+            }
+            h += `<td class="${cls}" onclick="findDualPattern(${ri},${ci})">${cell}</td>`;
+        });
+        h += "</tr>";
     });
-    table.appendChild(tr);
-  });
+    document.getElementById("tbl").innerHTML = h;
+    if(activeMatch) setTimeout(drawLines, 100);
 }
 
-// ================= CSV UPLOAD =================
-document.getElementById("csvFile").addEventListener("change",e=>{
-  const file=e.target.files[0];
-  if(!file) return;
+function findDualPattern(r, c) {
+    if(data[r][c] !== "**") return;
+    
+    // 1. Identify two different families in the last 10 rows [cite: 2026-02-03]
+    let famCounts = {};
+    let patternPoints = [];
+    
+    for(let i=1; i<=10; i++) {
+        if(r-i < 0) continue;
+        data[r-i].forEach((val, ci) => {
+            if(val !== "**") {
+                let f = getFam(val);
+                famCounts[f] = (famCounts[f] || 0) + 1;
+                patternPoints.push({r: 10-i, c: ci, f: f});
+            }
+        });
+    }
 
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const rows=reader.result
-      .trim()
-      .split(/\r?\n/)
-      .map(l=>l.split(",").map(v=>v.trim()));
-    buildTable(rows);
-    save();
-  };
-  reader.readAsText(file);
-});
+    // Pick top 2 families that have at least 2 jodis each
+    let sortedFams = Object.keys(famCounts).filter(f => famCounts[f] >= 2).slice(0, 2);
+    if(sortedFams.length < 2) { alert("Dono families ki 2-2 jodiyan nahi mili!"); return; }
 
-// ================= ADD ROW =================
-function addRow(){
-  const tr=document.createElement("tr");
-  for(let i=0;i<6;i++){
-    const td=document.createElement("td");
-    td.contentEditable=true;
-    td.oninput=save;
-    tr.appendChild(td);
-  }
-  table.appendChild(tr);
-  save();
-}
+    let finalPoints = patternPoints.filter(p => sortedFams.includes(p.f)).slice(0, 4);
+    finalPoints.forEach((p, idx) => p.fType = (p.f === sortedFams[0] ? 1 : 2));
 
-// ================= FAMILY APPLY =================
-function applyFamily(){
-  // clear old
-  [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("family"));
+    // 2. Search history for same "Shape" & "Dual Family" [cite: 2026-02-03]
+    let matches = [];
+    for(let i=0; i < data.length - 11; i++) {
+        let ok = true;
+        let histF1 = getFam(data[i + finalPoints[0].r][finalPoints[0].c]);
+        let histF2 = getFam(data[i + finalPoints.find(p => p.fType === 2).r][finalPoints.find(p => p.fType === 2).c]);
 
-  [...table.rows].forEach(row=>{
-    [...row.cells].forEach(cell=>{
-      const v=cell.innerText.trim();
-      if(!v) return;
+        finalPoints.forEach(p => {
+            let currentHistFam = getFam(data[i+p.r][p.c]);
+            if(p.fType === 1 && currentHistFam !== histF1) ok = false;
+            if(p.fType === 2 && currentHistFam !== histF2) ok = false;
+        });
 
-      for(const key in FAMILY){
-        if(FAMILY[key].includes(v)){
-          cell.classList.add("family");
-          break;
+        if(ok && data[i+10][c] !== "**") {
+            matches.push({start: i, points: finalPoints, targetCol: c, val: data[i+10][c]});
         }
-      }
+    }
+
+    displayResults(matches);
+}
+
+function displayResults(matches) {
+    let div = document.getElementById("checks");
+    div.innerHTML = matches.length ? "" : "No Dual-Family Match found.";
+    matches.slice(0, 3).forEach((m, i) => {
+        let b = document.createElement("div"); b.className = "check-btn";
+        b.innerHTML = `🔥 Dual-Match #${i+1} | Result: ${m.val}`;
+        b.onclick = () => { activeMatch = m; draw(); };
+        div.appendChild(b);
     });
-  });
+    document.getElementById("future").innerText = matches.slice(0,3).map(m => m.val).join(" | ") || "-- | -- | --";
 }
 
-// ================= CLEAR =================
-function clearAll(){
-  if(confirm("Delete all data?")){
-    table.innerHTML="";
-    localStorage.removeItem("jodiData");
-  }
+function drawLines() {
+    const cvs = document.getElementById("mainCanvas"); const ctx = cvs.getContext("2d");
+    const tbl = document.getElementById("tbl");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const rect = tbl.getBoundingClientRect();
+
+    const drawLine = (cls, color) => {
+        let els = Array.from(tbl.querySelectorAll(cls));
+        if(els.length < 2) return;
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+        els.forEach((el, i) => {
+            let r = el.getBoundingClientRect();
+            let x = r.left - rect.left + r.width/2;
+            let y = r.top - rect.top + r.height/2;
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+    };
+    drawLine(".f1-circle", "blue"); drawLine(".f2-circle", "red");
 }
+
+draw();
 </script>
-
 </body>
 </html>
