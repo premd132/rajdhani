@@ -2,154 +2,146 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V25 - Total Theory Pro</title>
+<title>Kalyan AI V26 - Master Console</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00d2ff; --bg: #050505; --row: #1a1a1a; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff3131; --bg: #0d0d0d; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .header-panel { border: 2px solid var(--gold); background: var(--row); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-    
-    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
+    /* Control Panel */
+    .master-panel { background: #1a1a1a; border: 2px solid var(--gold); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; font-size: 14px; }
     .btn:hover { background: var(--gold); color: #000; }
+    .btn-save { background: #28a745; border: none; }
 
-    .matrix-box { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; }
-    td, th { border: 1px solid #222; width: 48px; height: 48px; text-align: center; position: relative; }
-    th { background: #400; color: #fff; font-size: 10px; }
+    /* Matrix Table Styling [cite: 2026-02-03] */
+    .table-container { background: #fff; padding: 15px; border-radius: 8px; display: inline-block; position: relative; margin-top: 10px; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 20px; }
+    td, th { border: 2px solid #333; width: 55px; height: 55px; text-align: center; position: relative; cursor: text; }
+    th { background: #600; color: #fff; font-size: 12px; height: 30px; }
 
-    /* Pattern Marking [cite: 2026-02-03] */
-    .blank { background: #f0f0f0 !important; cursor: cell; }
-    .circle-mark::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; }
-    .source-highlight { background: #ffeb3b !important; border: 2px solid red !important; }
-    .total-badge { position: absolute; bottom: -2px; right: 0; font-size: 8px; color: blue; font-weight: bold; }
+    /* Logical Highlights [cite: 2026-02-03] */
+    .blank-cell { background: #f0f0f0 !important; color: #999; }
+    .source-origin { background: #ffff00 !important; border: 3px solid var(--red) !important; box-shadow: 0 0 10px gold; } /* Highlight source pair */
+    .target-cell { background: rgba(255, 0, 0, 0.1) !important; border: 4px solid var(--red) !important; } /* Highlight prediction cell */
+    .pattern-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
 
-    .future-analysis { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; }
-    .stat-row { display: flex; justify-content: space-around; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-    .stat-box { font-size: 12px; color: var(--gold); }
-    .stat-box b { display: block; font-size: 20px; color: #fff; }
-
-    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; }
-    .popup-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 20px; border-radius: 10px; z-index: 101; text-align: center; width: 280px; }
+    /* Prediction Display */
+    .prediction-box { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 25px; text-align: center; }
+    .stat-grid { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+    .stat-item { background: #222; padding: 10px; border-radius: 8px; width: 90px; border-top: 3px solid var(--gold); }
+    .stat-item span { font-size: 10px; color: #aaa; }
+    .stat-item b { font-size: 28px; color: var(--gold); display: block; }
 </style>
 </head>
 <body>
 
-<div class="header-panel">
-    <h2 style="margin:0; color:var(--gold);">Satta Total Oracle V25</h2>
-    <div style="margin-top:10px;">
-        <button class="btn" onclick="document.getElementById('csv').click()">📂 LOAD RECORD</button>
-        <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-        <button class="btn" onclick="addRow()" style="color:var(--gold)">➕ ADD WEEK</button>
-        <button class="btn" onclick="saveData()" style="background:#28a745; border:none;">💾 SYNC AI</button>
-    </div>
+<div class="master-panel">
+    <h2 style="margin:0; color:var(--gold);">🎯 KALYAN AI: MASTER CONSOLE V26</h2>
+    <p style="color:#0f0; font-family:monospace; font-size:12px; margin:10px 0;">STATUS: CELLS ARE EDITABLE | PATTERN SCANNING ACTIVE</p>
+    <button class="btn" onclick="document.getElementById('csvIn').click()">📂 LOAD RECORD (CSV)</button>
+    <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
+    <button class="btn" onclick="addRow()">➕ ADD ROW</button>
+    <button class="btn btn-save" onclick="saveData()">💾 SYNC DATA</button>
 </div>
 
 <center>
-    <div class="matrix-box">
+    <div class="table-container">
         <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="future-analysis">
-    <div class="stat-row">
-        <div class="stat-box">Predicted Total<b id="predTotal">--</b></div>
-        <div class="stat-box">Odd/Even<b id="oddEven">--</b></div>
-        <div class="stat-box">Confidence<b id="conf">0%</b></div>
+<div class="prediction-box">
+    <h3 style="margin:0; color:var(--blue); letter-spacing:1px;">🔮 FUTURE PREDICTION & TOTAL ANALYSIS</h3>
+    <div class="stat-grid">
+        <div class="stat-item"><span>JACKPOT</span><b id="j1">--</b></div>
+        <div class="stat-item"><span>SUPPORT</span><b id="j2">--</b></div>
+        <div class="stat-item"><span>TOTAL</span><b id="jTotal">--</b></div>
     </div>
-    <div style="display:flex; gap:10px; justify-content:center;">
-        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">MAIN<b style="display:block; font-size:24px; color:var(--gold);" id="f1">--</b></div>
-        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">SUPP<b style="display:block; font-size:24px; color:var(--gold);" id="f2">--</b></div>
-        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">CUT<b style="display:block; font-size:24px; color:var(--gold);" id="f3">--</b></div>
-    </div>
-    <button onclick="checkPopup()" style="width:100%; padding:15px; margin-top:15px; background:var(--blue); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🔍 CHECK LINE RECORD (POPUP)</button>
+    <button onclick="showRecordPopup()" style="width:100%; padding:15px; background:var(--blue); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">🔍 CHECK CONNECTION LINE (POPUP)</button>
 </div>
 
-<div class="popup-overlay" id="overlay" onclick="closePopup()"></div>
-<div class="popup-card" id="popup" style="display:none;">
-    <h3 style="margin-top:0">Historical Mirror Match</h3>
-    <div id="popBody" style="font-size:22px; font-weight:bold; margin:15px 0;"></div>
-    <p style="font-size:11px; color:#666;">This jodi was derived using the 'Weekly Total Mirror' logic from your old CSV records.</p>
+<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100;"></div>
+<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; color:#000; padding:25px; border-radius:15px; z-index:101; text-align:center; width:280px; border:4px solid var(--blue);">
+    <h3 style="margin-top:0">Pattern Found!</h3>
+    <div id="popVal" style="font-size:30px; font-weight:bold; margin:15px 0; color:#c00;"></div>
+    <p style="font-size:12px; color:#555;">Matching source row from history established.</p>
     <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem("v25_total_ai")) || Array(20).fill(["**","**","**","**","**","**"]);
-let matchData = null;
+const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+
+let db = JSON.parse(localStorage.getItem("v26_master")) || Array(20).fill(["**","**","**","**","**","**"]);
+let meta = null;
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getSum(v){ if(v==="**") return null; let s = parseInt(v[0]) + parseInt(v[1]); return s > 9 ? s % 10 : s; }
+function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
+function getSum(v){ if(v==="**") return null; let s = (parseInt(v[0])||0) + (parseInt(v[1])||0); return s > 9 ? s % 10 : s; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = c === "**" ? "blank" : "";
-            let sum = getSum(c);
-            if(matchData) {
-                if(ri === matchData.sR && ci === matchData.tC) cls += " source-highlight";
-                matchData.pts.forEach(p => { if(ri === matchData.sR + p.dr && ci === p.dc) cls += " circle-mark"; });
+            let cls = c === "**" ? "blank-cell" : "";
+            if(meta) {
+                if(ri === meta.tR && ci === meta.tC) cls += " target-cell";
+                if(ri === meta.sR && ci === meta.tC) cls += " source-origin";
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " pattern-circle"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="totalScan(${ri},${ci})">${c}${sum!==null?`<span class="total-badge">${sum}</span>`:''}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="scanPattern(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("mainTbl").innerHTML = h;
 }
 
-function totalScan(r, c) {
-    if(db[r][c] !== "**") { matchData = null; draw(); return; }
+function scanPattern(r, c) {
+    if(db[r][c] !== "**") { meta = null; draw(); return; }
     
-    // Total Pattern Discovery (10 Weeks) [cite: 2026-02-03]
+    // Pattern search within last 10 weeks [cite: 2026-02-03]
     let dna = [];
     for(let i=1; i<=10; i++) {
-        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, sum: getSum(v)}); });
+        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, f: getF(v)}); });
     }
 
-    let results = {};
-    let best = null;
+    let scores = {};
+    let topMatch = null;
 
     for(let i=0; i < db.length - 1; i++) {
         if(i >= r-1) continue;
-        let score = 0;
+        let s = 0;
         dna.forEach(p => {
             if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
-                if(db[i+p.dr][p.dc] === p.val) score += 100;
-                else if(getSum(db[i+p.dr][p.dc]) === p.sum) score += 40; // Total Match Weight
+                if(db[i+p.dr][p.dc] === p.val) s += 100; // Perfect match
+                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 40; // Family match
             }
         });
 
-        if(score > 40 && db[i][c] !== "**") {
-            results[db[i][c]] = (results[db[i][c]] || 0) + score;
-            if(!best || score > best.score) best = { sR: i, tR: r, tC: c, score: score, pts: dna.slice(0,5) };
+        if(s > 40 && db[i][c] !== "**") {
+            scores[db[i][c]] = (scores[db[i][c]] || 0) + s;
+            if(!topMatch || s > topMatch.score) topMatch = { sR: i, tR: r, tC: c, score: s, pts: dna.slice(0,6) };
         }
     }
 
-    let res = Object.keys(results).sort((a,b) => results[a] - results[b]);
-    let topJodi = res[0] || "15";
-    document.getElementById("f1").innerText = topJodi;
-    document.getElementById("f2").innerText = res[1] || "60";
-    document.getElementById("f3").innerText = res[2] || "01";
-    
-    let t = getSum(topJodi);
-    document.getElementById("predTotal").innerText = t;
-    document.getElementById("oddEven").innerText = t % 2 === 0 ? "EVEN" : "ODD";
-    document.getElementById("conf").innerText = best ? "95%" : "40%";
-    
-    matchData = best;
+    let res = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+    document.getElementById("j1").innerText = res[0] || "??";
+    document.getElementById("j2").innerText = res[1] || "??";
+    document.getElementById("jTotal").innerText = getSum(res[0]) || "--";
+    meta = topMatch;
     draw();
 }
 
-function checkPopup() {
-    if(!matchData) return;
+function showRecordPopup() {
+    if(!meta) return alert("Bhai, pehle khali cell par click karein!");
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
-    document.getElementById("popBody").innerText = "Historical Pair: " + db[matchData.sR][matchData.tC];
+    document.getElementById("popVal").innerText = db[meta.sR][meta.tC];
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem("v25_total_ai", JSON.stringify(db)); alert("Total Theory Synced!"); }
+function saveData() { localStorage.setItem("v26_master", JSON.stringify(db)); alert("Sync Complete!"); }
 function importCSV(input) {
     let reader = new FileReader();
     reader.onload = () => {
