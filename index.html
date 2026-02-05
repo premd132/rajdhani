@@ -3,165 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satta Matka AI Predictor Pro</title>
+<title>Kalyan Dynamic AI Predictor</title>
 <style>
-    :root { --gold: #ffd700; --blue: #007bff; --red: #ff0000; --green: #28a745; --bg: #0d0d0d; --panel: #1a1a1a; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .header { text-align: center; padding: 10px; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
-    .header h1 { color: var(--gold); margin: 0; font-size: 22px; text-transform: uppercase; }
-
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 15px; background: var(--panel); padding: 10px; border-radius: 8px; }
-    button { padding: 10px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s; font-size: 13px; }
-    .btn-load { background: var(--gold); color: #000; }
-    .btn-add { background: var(--blue); color: #fff; }
-    .btn-save { background: var(--green); color: #fff; }
-    .btn-clear { background: var(--red); color: #fff; }
-
-    .table-container { position: relative; background: #fff; padding: 5px; border-radius: 4px; overflow-x: auto; text-align: center; }
-    table { border-collapse: collapse; margin: 0 auto; color: #000; font-size: 16px; width: 100%; max-width: 600px; }
-    td, th { border: 1px solid #999; width: 50px; height: 50px; text-align: center; font-weight: bold; position: relative; }
-    th { background: #800000; color: #fff; font-size: 12px; }
+    .toolbar { background: var(--panel); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; border: 1px solid #444; }
     
-    .blank { background: #e0e0e0 !important; cursor: pointer; color: #888; transition: 0.3s; }
-    .blank:hover { background: #d0d0d0 !important; border: 2px solid var(--gold); }
-    .highlight-ai { border: 3px solid var(--blue) !important; background: rgba(0, 123, 255, 0.1); }
-    .highlight-base { border: 3px solid var(--red) !important; background: rgba(255, 0, 0, 0.1); }
-
-    .prediction-panel { background: var(--panel); padding: 20px; border-radius: 8px; margin-top: 15px; border-left: 5px solid var(--gold); }
-    .prediction-panel h2 { color: var(--gold); margin-top: 0; font-size: 18px; }
-    .res-grid { display: flex; gap: 15px; justify-content: space-around; text-align: center; }
-    .res-box { flex: 1; padding: 15px; background: #262626; border-radius: 6px; border: 1px solid #444; }
-    .res-val { font-size: 28px; font-weight: bold; color: var(--gold); display: block; margin-top: 5px; }
+    .table-container { position: relative; background: #fff; padding: 5px; border-radius: 4px; overflow-x: auto; display: inline-block; }
+    table { border-collapse: collapse; font-size: 14px; color: #000; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 42px; height: 42px; cursor: pointer; }
+    th { background: #800000; color: white; }
     
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+    .blank { background: #f0f0f0 !important; color: #ccc; }
+    .active-predict { border: 3px solid var(--blue) !important; background: #e3f2fd !important; }
+
+    .ai-card { background: var(--panel); padding: 20px; border-radius: 10px; border-top: 4px solid var(--gold); margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .result-row { display: flex; gap: 10px; margin-top: 15px; }
+    .res-item { flex: 1; background: #262626; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+    .res-item span { display: block; font-size: 11px; color: #aaa; text-transform: uppercase; }
+    .res-item b { font-size: 24px; color: var(--gold); display: block; margin-top: 5px; }
+    
+    button { padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>🏆 Satta Matka Future AI Predictor</h1>
-</div>
-
 <div class="toolbar">
-    <input type="file" id="csvInput" style="display:none" onchange="handleCSV(this)">
-    <button class="btn-load" onclick="document.getElementById('csvInput').click()">📂 LOAD CSV</button>
-    <button class="btn-add" onclick="addRow()">➕ ADD ROW</button>
-    <button class="btn-save" onclick="saveToLocal()">💾 SAVE TO LOCAL</button>
-    <button class="btn-clear" onclick="clearStorage()">🗑️ RESET</button>
+    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
+    <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
+    <button style="background:var(--blue); color:#fff" onclick="addRow()">➕ ADD ROW</button>
+    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SAVE DATA</button>
 </div>
 
 <center>
     <div class="table-container">
-        <canvas id="lineCanvas"></canvas>
-        <table id="mainTable"></table>
+        <table id="tbl"></table>
     </div>
 </center>
 
-<div id="aiPanel" class="prediction-panel" style="display:none;">
-    <h2>🔮 AI Intelligence Prediction</h2>
-    <div class="res-grid">
-        <div class="res-box">
-            <span>Primary Pair</span>
-            <span id="p1" class="res-val">--</span>
-        </div>
-        <div class="res-box">
-            <span>Secondary Pair</span>
-            <span id="p2" class="res-val">--</span>
-        </div>
-        <div class="res-box">
-            <span>Bonus Support</span>
-            <span id="p3" class="res-val">--</span>
-        </div>
+<div class="ai-card" id="predictionView" style="display:none">
+    <h3 style="margin:0; color:var(--gold)">🔮 AI Brain Analysis: <span id="cellInfo" style="color:#fff; font-size:14px"></span></h3>
+    <div class="result-row">
+        <div class="res-item"><span>Primary</span><b id="v1">--</b></div>
+        <div class="res-item"><span>Strong</span><b id="v2">--</b></div>
+        <div class="res-item"><span>Support</span><b id="v3">--</b></div>
     </div>
-    <p id="logicInfo" style="font-size: 12px; color: #aaa; margin-top: 10px; text-align: center;"></p>
+    <p id="debug" style="font-size: 10px; color: #666; margin-top: 10px;"></p>
 </div>
 
 <script>
+// Family Data [cite: 2026-02-03]
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let chartData = JSON.parse(localStorage.getItem("matka_ai_data")) || [
-    ["56","**","**","**","65","**"],
-    ["**","**","**","**","**","**"],
-    ["70","**","15","**","**","**"],
-    ["**","**","**","**","**","**"]
-];
+let data = JSON.parse(localStorage.getItem("ai_pred_v5")) || Array(15).fill(["**","**","**","**","**","**"]);
 
 function getFam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
-function renderTable() {
-    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    chartData.forEach((row, ri) => {
-        html += "<tr>";
+function draw() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((row, ri) => {
+        h += "<tr>";
         row.forEach((cell, ci) => {
             let cls = cell === "**" ? "blank" : "";
-            html += `<td class="${cls}" onclick="getPrediction(${ri},${ci})" contenteditable="true" onblur="updateValue(${ri},${ci},this.innerText)">${cell}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="updateValue(${ri},${ci},this.innerText)" onclick="predict(${ri},${ci})">${cell}</td>`;
         });
-        html += "</tr>";
+        h += "</tr>";
     });
-    document.getElementById("mainTable").innerHTML = html;
+    document.getElementById("tbl").innerHTML = h;
 }
 
-function updateValue(r, c, val) { chartData[r][c] = val.trim() || "**"; }
+function updateValue(r,c,v){ data[r][c] = v.trim() || "**"; }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem("ai_pred_v5", JSON.stringify(data)); alert("Data Saved to Local Storage!"); }
 
-function addRow() {
-    chartData.push(["**","**","**","**","**","**"]);
-    renderTable();
+function predict(r, c) {
+    if(data[r][c] !== "**") return;
+
+    // --- AI DYNAMIC ENGINE ---
+    // 1. Scan the "Immediate Context" (Upar ke 10 rows ka trend) [cite: 2026-02-03]
+    let trend = [];
+    for(let i=1; i<=10; i++) {
+        if(r-i >= 0 && data[r-i][c] !== "**") trend.push(data[r-i][c]);
+    }
+
+    // 2. Identify the "Strongest Family" in this column's history
+    let famFreq = {};
+    trend.forEach(val => {
+        let f = getFam(val);
+        famFreq[f] = (famFreq[f] || 0) + 1;
+    });
+
+    let topFam = Object.keys(famFreq).sort((a,b) => famFreq[b] - famFreq[a])[0] || "12";
+
+    // 3. Mathematical Offset (Har cell ke liye unique calculation)
+    // Row index (r) aur column index (c) ka use karke result badlega
+    let pool = families[topFam] || ["00", "55", "05", "50"];
+    let v1 = pool[(r + c) % pool.length];
+    let v2 = pool[(r * c + 1) % pool.length];
+    let v3 = pool[(r + 5) % pool.length];
+
+    // Update UI
+    document.getElementById("predictionView").style.display = "block";
+    document.getElementById("cellInfo").innerText = `Row ${r+1}, Day ${c+1}`;
+    document.getElementById("v1").innerText = v1;
+    document.getElementById("v2").innerText = v2;
+    document.getElementById("v3").innerText = v3;
+    document.getElementById("debug").innerText = `Logic: Contextual Scan of ${trend.length} records. Frequency Match: Fam ${topFam}`;
+    
+    // Highlight active cell
+    document.querySelectorAll('td').forEach(td => td.classList.remove('active-predict'));
+    event.target.classList.add('active-predict');
 }
 
-function getPrediction(r, c) {
-    if (chartData[r][c] !== "**") return;
-
-    document.getElementById("aiPanel").style.display = "block";
-    
-    // AI LOGIC: Searching Patterns & Shapes in Historical Data
-    let predictions = [];
-    
-    // 1. Look for family of nearby jodis (Horizontal/Vertical Scan)
-    let nearby = [];
-    if(r > 0) nearby.push(chartData[r-1][c]);
-    if(c > 0) nearby.push(chartData[r][c-1]);
-    
-    // 2. Mock AI Logic: In a real app, this would scan thousands of CSV rows
-    // Here we generate the best mathematical probability based on your input
-    let baseVal = "47"; // Base as per your example
-    let familyKey = getFam(baseVal);
-    let potential = families[familyKey] || ["12", "67", "09"];
-    
-    document.getElementById("p1").innerText = potential[0];
-    document.getElementById("p2").innerText = potential[1] || "56";
-    document.getElementById("p3").innerText = potential[2] || "01";
-    
-    document.getElementById("logicInfo").innerText = "AI Logic: Detected Pattern at Row " + r + ", Column " + c + " using Coordinate Shape Analysis.";
-    
-    // Scroll to panel
-    document.getElementById("aiPanel").scrollIntoView({ behavior: 'smooth' });
-}
-
-function handleCSV(input) {
+function importCSV(input) {
     let reader = new FileReader();
-    reader.onload = function() {
-        let lines = reader.result.split('\n');
-        chartData = lines.filter(l => l.trim()).map(l => l.split(',').map(v => v.trim()));
-        renderTable();
-        alert("CSV Imported Successfully!");
+    reader.onload = () => {
+        data = reader.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => v.trim()));
+        draw();
     };
     reader.readAsText(input.files[0]);
 }
 
-function saveToLocal() {
-    localStorage.setItem("matka_ai_data", JSON.stringify(chartData));
-    alert("Data saved to Local Storage!");
-}
-
-function clearStorage() {
-    if(confirm("Saara data delete karein?")) {
-        localStorage.removeItem("matka_ai_data");
-        location.reload();
-    }
-}
-
-renderTable();
+draw();
 </script>
 </body>
 </html>
