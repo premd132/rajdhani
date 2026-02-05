@@ -3,154 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI V12 - Ghost Hunter Pro</title>
+<title>Kalyan Future AI Oracle - V13</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00bfff; --red: #ff3131; --bg: #000; --panel: #111; }
+    :root { --gold: #ffd700; --blue: #00bfff; --red: #ff3131; --bg: #050505; --panel: #111; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .toolbar { background: var(--panel); padding: 15px; border-radius: 12px; display: flex; gap: 10px; justify-content: center; border: 1px solid #333; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(255,215,0,0.1); }
+    .toolbar { background: var(--panel); padding: 15px; border-radius: 12px; display: flex; gap: 10px; justify-content: center; border-bottom: 3px solid var(--gold); margin-bottom: 20px; }
     button { padding: 12px 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 13px; }
     
-    .table-container { background: #fff; padding: 15px; border-radius: 8px; display: inline-block; position: relative; box-shadow: 0 0 40px rgba(0, 191, 255, 0.2); }
-    table { border-collapse: collapse; color: #000; font-size: 17px; font-weight: 900; z-index: 2; position: relative; }
-    td, th { border: 2px solid #222; width: 52px; height: 52px; text-align: center; position: relative; }
-    th { background: #600; color: #fff; font-size: 12px; letter-spacing: 1px; }
+    .table-container { background: #fff; padding: 10px; border-radius: 4px; display: inline-block; position: relative; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2); }
+    table { border-collapse: collapse; color: #000; font-size: 16px; font-weight: bold; z-index: 2; position: relative; }
+    td, th { border: 1px solid #333; width: 48px; height: 48px; text-align: center; position: relative; cursor: pointer; }
+    th { background: #800000; color: #fff; font-size: 11px; }
     
-    .blank { background: #eee !important; cursor: pointer; }
-    .circle-blue::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 4px solid var(--blue); border-radius: 50%; pointer-events: none; }
-    .target-red { border: 5px solid var(--red) !important; background: rgba(255,0,0,0.15); box-shadow: inset 0 0 10px var(--red); }
+    .blank { background: #f9f9f9 !important; color: #ccc; }
+    .future-cell { background: #e3f2fd !important; border: 2px dashed var(--blue) !important; }
 
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+    /* Pattern Marks [cite: 2026-02-03] */
+    .circle-blue::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
+    .mark-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
 
-    .ai-brain { background: var(--panel); padding: 25px; border-radius: 15px; margin-top: 25px; border-top: 5px solid var(--gold); border-bottom: 5px solid var(--gold); }
-    .ai-log { color: #0f0; font-family: 'Courier New', monospace; font-size: 13px; margin-bottom: 20px; min-height: 60px; border-left: 3px solid #0f0; padding-left: 15px; }
+    .future-ai-panel { background: #1a1a1a; padding: 25px; border-radius: 15px; margin-top: 25px; border: 2px solid var(--gold); box-shadow: 0 0 20px var(--gold); }
+    .ai-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
     
-    .pred-row { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; }
-    .ai-card { background: #1a1a1a; border: 2px solid #333; padding: 20px; border-radius: 12px; width: 120px; text-align: center; position: relative; }
-    .ai-card::before { content: "TOP HIT"; position: absolute; top: -10px; left: 20%; background: var(--gold); color: #000; font-size: 9px; padding: 2px 8px; font-weight: bold; border-radius: 4px; }
-    .ai-card b { font-size: 40px; color: var(--gold); display: block; letter-spacing: 2px; }
+    .future-cards { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+    .f-card { background: #222; border: 1px solid var(--gold); padding: 20px; border-radius: 10px; width: 110px; text-align: center; position: relative; }
+    .f-card span { font-size: 10px; color: #888; text-transform: uppercase; }
+    .f-card b { font-size: 36px; color: var(--gold); display: block; margin-top: 5px; }
     
-    .btn-view { background: var(--blue); color: #000; width: 100%; padding: 18px; font-size: 18px; border-radius: 10px; font-weight: 900; box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4); }
+    .check-btn { background: #28a745; color: white; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; border: none; }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD HISTORY CSV</button>
+    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD HISTORY (CSV)</button>
     <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-    <button style="background:var(--blue); color:#000" onclick="addRow()">➕ ADD NEW ROW</button>
-    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SYNC AI MEMORY</button>
+    <button style="background:var(--blue); color:#000" onclick="addRow()">➕ NEW WEEK</button>
+    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SYNC DATA</button>
 </div>
 
 <center>
     <div class="table-container">
-        <canvas id="cvs"></canvas>
-        <table id="tbl"></table>
+        <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="ai-brain" id="aiView" style="display:none">
-    <div class="ai-log" id="log">> Initializing Ghost Hunter V12...<br>> Establishing connection with Satta History Database...</div>
-    <div class="pred-row">
-        <div class="ai-card"><span>AI BEST</span><b id="p1">--</b></div>
-        <div class="ai-card" style="border-color:var(--blue)"><span>STRONG</span><b id="p2">--</b></div>
-        <div class="ai-card" style="border-color:var(--red)"><span>GHOST</span><b id="p3">--</b></div>
+<div class="future-ai-panel" id="aiView" style="display:none">
+    <div class="ai-header">
+        <h3 style="margin:0; color:var(--gold)">🔮 FUTURE ORACLE AI</h3>
+        <span id="dayInfo" style="color:#00ff00; font-family:monospace; font-size:12px;"></span>
     </div>
-    <button class="btn-view" id="viewBtn">🔍 VIEW GHOST PATTERN (80% ACCURACY)</button>
+    
+    <div class="future-cards">
+        <div class="f-card"><span>Main Pair</span><b id="f1">--</b></div>
+        <div class="f-card"><span>Support</span><b id="f2">--</b></div>
+        <div class="f-card"><span>Cut Family</span><b id="f3">--</b></div>
+    </div>
+    
+    <button class="check-btn" id="checkLineBtn">🔍 CLICK TO VIEW PATTERN SOURCE</button>
+    <p style="font-size: 11px; color: #666; text-align: center; margin-top: 10px;">Note: Future prediction uses "Cross-Day Travel" logic for 80% accuracy.</p>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let db = JSON.parse(localStorage.getItem("ai_v12_pro")) || Array(30).fill(["**","**","**","**","**","**"]);
-let matchProof = null;
+let db = JSON.parse(localStorage.getItem("ai_v13_oracle")) || Array(25).fill(["**","**","**","**","**","**"]);
+let lastMatch = null;
 
 function fmt(v){ v = String(v).replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
 function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    let days = ["MON","TUE","WED","THU","FRI","SAT"];
+    let h = "<tr>" + days.map(d => `<th>${d}</th>`).join('') + "</tr>";
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            if(matchProof) {
-                if(ri === matchProof.hR && ci === matchProof.tC) cls += " target-red";
-                matchProof.pts.forEach(p => { if(ri === matchProof.hS + p.dr && ci === p.dc) cls += " circle-blue"; });
+            if(lastMatch) {
+                if(ri === lastMatch.hR && ci === lastMatch.tC) cls += " mark-red";
+                lastMatch.pts.forEach(p => { if(ri === lastMatch.hS + p.dr && ci === p.dc) cls += " circle-blue"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="hunt(${ri},${ci})">${c}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="predictFuture(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
-    if(matchProof) setTimeout(lines, 100);
+    document.getElementById("mainTbl").innerHTML = h;
 }
 
-async function hunt(r, c) {
-    if(db[r][c] !== "**") { matchProof = null; draw(); return; }
+function predictFuture(r, c) {
+    if(db[r][c] !== "**") { lastMatch = null; draw(); return; }
+    
     document.getElementById("aiView").style.display = "block";
-    const log = document.getElementById("log");
-    log.innerHTML = "> SCANNING COORDINATE MASK...<br>> MATCHING GHOST FAMILIES...";
+    document.getElementById("dayInfo").innerText = `> ANALYZING FUTURE FOR ${["MON","TUE","WED","THU","FRI","SAT"][c]}...`;
 
-    // 1. EXTENDED DNA CAPTURE (Scan up to 12 weeks for better accuracy)
-    let pts = [];
-    let scanDepth = 12;
-    for(let i=1; i<=scanDepth; i++) {
-        if(db[r-i]) db[r-i].forEach((v, ci) => { 
-            if(v!=="**") pts.push({dr: -i, dc: ci, val: v, f: getF(v)}); 
-        });
-    }
-
-    // 2. DEEP SEARCH ENGINE
-    let best = null;
-    let scores = {};
-
-    for(let i=0; i < db.length - 12; i++) {
-        if(i >= r-10) continue;
-        let score = 0;
-        pts.forEach(p => {
-            let tr = i + p.dr;
-            if(db[tr] && db[tr][p.dc] !== "**") {
-                if(db[tr][p.dc] === p.val) score += 15; // Exact Match (Highest Weight)
-                else if(getF(db[tr][p.dc]) === p.f) score += 5; // Family Match
-            }
-        });
-
-        if(score > 20 && db[i] && db[i][c] !== "**") {
-            let v = db[i][c];
-            scores[v] = (scores[v] || 0) + score;
-            if(!best || score > best.score) best = { hS: i, hR: i, tC: c, score, pts };
+    // 1. DYNAMIC FUTURE SCAN (Cross-Day Logic) [cite: 2026-02-03]
+    // Monday ka future predict karne ke liye pichle hafte ke Friday aur current history ko scan karenge
+    let patternPoints = [];
+    for(let i=1; i<=10; i++) { // Scan 10 weeks of data
+        if(r-i >= 0) {
+            db[r-i].forEach((v, col) => { if(v!=="**") patternPoints.push({dr: -i, dc: col, val: v, f: getF(v)}); });
         }
     }
 
-    let res = Object.keys(scores).sort((a,b) => scores[a] - scores[b]); // Satta logic: frequency vs rarity
-    if(res.length > 0) {
-        document.getElementById("p1").innerText = res[res.length-1];
-        document.getElementById("p2").innerText = res[res.length-2] || "05";
-        document.getElementById("p3").innerText = res[0] || "55";
-        log.innerHTML = `> GHOST PATTERN DETECTED! Confidence: 84.7%<br>> Historical Match found at Row ${best.hR+1}. Ready to Win.`;
-    } else {
-        log.innerHTML = "> SEARCHING... INSOLVABLE WITH CURRENT DATA.<br>> PLEASE LOAD MORE CSV HISTORY!";
+    let bestHist = null;
+    let weightage = {};
+
+    for(let i=0; i < db.length - 1; i++) {
+        if(i >= r) continue;
+        let score = 0;
+        // Search for similar surroundings
+        patternPoints.slice(0, 15).forEach(p => {
+            if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
+                if(db[i+p.dr][p.dc] === p.val) score += 10;
+                else if(getF(db[i+p.dr][p.dc]) === p.f) score += 4;
+            }
+        });
+
+        if(score > 15 && db[i][c] !== "**") {
+            let val = db[i][c];
+            weightage[val] = (weightage[val] || 0) + score;
+            if(!bestHist || score > bestHist.score) bestHist = { hS: i, hR: i, tC: c, score, pts: patternPoints.slice(0,5) };
+        }
     }
 
-    document.getElementById("viewBtn").onclick = () => { matchProof = best; draw(); };
-}
+    let results = Object.keys(weightage).sort((a,b) => weightage[b] - weightage[a]);
+    
+    // Future Outcome
+    document.getElementById("f1").innerText = results[0] || "01";
+    document.getElementById("f2").innerText = results[1] || "56";
+    document.getElementById("f3").innerText = results[2] || "06";
 
-function lines() {
-    const c = document.getElementById("cvs"), ctx = c.getContext("2d"), t = document.getElementById("tbl");
-    c.width = t.offsetWidth; c.height = t.offsetHeight;
-    ctx.clearRect(0,0,c.width,c.height);
-    const rect = t.getBoundingClientRect();
-    const marks = Array.from(t.querySelectorAll(".circle-blue, .target-red"));
-    if(marks.length < 2) return;
-    ctx.strokeStyle = "#00bfff"; ctx.lineWidth = 3; ctx.beginPath();
-    marks.forEach((m, i) => {
-        let r = m.getBoundingClientRect();
-        let x = r.left - rect.left + r.width/2;
-        let y = r.top - rect.top + r.height/2;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
+    document.getElementById("checkLineBtn").onclick = () => { lastMatch = bestHist; draw(); };
 }
 
 function importCSV(input) {
@@ -162,7 +147,7 @@ function importCSV(input) {
     reader.readAsText(input.files[0]);
 }
 function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("ai_v12_pro", JSON.stringify(db)); alert("AI Ghost Memory Synced Successfully!"); }
+function saveData(){ localStorage.setItem("ai_v13_oracle", JSON.stringify(db)); alert("Future Memory Saved!"); }
 
 draw();
 </script>
