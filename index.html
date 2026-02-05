@@ -41,11 +41,11 @@
     <p style="color:#0f0; margin:5px 0 0 0; font-family:monospace; font-size:12px;">STATUS: SCANNING OLD RECORDS FOR 100% MATCH...</p>
 </div>
 
-<div class="csv-zone">
+<div class="nav-tools">
+    <button style="background:var(--gold); color:#000" onclick="document.getElementById('csv').click()">📁 LOAD 10-YEAR DATA</button>
+    <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
     <button style="background:var(--cyan); color:#000" onclick="addRow()">➕ ADD WEEK</button>
-    <button onclick="document.getElementById('csvInp').click()" style="background:var(--gold); padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">📂 IMPORT HISTORY CSV</button>
-    <input type="file" id="csvInp" style="display:none" onchange="importCSV(this)">
-    <button onclick="saveData()" style="background:#28a745; color:white; padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">💾 SAVE TO LOCAL STORAGE</button>
+    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SYNC QUANTUM</button>
 </div>
 
 <center>
