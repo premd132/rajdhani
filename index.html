@@ -42,6 +42,7 @@
 </div>
 
 <div class="csv-zone">
+    <button style="background:var(--cyan); color:#000" onclick="addRow()">➕ ADD WEEK</button>
     <button onclick="document.getElementById('csvInp').click()" style="background:var(--gold); padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">📂 IMPORT HISTORY CSV</button>
     <input type="file" id="csvInp" style="display:none" onchange="importCSV(this)">
     <button onclick="saveData()" style="background:#28a745; color:white; padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">💾 SAVE TO LOCAL STORAGE</button>
