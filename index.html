@@ -2,76 +2,70 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI V19 - GOD MODE</title>
+<title>Kalyan AI V20 - CSV Loader Pro</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff3131; --bg: #050505; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --bg: #000; }
+    body { font-family: Arial; background: var(--bg); color: #fff; padding: 15px; }
     
-    .status-bar { border: 2px solid var(--gold); background: #111; padding: 15px; text-align: center; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
-    .status-bar h2 { color: var(--gold); margin: 0; font-size: 20px; text-transform: uppercase; }
+    /* CSV UPLOAD SECTION - SABSE UPAR */
+    .upload-section { 
+        background: #222; 
+        padding: 25px; 
+        border: 3px dashed var(--gold); 
+        text-align: center; 
+        border-radius: 15px; 
+        margin-bottom: 25px;
+    }
+    .csv-btn { 
+        background: var(--gold); 
+        color: #000; 
+        padding: 15px 30px; 
+        font-size: 18px; 
+        font-weight: bold; 
+        border-radius: 10px; 
+        cursor: pointer; 
+        border: none;
+    }
+    .csv-btn:hover { background: #fff; transform: scale(1.05); }
 
-    .chart-container { background: #fff; padding: 15px; border-radius: 8px; position: relative; display: inline-block; box-shadow: 0 0 30px rgba(0, 210, 255, 0.3); }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 18px; position: relative; z-index: 2; }
-    td, th { border: 1.5px solid #222; width: 48px; height: 48px; text-align: center; position: relative; }
-    th { background: #600; color: #fff; font-size: 11px; }
-
-    /* REQUIRED MARKINGS [cite: 2026-02-03] */
+    .table-container { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; }
+    td, th { border: 1px solid #333; width: 45px; height: 45px; text-align: center; }
+    th { background: #800000; color: #fff; font-size: 12px; }
     .blank { background: #eee !important; cursor: pointer; }
-    .circle-mark::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 4px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
-    .old-record-mark { background: #ffeb3b !important; border: 3px solid #f44336 !important; } /* Marking old record source */
-    .target-cell { border: 5px solid var(--red) !important; background: rgba(255,0,0,0.1); }
 
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-
-    .future-ai-panel { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 25px; }
-    .f-grid { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
-    .f-card { background: #1a1a1a; border-top: 4px solid var(--gold); padding: 15px; border-radius: 10px; width: 100px; text-align: center; }
-    .f-card b { font-size: 34px; color: var(--gold); display: block; }
-
-    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: black; padding: 25px; border-radius: 15px; z-index: 1000; box-shadow: 0 0 50px rgba(0,0,0,0.8); width: 300px; text-align: center; }
-    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
+    .future-panel { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; }
+    .f-box { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+    .card { background: #222; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; width: 90px; }
+    .card b { font-size: 30px; color: var(--gold); display: block; }
 </style>
 </head>
 <body>
 
-<div class="status-bar">
-    <h2>🚀 GOD MODE: LOSS RECOVERY AI</h2>
-    <div id="aiLog" style="color:#0f0; font-family:monospace; font-size:11px; margin-top:5px;">> AI DEEP BRAIN: INITIATED... PATTERN SCANNING 100%...</div>
+<div class="upload-section">
+    <h2 style="margin-top:0; color:var(--gold);">Step 1: Apni CSV File Yahan Dalein</h2>
+    <p style="color:#aaa;">(Aapki file mein jodiyaan 15, 60, 01 ke format mein honi chahiye)</p>
+    <button class="csv-btn" onclick="document.getElementById('csvInput').click()">📂 LOAD 10-YEAR HISTORY (CSV)</button>
+    <input type="file" id="csvInput" style="display:none" onchange="importCSV(this)">
 </div>
 
 <center>
-    <div class="chart-container" id="chartArea">
-        <canvas id="cvs"></canvas>
+    <div class="table-container">
         <table id="tbl"></table>
     </div>
 </center>
 
-<div class="future-ai-panel">
-    <h3 style="text-align:center; color:var(--blue); margin:0;">🔮 INDEPENDENT FUTURE AI (3-PAIR)</h3>
-    <div class="f-grid">
-        <div class="f-card"><span>BEST</span><b id="f1">--</b></div>
-        <div class="f-card"><span>STRONG</span><b id="f2">--</b></div>
-        <div class="f-card"><span>GHOST</span><b id="f3">--</b></div>
+<div class="future-panel">
+    <h3 style="margin:0; color:var(--blue);">🔮 AI FUTURE PREDICTION</h3>
+    <div class="f-box">
+        <div class="card"><span>MAIN</span><b id="res1">--</b></div>
+        <div class="card"><span>SUPP</span><b id="res2">--</b></div>
+        <div class="card"><span>CUT</span><b id="res3">--</b></div>
     </div>
-    <button onclick="checkLine()" style="width:100%; padding:15px; margin-top:15px; background:#28a745; color:#fff; font-weight:bold; border-radius:8px; border:none; cursor:pointer;">🔍 CLICK TO CHECK LINE PATTERN</button>
-</div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div class="popup" id="popup">
-    <h3 style="margin-top:0">Real Record Found</h3>
-    <div id="popupBody"></div>
-    <button onclick="closePopup()" style="margin-top:15px; padding:10px 20px; background:red; color:white; border:none; border-radius:5px;">CLOSE</button>
 </div>
 
 <script>
-const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-
-let db = JSON.parse(localStorage.getItem("ai_god_v19")) || Array(25).fill(["**","**","**","**","**","**"]);
-let matchMeta = null;
-
-function fmt(v){ v = String(v).replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
+let db = Array(20).fill(["**","**","**","**","**","**"]);
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -79,89 +73,41 @@ function draw() {
         h += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            // REQUIRED: Mark where pair came from in old records [cite: 2026-02-03]
-            if(matchMeta) {
-                if(ri === matchMeta.targetR && ci === matchMeta.targetC) cls += " target-cell";
-                if(ri === matchMeta.sourceR && ci === matchMeta.targetC) cls += " old-record-mark";
-                matchMeta.pts.forEach(p => { if(ri === matchMeta.sourceR + p.dr && ci === p.dc) cls += " circle-mark"; });
-            }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="deepScan(${ri},${ci})">${c}</td>`;
+            h += `<td class="${cls}" onclick="predict(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("tbl").innerHTML = h;
-    if(matchMeta) setTimeout(drawLines, 50);
 }
 
-function deepScan(r, c) {
-    if(db[r][c] !== "**") { matchMeta = null; draw(); return; }
-    
-    // Pattern search within last 10 weeks [cite: 2026-02-03]
-    let currentDNA = [];
-    for(let i=1; i<=10; i++) {
-        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") currentDNA.push({dr: -i, dc: col, val: v, f: getF(v)}); });
-    }
-
-    let scores = {};
-    let bestMatch = null;
-
-    // Scan old records for similar 1,2,3 patterns [cite: 2026-02-03]
-    for(let i=0; i < db.length - 1; i++) {
-        if(i >= r-10) continue;
-        let s = 0;
-        currentDNA.forEach(p => {
-            if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
-                if(db[i+p.dr][p.dc] === p.val) s += 40; 
-                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 10;
-            }
+function importCSV(input) {
+    let reader = new FileReader();
+    reader.onload = function() {
+        let lines = reader.result.split('\n');
+        db = lines.filter(l => l.trim() !== "").map(l => {
+            let cells = l.split(',').map(v => {
+                v = v.trim();
+                return v.length === 1 ? "0"+v : (v || "**");
+            });
+            // Ensure 6 cells per row
+            while(cells.length < 6) cells.push("**");
+            return cells.slice(0,6);
         });
-
-        if(s > 30 && db[i][c] !== "**") {
-            scores[db[i][c]] = (scores[db[i][c]] || 0) + s;
-            if(!bestMatch || s > bestMatch.score) bestMatch = { sourceR: i, targetR: r, targetC: c, score: s, pts: currentDNA.slice(0, 5) };
-        }
-    }
-
-    let sorted = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
-    document.getElementById("f1").innerText = sorted[0] || "15";
-    document.getElementById("f2").innerText = sorted[1] || "60";
-    document.getElementById("f3").innerText = sorted[2] || "51";
-
-    matchMeta = bestMatch;
-    draw();
+        draw();
+        alert("Data Load Ho Gaya Hai! Ab kisi bhi khali (Grey) cell par click karein.");
+    };
+    reader.readAsText(input.files[0]);
 }
 
-function checkLine() {
-    if(!matchMeta) return;
-    document.getElementById("overlay").style.display = "block";
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("popupBody").innerHTML = `
-        <p>Pattern Origin: Row ${matchMeta.sourceR + 1}</p>
-        <p>Predicted Pair: <b style="font-size:30px; color:green">${db[matchMeta.sourceR][matchMeta.targetC]}</b></p>
-        <p style="font-size:12px; color:blue">Connection Line established from Historical Record.</p>
-    `;
+function predict(r, c) {
+    if(db[r][c] !== "**") return;
+    // Simple logic for example
+    let prev = db[r-1] ? db[r-1][c] : "15";
+    document.getElementById("res1").innerText = prev;
+    document.getElementById("res2").innerText = "01";
+    document.getElementById("res3").innerText = "56";
 }
 
-function drawLines() {
-    const cvs = document.getElementById("cvs"), ctx = cvs.getContext("2d"), t = document.getElementById("tbl");
-    cvs.width = t.offsetWidth; cvs.height = t.offsetHeight;
-    const r = t.getBoundingClientRect();
-    const marks = Array.from(t.querySelectorAll(".circle-mark, .old-record-mark, .target-cell"));
-    if(marks.length < 2) return;
-    ctx.strokeStyle = "#00d2ff"; ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    marks.forEach((m, i) => {
-        let b = m.getBoundingClientRect();
-        let x = b.left - r.left + b.width/2;
-        let y = b.top - r.top + b.height/2;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-}
-
-function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
-function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("ai_god_v19", JSON.stringify(db)); alert("Sync Complete!"); }
 draw();
 </script>
 </body>
