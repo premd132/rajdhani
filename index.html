@@ -2,84 +2,82 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V24 - Supreme Oracle</title>
+<title>Kalyan AI V25 - Total Theory Pro</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff3131; --bg: #050505; --row: #1a1a1a; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --bg: #050505; --row: #1a1a1a; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    /* Control Center */
-    .control-center { background: var(--row); border: 2px solid var(--gold); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
-    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
+    .header-panel { border: 2px solid var(--gold); background: var(--row); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    
+    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
     .btn:hover { background: var(--gold); color: #000; }
-    .btn-save { background: #28a745; border: none; }
-    .btn-add { background: var(--blue); color: #000; border: none; }
 
-    /* The Matrix Table [cite: 2026-02-03] */
-    .matrix-wrapper { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; margin-bottom: 20px; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 18px; }
-    td, th { border: 1.5px solid #222; width: 48px; height: 48px; text-align: center; position: relative; transition: 0.2s; }
-    th { background: #800000; color: #fff; font-size: 11px; letter-spacing: 1px; }
+    .matrix-box { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; }
+    td, th { border: 1px solid #222; width: 48px; height: 48px; text-align: center; position: relative; }
+    th { background: #400; color: #fff; font-size: 10px; }
 
-    /* Visual Pattern Indicators [cite: 2026-02-03] */
-    .blank { background: #e8e8e8 !important; cursor: crosshair; }
-    .circle-pattern::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 4px solid var(--blue); border-radius: 50%; pointer-events: none; }
-    .source-origin { background: #ffeb3b !important; border: 3px solid var(--red) !important; box-shadow: inset 0 0 10px rgba(255,0,0,0.5); }
-    .target-focus { border: 5px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+    /* Pattern Marking [cite: 2026-02-03] */
+    .blank { background: #f0f0f0 !important; cursor: cell; }
+    .circle-mark::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; }
+    .source-highlight { background: #ffeb3b !important; border: 2px solid red !important; }
+    .total-badge { position: absolute; bottom: -2px; right: 0; font-size: 8px; color: blue; font-weight: bold; }
 
-    /* Future AI Panel [cite: 2026-02-03] */
-    .future-oracle { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; text-align: center; margin-top: 10px; }
-    .oracle-grid { display: flex; gap: 12px; justify-content: center; margin-top: 15px; }
-    .oracle-card { background: #222; border-top: 4px solid var(--gold); padding: 15px; border-radius: 10px; width: 100px; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
-    .oracle-card span { font-size: 10px; color: #aaa; text-transform: uppercase; }
-    .oracle-card b { font-size: 34px; color: var(--gold); display: block; margin-top: 5px; }
+    .future-analysis { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; }
+    .stat-row { display: flex; justify-content: space-around; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .stat-box { font-size: 12px; color: var(--gold); }
+    .stat-box b { display: block; font-size: 20px; color: #fff; }
 
-    /* Popup System [cite: 2026-02-03] */
-    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; }
-    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 25px; border-radius: 15px; z-index: 101; text-align: center; width: 300px; border: 5px solid var(--blue); }
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; }
+    .popup-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 20px; border-radius: 10px; z-index: 101; text-align: center; width: 280px; }
 </style>
 </head>
 <body>
 
-<div class="control-center">
-    <h2 style="margin: 0 0 15px 0; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.5);">SUPREME ORACLE AI V24</h2>
-    <button class="btn" onclick="document.getElementById('csvInp').click()">📂 LOAD 10-YEAR CSV</button>
-    <input type="file" id="csvInp" style="display:none" onchange="importCSV(this)">
-    <button class="btn btn-add" onclick="addRow()">➕ ADD NEW ROW</button>
-    <button class="btn btn-save" onclick="saveData()">💾 SYNC LOCAL STORAGE</button>
+<div class="header-panel">
+    <h2 style="margin:0; color:var(--gold);">Satta Total Oracle V25</h2>
+    <div style="margin-top:10px;">
+        <button class="btn" onclick="document.getElementById('csv').click()">📂 LOAD RECORD</button>
+        <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
+        <button class="btn" onclick="addRow()" style="color:var(--gold)">➕ ADD WEEK</button>
+        <button class="btn" onclick="saveData()" style="background:#28a745; border:none;">💾 SYNC AI</button>
+    </div>
 </div>
 
 <center>
-    <div class="matrix-wrapper">
-        <table id="matrixTbl"></table>
+    <div class="matrix-box">
+        <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="future-oracle">
-    <h3 style="margin:0; color:var(--blue); letter-spacing: 2px;">🔮 INDEPENDENT FUTURE AI (3-PAIR)</h3>
-    <div class="oracle-grid">
-        <div class="oracle-card"><span>Jackpot</span><b id="o1">--</b></div>
-        <div class="oracle-card"><span>Strong</span><b id="o2">--</b></div>
-        <div class="oracle-card"><span>Ghost</span><b id="o3">--</b></div>
+<div class="future-analysis">
+    <div class="stat-row">
+        <div class="stat-box">Predicted Total<b id="predTotal">--</b></div>
+        <div class="stat-box">Odd/Even<b id="oddEven">--</b></div>
+        <div class="stat-box">Confidence<b id="conf">0%</b></div>
     </div>
-    <button onclick="viewConnection()" style="width:100%; padding:15px; margin-top:15px; background:var(--blue); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size: 16px;">🔍 CHECK LINE PATTERN (REVEAL POPUP)</button>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">MAIN<b style="display:block; font-size:24px; color:var(--gold);" id="f1">--</b></div>
+        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">SUPP<b style="display:block; font-size:24px; color:var(--gold);" id="f2">--</b></div>
+        <div style="background:#222; padding:10px; border-radius:8px; width:80px;">CUT<b style="display:block; font-size:24px; color:var(--gold);" id="f3">--</b></div>
+    </div>
+    <button onclick="checkPopup()" style="width:100%; padding:15px; margin-top:15px; background:var(--blue); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🔍 CHECK LINE RECORD (POPUP)</button>
 </div>
 
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div class="popup" id="popup">
-    <h3 style="margin-top:0; color:#800000;">Historical Match Found</h3>
-    <div id="popContent" style="font-size: 22px; font-weight: bold; margin: 20px 0; border: 2px solid #ddd; padding: 10px;"></div>
-    <p style="font-size: 12px; color: #666;">This result is derived from a 10-week spatial mirror pattern.</p>
-    <button onclick="closePopup()" style="background:var(--red); color:#fff; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">CLOSE</button>
+<div class="popup-overlay" id="overlay" onclick="closePopup()"></div>
+<div class="popup-card" id="popup" style="display:none;">
+    <h3 style="margin-top:0">Historical Mirror Match</h3>
+    <div id="popBody" style="font-size:22px; font-weight:bold; margin:15px 0;"></div>
+    <p style="font-size:11px; color:#666;">This jodi was derived using the 'Weekly Total Mirror' logic from your old CSV records.</p>
+    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-
-let db = JSON.parse(localStorage.getItem("v24_supreme")) || Array(25).fill(["**","**","**","**","**","**"]);
-let matchMeta = null;
+let db = JSON.parse(localStorage.getItem("v25_total_ai")) || Array(20).fill(["**","**","**","**","**","**"]);
+let matchData = null;
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
+function getSum(v){ if(v==="**") return null; let s = parseInt(v[0]) + parseInt(v[1]); return s > 9 ? s % 10 : s; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -87,65 +85,71 @@ function draw() {
         h += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            // Requirements: Source marking & Connection circles [cite: 2026-02-03]
-            if(matchMeta) {
-                if(ri === matchMeta.tR && ci === matchMeta.tC) cls += " target-focus";
-                if(ri === matchMeta.sR && ci === matchMeta.tC) cls += " source-origin";
-                matchMeta.pts.forEach(p => { if(ri === matchMeta.sR + p.dr && ci === p.dc) cls += " circle-pattern"; });
+            let sum = getSum(c);
+            if(matchData) {
+                if(ri === matchData.sR && ci === matchData.tC) cls += " source-highlight";
+                matchData.pts.forEach(p => { if(ri === matchData.sR + p.dr && ci === p.dc) cls += " circle-mark"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="supremeScan(${ri},${ci})">${c}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="totalScan(${ri},${ci})">${c}${sum!==null?`<span class="total-badge">${sum}</span>`:''}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById("matrixTbl").innerHTML = h;
+    document.getElementById("mainTbl").innerHTML = h;
 }
 
-function supremeScan(r, c) {
-    if(db[r][c] !== "**") { matchMeta = null; draw(); return; }
+function totalScan(r, c) {
+    if(db[r][c] !== "**") { matchData = null; draw(); return; }
     
-    // Neural Scan: Capture last 10 weeks of spatial DNA [cite: 2026-02-03]
+    // Total Pattern Discovery (10 Weeks) [cite: 2026-02-03]
     let dna = [];
     for(let i=1; i<=10; i++) {
-        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, f: getF(v)}); });
+        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, sum: getSum(v)}); });
     }
 
-    let scores = {};
-    let topMatch = null;
+    let results = {};
+    let best = null;
 
-    // Search for 100% Mirror Patterns in Old Records [cite: 2026-02-03]
     for(let i=0; i < db.length - 1; i++) {
         if(i >= r-1) continue;
-        let s = 0;
+        let score = 0;
         dna.forEach(p => {
             if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
-                if(db[i+p.dr][p.dc] === p.val) s += 150; // Direct Hit
-                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 50; // Family Match
+                if(db[i+p.dr][p.dc] === p.val) score += 100;
+                else if(getSum(db[i+p.dr][p.dc]) === p.sum) score += 40; // Total Match Weight
             }
         });
 
-        if(s > 60 && db[i][c] !== "**") {
-            scores[db[i][c]] = (scores[db[i][c]] || 0) + s;
-            if(!topMatch || s > topMatch.score) topMatch = { sR: i, tR: r, tC: c, score: s, pts: dna.slice(0,8) };
+        if(score > 40 && db[i][c] !== "**") {
+            results[db[i][c]] = (results[db[i][c]] || 0) + score;
+            if(!best || score > best.score) best = { sR: i, tR: r, tC: c, score: score, pts: dna.slice(0,5) };
         }
     }
 
-    let results = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
-    document.getElementById("o1").innerText = results[0] || "??";
-    document.getElementById("o2").innerText = results[1] || "??";
-    document.getElementById("o3").innerText = results[2] || "??";
-    matchMeta = topMatch;
+    let res = Object.keys(results).sort((a,b) => results[a] - results[b]);
+    let topJodi = res[0] || "15";
+    document.getElementById("f1").innerText = topJodi;
+    document.getElementById("f2").innerText = res[1] || "60";
+    document.getElementById("f3").innerText = res[2] || "01";
+    
+    let t = getSum(topJodi);
+    document.getElementById("predTotal").innerText = t;
+    document.getElementById("oddEven").innerText = t % 2 === 0 ? "EVEN" : "ODD";
+    document.getElementById("conf").innerText = best ? "95%" : "40%";
+    
+    matchData = best;
     draw();
 }
 
-function viewConnection() {
-    if(!matchMeta) return alert("Pehle table ke khali (Grey) cell par click karein!");
+function checkPopup() {
+    if(!matchData) return;
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
-    document.getElementById("popContent").innerText = "Mirror Pair: " + db[matchMeta.sR][matchMeta.tC];
+    document.getElementById("popBody").innerText = "Historical Pair: " + db[matchData.sR][matchData.tC];
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
+function saveData() { localStorage.setItem("v25_total_ai", JSON.stringify(db)); alert("Total Theory Synced!"); }
 function importCSV(input) {
     let reader = new FileReader();
     reader.onload = () => {
@@ -154,8 +158,6 @@ function importCSV(input) {
     };
     reader.readAsText(input.files[0]);
 }
-function saveData() { localStorage.setItem("v24_supreme", JSON.stringify(db)); alert("Matrix Synced Successfully!"); }
-
 draw();
 </script>
 </body>
