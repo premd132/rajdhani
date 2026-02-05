@@ -2,112 +2,175 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V20 - CSV Loader Pro</title>
+<title>Kalyan AI V22 - 100% Mirror</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00d2ff; --bg: #000; }
-    body { font-family: Arial; background: var(--bg); color: #fff; padding: 15px; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff3131; --bg: #050505; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    /* CSV UPLOAD SECTION - SABSE UPAR */
-    .upload-section { 
-        background: #222; 
-        padding: 25px; 
-        border: 3px dashed var(--gold); 
-        text-align: center; 
-        border-radius: 15px; 
-        margin-bottom: 25px;
-    }
-    .csv-btn { 
-        background: var(--gold); 
-        color: #000; 
-        padding: 15px 30px; 
-        font-size: 18px; 
-        font-weight: bold; 
-        border-radius: 10px; 
-        cursor: pointer; 
-        border: none;
-    }
-    .csv-btn:hover { background: #fff; transform: scale(1.05); }
-
-    .table-container { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; }
+    /* UI Design */
+    .header { text-align: center; border: 2px solid var(--gold); padding: 15px; border-radius: 10px; margin-bottom: 20px; background: #111; }
+    .csv-zone { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+    
+    .table-container { background: #fff; padding: 10px; border-radius: 5px; display: inline-block; position: relative; }
     table { border-collapse: collapse; color: #000; font-weight: 900; }
-    td, th { border: 1px solid #333; width: 45px; height: 45px; text-align: center; }
-    th { background: #800000; color: #fff; font-size: 12px; }
-    .blank { background: #eee !important; cursor: pointer; }
+    td, th { border: 1.5px solid #222; width: 45px; height: 45px; text-align: center; position: relative; }
+    th { background: #800000; color: #fff; font-size: 11px; }
+
+    /* Logic Based Styling [cite: 2026-02-03] */
+    .blank { background: #eee !important; cursor: crosshair; }
+    .circle-mark::after { content: ""; position: absolute; top: 8%; left: 8%; width: 84%; height: 84%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
+    .source-cell { background: #ffff00 !important; border: 3px solid var(--red) !important; color: #000 !important; }
+    .current-target { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
     .future-panel { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; }
-    .f-box { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-    .card { background: #222; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; width: 90px; }
-    .card b { font-size: 30px; color: var(--gold); display: block; }
+    .f-grid { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
+    .f-card { background: #222; border: 1px solid var(--gold); padding: 15px; border-radius: 10px; width: 100px; }
+    .f-card b { font-size: 32px; color: var(--gold); display: block; }
+
+    /* Popup [cite: 2026-02-03] */
+    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: black; padding: 25px; border-radius: 15px; z-index: 1000; width: 280px; text-align: center; border: 4px solid var(--blue); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
 </style>
 </head>
 <body>
 
-<div class="upload-section">
-    <h2 style="margin-top:0; color:var(--gold);">Step 1: Apni CSV File Yahan Dalein</h2>
-    <p style="color:#aaa;">(Aapki file mein jodiyaan 15, 60, 01 ke format mein honi chahiye)</p>
-    <button class="csv-btn" onclick="document.getElementById('csvInput').click()">📂 LOAD 10-YEAR HISTORY (CSV)</button>
-    <input type="file" id="csvInput" style="display:none" onchange="importCSV(this)">
+<div class="header">
+    <h2 style="margin:0; color:var(--gold);">RAJDHANI/KALYAN 100% ORACLE V22</h2>
+    <p style="color:#0f0; margin:5px 0 0 0; font-family:monospace; font-size:12px;">STATUS: SCANNING OLD RECORDS FOR 100% MATCH...</p>
+</div>
+
+<div class="csv-zone">
+    <button onclick="document.getElementById('csvInp').click()" style="background:var(--gold); padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">📂 IMPORT HISTORY CSV</button>
+    <input type="file" id="csvInp" style="display:none" onchange="importCSV(this)">
+    <button onclick="saveData()" style="background:#28a745; color:white; padding:10px 20px; font-weight:bold; border:none; cursor:pointer;">💾 SAVE TO LOCAL STORAGE</button>
 </div>
 
 <center>
-    <div class="table-container">
-        <table id="tbl"></table>
+    <div class="table-container" id="chartArea">
+        <canvas id="canvas"></canvas>
+        <table id="mainTbl"></table>
     </div>
 </center>
 
 <div class="future-panel">
-    <h3 style="margin:0; color:var(--blue);">🔮 AI FUTURE PREDICTION</h3>
-    <div class="f-box">
-        <div class="card"><span>MAIN</span><b id="res1">--</b></div>
-        <div class="card"><span>SUPP</span><b id="res2">--</b></div>
-        <div class="card"><span>CUT</span><b id="res3">--</b></div>
+    <h3 style="margin:0; color:var(--blue);">🔮 FUTURE AI: 3-PAIR PREDICTION</h3>
+    <div class="f-grid">
+        <div class="f-card"><span>MAIN</span><b id="r1">--</b></div>
+        <div class="f-card"><span>SUPP</span><b id="r2">--</b></div>
+        <div class="f-card"><span>CUT</span><b id="r3">--</b></div>
     </div>
+    <button onclick="checkLine()" style="width:100%; padding:15px; margin-top:15px; background:var(--blue); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">🔍 CLICK TO CHECK LINE PATTERN (POPUP)</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div class="popup" id="popup">
+    <h3 style="margin-top:0">Historical Record</h3>
+    <div id="popContent" style="font-size:18px; font-weight:bold; margin:15px 0;"></div>
+    <p style="font-size:12px; color:#555;">Pattern matched from 10-week scan.</p>
+    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-let db = Array(20).fill(["**","**","**","**","**","**"]);
+const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+
+let db = JSON.parse(localStorage.getItem("v22_oracle")) || Array(25).fill(["**","**","**","**","**","**"]);
+let meta = null;
+
+function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
+function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
-        h += "<tr>";
+        html += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            h += `<td class="${cls}" onclick="predict(${ri},${ci})">${c}</td>`;
+            if(meta) {
+                if(ri === meta.tR && ci === meta.tC) cls += " current-target";
+                if(ri === meta.sR && ci === meta.tC) cls += " source-cell";
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " circle-mark"; });
+            }
+            html += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="oracleScan(${ri},${ci})">${c}</td>`;
         });
-        h += "</tr>";
+        html += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
+    document.getElementById("mainTbl").innerHTML = html;
+    if(meta) drawLines();
+}
+
+function oracleScan(r, c) {
+    if(db[r][c] !== "**") { meta = null; draw(); return; }
+    
+    // Pattern capture from last 10 weeks [cite: 2026-02-03]
+    let dna = [];
+    for(let i=1; i<=10; i++) {
+        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, f: getF(v)}); });
+    }
+
+    let results = {};
+    let top = null;
+
+    // Search old records for 100% mirror [cite: 2026-02-03]
+    for(let i=0; i < db.length - 1; i++) {
+        if(i >= r-1) continue;
+        let s = 0;
+        dna.forEach(p => {
+            if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
+                if(db[i+p.dr][p.dc] === p.val) s += 100; // Perfect Mirror
+                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 20;
+            }
+        });
+
+        if(s > 50 && db[i][c] !== "**") {
+            results[db[i][c]] = (results[db[i][c]] || 0) + s;
+            if(!top || s > top.score) top = { sR: i, tR: r, tC: c, score: s, pts: dna.slice(0,6) };
+        }
+    }
+
+    let sorted = Object.keys(results).sort((a,b) => results[b] - results[a]);
+    document.getElementById("r1").innerText = sorted[0] || "??";
+    document.getElementById("r2").innerText = sorted[1] || "??";
+    document.getElementById("r3").innerText = sorted[2] || "??";
+    meta = top;
+    draw();
+}
+
+function checkLine() {
+    if(!meta) return alert("Bhai, pehle kisi blank cell par click karein!");
+    document.getElementById("overlay").style.display = "block";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("popContent").innerText = "Mirror Result: " + db[meta.sR][meta.tC];
+}
+
+function drawLines() {
+    const cvs = document.getElementById("canvas"), ctx = cvs.getContext("2d"), t = document.getElementById("mainTbl");
+    cvs.width = t.offsetWidth; cvs.height = t.offsetHeight;
+    const rect = t.getBoundingClientRect();
+    const marks = Array.from(t.querySelectorAll(".circle-mark, .source-cell, .current-target"));
+    if(marks.length < 2) return;
+    ctx.strokeStyle = "#00d2ff"; ctx.lineWidth = 2; ctx.beginPath();
+    marks.forEach((m, i) => {
+        let b = m.getBoundingClientRect();
+        let x = b.left - rect.left + b.width/2;
+        let y = b.top - rect.top + b.height/2;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
 }
 
 function importCSV(input) {
     let reader = new FileReader();
-    reader.onload = function() {
-        let lines = reader.result.split('\n');
-        db = lines.filter(l => l.trim() !== "").map(l => {
-            let cells = l.split(',').map(v => {
-                v = v.trim();
-                return v.length === 1 ? "0"+v : (v || "**");
-            });
-            // Ensure 6 cells per row
-            while(cells.length < 6) cells.push("**");
-            return cells.slice(0,6);
-        });
+    reader.onload = () => {
+        db = reader.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => fmt(v.trim())));
         draw();
-        alert("Data Load Ho Gaya Hai! Ab kisi bhi khali (Grey) cell par click karein.");
     };
     reader.readAsText(input.files[0]);
 }
 
-function predict(r, c) {
-    if(db[r][c] !== "**") return;
-    // Simple logic for example
-    let prev = db[r-1] ? db[r-1][c] : "15";
-    document.getElementById("res1").innerText = prev;
-    document.getElementById("res2").innerText = "01";
-    document.getElementById("res3").innerText = "56";
-}
-
+function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
+function saveData() { localStorage.setItem("v22_oracle", JSON.stringify(db)); alert("Memory Synced!"); }
 draw();
 </script>
 </body>
