@@ -3,141 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Future AI Oracle - V13</title>
+<title>Ultimate Loss Recovery AI V15</title>
 <style>
-    :root { --gold: #ffd700; --blue: #00bfff; --red: #ff3131; --bg: #050505; --panel: #111; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff4d4d; --bg: #000; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .toolbar { background: var(--panel); padding: 15px; border-radius: 12px; display: flex; gap: 10px; justify-content: center; border-bottom: 3px solid var(--gold); margin-bottom: 20px; }
-    button { padding: 12px 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 13px; }
-    
-    .table-container { background: #fff; padding: 10px; border-radius: 4px; display: inline-block; position: relative; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2); }
-    table { border-collapse: collapse; color: #000; font-size: 16px; font-weight: bold; z-index: 2; position: relative; }
-    td, th { border: 1px solid #333; width: 48px; height: 48px; text-align: center; position: relative; cursor: pointer; }
-    th { background: #800000; color: #fff; font-size: 11px; }
-    
-    .blank { background: #f9f9f9 !important; color: #ccc; }
-    .future-cell { background: #e3f2fd !important; border: 2px dashed var(--blue) !important; }
+    .header { text-align: center; padding: 20px; border-bottom: 2px solid var(--gold); background: #111; margin-bottom: 20px; }
+    .header h1 { color: var(--gold); margin: 0; font-size: 22px; }
+    .header p { color: #0f0; font-family: monospace; font-size: 12px; margin-top: 5px; }
 
-    /* Pattern Marks [cite: 2026-02-03] */
-    .circle-blue::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
-    .mark-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+    .toolbar { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+    button { padding: 10px 15px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
 
-    .future-ai-panel { background: #1a1a1a; padding: 25px; border-radius: 15px; margin-top: 25px; border: 2px solid var(--gold); box-shadow: 0 0 20px var(--gold); }
-    .ai-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .table-container { background: #fff; padding: 10px; border-radius: 5px; display: inline-block; position: relative; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; }
+    td, th { border: 1px solid #444; width: 45px; height: 45px; text-align: center; position: relative; }
+    th { background: #800000; color: #fff; }
     
-    .future-cards { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
-    .f-card { background: #222; border: 1px solid var(--gold); padding: 20px; border-radius: 10px; width: 110px; text-align: center; position: relative; }
+    .blank { background: #f2f2f2 !important; color: #bbb; cursor: pointer; }
+    .circle-mark::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; }
+    .target-box { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+
+    /* Future Prediction Board */
+    .future-board { background: #1a1a1a; padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px solid var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+    .f-grid { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
+    .f-card { background: #262626; border: 1px solid #444; padding: 15px; border-radius: 10px; width: 100px; text-align: center; }
+    .f-card b { font-size: 32px; color: var(--gold); display: block; }
     .f-card span { font-size: 10px; color: #888; text-transform: uppercase; }
-    .f-card b { font-size: 36px; color: var(--gold); display: block; margin-top: 5px; }
-    
-    .check-btn { background: #28a745; color: white; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; border: none; }
+
+    .recovery-msg { background: rgba(0, 255, 0, 0.1); border: 1px solid #0f0; color: #0f0; padding: 10px; border-radius: 5px; font-size: 12px; margin-top: 15px; text-align: center; }
 </style>
 </head>
 <body>
 
+<div class="header">
+    <h1>RAJDHANI LOSS RECOVERY AI</h1>
+    <p id="aiStatus">> LOADING FUTURE ORACLE... DATA SYNC ACTIVE</p>
+</div>
+
 <div class="toolbar">
-    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD HISTORY (CSV)</button>
+    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD BIG DATA (CSV)</button>
     <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
     <button style="background:var(--blue); color:#000" onclick="addRow()">➕ NEW WEEK</button>
-    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SYNC DATA</button>
+    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SAVE PROGRESS</button>
 </div>
 
 <center>
     <div class="table-container">
-        <table id="mainTbl"></table>
+        <table id="tbl"></table>
     </div>
 </center>
 
-<div class="future-ai-panel" id="aiView" style="display:none">
-    <div class="ai-header">
-        <h3 style="margin:0; color:var(--gold)">🔮 FUTURE ORACLE AI</h3>
-        <span id="dayInfo" style="color:#00ff00; font-family:monospace; font-size:12px;"></span>
+<div class="future-board" id="futurePanel" style="display:none">
+    <div style="text-align:center; font-weight:bold; color:var(--gold); font-size: 18px;">🔮 NEXT DAY FUTURE PREDICTION</div>
+    <div class="f-grid">
+        <div class="f-card"><span>Main</span><b id="next1">--</b></div>
+        <div class="f-card"><span>Support</span><b id="next2">--</b></div>
+        <div class="f-card"><span>Cut</span><b id="next3">--</b></div>
     </div>
-    
-    <div class="future-cards">
-        <div class="f-card"><span>Main Pair</span><b id="f1">--</b></div>
-        <div class="f-card"><span>Support</span><b id="f2">--</b></div>
-        <div class="f-card"><span>Cut Family</span><b id="f3">--</b></div>
-    </div>
-    
-    <button class="check-btn" id="checkLineBtn">🔍 CLICK TO VIEW PATTERN SOURCE</button>
-    <p style="font-size: 11px; color: #666; text-align: center; margin-top: 10px;">Note: Future prediction uses "Cross-Day Travel" logic for 80% accuracy.</p>
+    <button onclick="showLine()" style="background:#222; color:var(--blue); border:1px solid var(--blue); width:100%; margin-top:15px; padding:10px; cursor:pointer; font-weight:bold;">🔍 VIEW HISTORICAL CONNECTION</button>
+    <div class="recovery-msg">AI: "Target set for 95% Accuracy. Follow the Family Travel pattern."</div>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let db = JSON.parse(localStorage.getItem("ai_v13_oracle")) || Array(25).fill(["**","**","**","**","**","**"]);
-let lastMatch = null;
+let db = JSON.parse(localStorage.getItem("recovery_v15")) || Array(25).fill(["**","**","**","**","**","**"]);
+let activeProof = null;
 
 function fmt(v){ v = String(v).replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
 function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
-    let days = ["MON","TUE","WED","THU","FRI","SAT"];
-    let h = "<tr>" + days.map(d => `<th>${d}</th>`).join('') + "</tr>";
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            if(lastMatch) {
-                if(ri === lastMatch.hR && ci === lastMatch.tC) cls += " mark-red";
-                lastMatch.pts.forEach(p => { if(ri === lastMatch.hS + p.dr && ci === p.dc) cls += " circle-blue"; });
+            if(activeProof) {
+                if(ri === activeProof.hR && ci === activeProof.tC) cls += " target-box";
+                activeProof.pts.forEach(p => { if(ri === activeProof.hS + p.dr && ci === p.dc) cls += " circle-mark"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="predictFuture(${ri},${ci})">${c}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="analyzeFuture(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById("mainTbl").innerHTML = h;
+    document.getElementById("tbl").innerHTML = h;
 }
 
-function predictFuture(r, c) {
-    if(db[r][c] !== "**") { lastMatch = null; draw(); return; }
+function analyzeFuture(r, c) {
+    if(db[r][c] !== "**") { activeProof = null; draw(); return; }
+    document.getElementById("futurePanel").style.display = "block";
     
-    document.getElementById("aiView").style.display = "block";
-    document.getElementById("dayInfo").innerText = `> ANALYZING FUTURE FOR ${["MON","TUE","WED","THU","FRI","SAT"][c]}...`;
-
-    // 1. DYNAMIC FUTURE SCAN (Cross-Day Logic) [cite: 2026-02-03]
-    // Monday ka future predict karne ke liye pichle hafte ke Friday aur current history ko scan karenge
+    // The Oracle Engine [cite: 2026-02-03]
     let patternPoints = [];
-    for(let i=1; i<=10; i++) { // Scan 10 weeks of data
-        if(r-i >= 0) {
-            db[r-i].forEach((v, col) => { if(v!=="**") patternPoints.push({dr: -i, dc: col, val: v, f: getF(v)}); });
-        }
+    for(let i=1; i<=12; i++) { // Deep 12-week scan
+        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") patternPoints.push({dr: -i, dc: col, val: v, f: getF(v)}); });
     }
 
-    let bestHist = null;
-    let weightage = {};
+    let scores = {};
+    let best = null;
 
     for(let i=0; i < db.length - 1; i++) {
         if(i >= r) continue;
-        let score = 0;
-        // Search for similar surroundings
+        let s = 0;
         patternPoints.slice(0, 15).forEach(p => {
             if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
-                if(db[i+p.dr][p.dc] === p.val) score += 10;
-                else if(getF(db[i+p.dr][p.dc]) === p.f) score += 4;
+                if(db[i+p.dr][p.dc] === p.val) s += 15; // Strict Match
+                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 5; // Family Match
             }
         });
 
-        if(score > 15 && db[i][c] !== "**") {
+        if(s > 15 && db[i][c] !== "**") {
             let val = db[i][c];
-            weightage[val] = (weightage[val] || 0) + score;
-            if(!bestHist || score > bestHist.score) bestHist = { hS: i, hR: i, tC: c, score, pts: patternPoints.slice(0,5) };
+            scores[val] = (scores[val] || 0) + s;
+            if(!best || s > best.score) best = { hS: i, hR: i, tC: c, score: s, pts: patternPoints.slice(0,5) };
         }
     }
 
-    let results = Object.keys(weightage).sort((a,b) => weightage[b] - weightage[a]);
-    
-    // Future Outcome
-    document.getElementById("f1").innerText = results[0] || "01";
-    document.getElementById("f2").innerText = results[1] || "56";
-    document.getElementById("f3").innerText = results[2] || "06";
+    let res = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+    document.getElementById("next1").innerText = res[0] || "01";
+    document.getElementById("next2").innerText = res[1] || "56";
+    document.getElementById("next3").innerText = res[2] || "06";
 
-    document.getElementById("checkLineBtn").onclick = () => { lastMatch = bestHist; draw(); };
+    activeProof = best;
 }
 
+function showLine() { draw(); }
 function importCSV(input) {
     let reader = new FileReader();
     reader.onload = () => {
@@ -147,7 +139,7 @@ function importCSV(input) {
     reader.readAsText(input.files[0]);
 }
 function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("ai_v13_oracle", JSON.stringify(db)); alert("Future Memory Saved!"); }
+function saveData(){ localStorage.setItem("recovery_v15", JSON.stringify(db)); alert("Recovery Data Saved!"); }
 
 draw();
 </script>
