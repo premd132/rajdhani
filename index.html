@@ -3,34 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Dynamic AI Predictor</title>
+<title>Deep AI Pattern Scanner</title>
 <style>
-    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #000; }
+    body { font-family: 'Arial', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .toolbar { background: var(--panel); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; border: 1px solid #444; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+    button { padding: 12px 20px; font-weight: bold; cursor: pointer; border-radius: 6px; border: none; }
     
-    .table-container { position: relative; background: #fff; padding: 5px; border-radius: 4px; overflow-x: auto; display: inline-block; }
-    table { border-collapse: collapse; font-size: 14px; color: #000; width: 100%; }
-    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 42px; height: 42px; cursor: pointer; }
+    .table-container { background: #fff; padding: 5px; border-radius: 4px; display: inline-block; overflow-x: auto; }
+    table { border-collapse: collapse; color: #000; font-size: 16px; width: 100%; }
+    td, th { border: 1px solid #000; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; }
     th { background: #800000; color: white; }
     
-    .blank { background: #f0f0f0 !important; color: #ccc; }
-    .active-predict { border: 3px solid var(--blue) !important; background: #e3f2fd !important; }
+    .blank { background: #eee !important; color: #aaa; }
+    .matched { background: #fff9c4 !important; border: 2px solid var(--blue) !important; }
+    .target { border: 3px solid var(--red) !important; animation: blink 1s infinite; }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    .ai-card { background: var(--panel); padding: 20px; border-radius: 10px; border-top: 4px solid var(--gold); margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .result-row { display: flex; gap: 10px; margin-top: 15px; }
-    .res-item { flex: 1; background: #262626; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
-    .res-item span { display: block; font-size: 11px; color: #aaa; text-transform: uppercase; }
-    .res-item b { font-size: 24px; color: var(--gold); display: block; margin-top: 5px; }
-    
-    button { padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
+    .ai-brain-panel { background: #1a1a1a; padding: 20px; border-radius: 12px; border-top: 5px solid var(--gold); margin-top: 20px; }
+    .analysis-text { font-family: 'Courier New', monospace; font-size: 13px; color: #00ff00; margin-bottom: 15px; }
+    .prediction-box { display: flex; gap: 10px; justify-content: center; }
+    .pred-card { background: #262626; padding: 20px; border-radius: 8px; border: 1px solid #444; width: 100px; text-align: center; }
+    .pred-card span { font-size: 10px; color: #888; }
+    .pred-card b { font-size: 30px; color: var(--gold); display: block; }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
+    <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD HISTORY (CSV)</button>
     <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
     <button style="background:var(--blue); color:#fff" onclick="addRow()">➕ ADD ROW</button>
     <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SAVE DATA</button>
@@ -42,88 +44,101 @@
     </div>
 </center>
 
-<div class="ai-card" id="predictionView" style="display:none">
-    <h3 style="margin:0; color:var(--gold)">🔮 AI Brain Analysis: <span id="cellInfo" style="color:#fff; font-size:14px"></span></h3>
-    <div class="result-row">
-        <div class="res-item"><span>Primary</span><b id="v1">--</b></div>
-        <div class="res-item"><span>Strong</span><b id="v2">--</b></div>
-        <div class="res-item"><span>Support</span><b id="v3">--</b></div>
+<div class="ai-brain-panel" id="aiView" style="display:none">
+    <div class="analysis-text" id="statusLine">AI is thinking...</div>
+    <div class="prediction-box">
+        <div class="pred-card"><span>AI BEST</span><b id="p1">--</b></div>
+        <div class="pred-card"><span>HISTORY</span><b id="p2">--</b></div>
+        <div class="pred-card"><span>FAMILY</span><b id="p3">--</b></div>
     </div>
-    <p id="debug" style="font-size: 10px; color: #666; margin-top: 10px;"></p>
+    <p id="logicDesc" style="font-size: 12px; color: #ccc; margin-top: 15px; text-align: center; border-top: 1px solid #333; padding-top: 10px;"></p>
 </div>
 
 <script>
-// Family Data [cite: 2026-02-03]
+// Deep Family Logic [cite: 2026-02-03]
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem("ai_pred_v5")) || Array(15).fill(["**","**","**","**","**","**"]);
+let records = JSON.parse(localStorage.getItem("deep_ai_v6")) || Array(20).fill(["**","**","**","**","**","**"]);
 
 function getFam(v){ let s = String(v).padStart(2,'0'); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((row, ri) => {
+    records.forEach((row, ri) => {
         h += "<tr>";
         row.forEach((cell, ci) => {
             let cls = cell === "**" ? "blank" : "";
-            h += `<td class="${cls}" contenteditable="true" onblur="updateValue(${ri},${ci},this.innerText)" onclick="predict(${ri},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" contenteditable="true" onblur="records[${ri}][${ci}]=this.innerText.trim()" onclick="deepScan(${ri},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("tbl").innerHTML = h;
 }
 
-function updateValue(r,c,v){ data[r][c] = v.trim() || "**"; }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("ai_pred_v5", JSON.stringify(data)); alert("Data Saved to Local Storage!"); }
+function deepScan(r, c) {
+    if(records[r][c] !== "**") return;
 
-function predict(r, c) {
-    if(data[r][c] !== "**") return;
-
-    // --- AI DYNAMIC ENGINE ---
-    // 1. Scan the "Immediate Context" (Upar ke 10 rows ka trend) [cite: 2026-02-03]
-    let trend = [];
-    for(let i=1; i<=10; i++) {
-        if(r-i >= 0 && data[r-i][c] !== "**") trend.push(data[r-i][c]);
+    // 1. "Pattern Brain" - Capture the surrounding environment (Shape)
+    // Ye dekhta hai ki click kiye huye cell ke upar-neeche aur side mein kya jodiya hain
+    let pattern = [];
+    for(let dr = -2; dr <= 0; dr++) { // Checking 2 rows above
+        for(let dc = -2; dc <= 2; dc++) {
+            let nr = r + dr, nc = c + dc;
+            if(nr >= 0 && nr < records.length && nc >= 0 && nc < 6 && (dr !== 0 || dc !== 0)) {
+                if(records[nr][nc] !== "**") {
+                    pattern.push({dr, dc, val: records[nr][nc], fam: getFam(records[nr][nc])});
+                }
+            }
+        }
     }
 
-    // 2. Identify the "Strongest Family" in this column's history
-    let famFreq = {};
-    trend.forEach(val => {
-        let f = getFam(val);
-        famFreq[f] = (famFreq[f] || 0) + 1;
-    });
+    document.getElementById("aiView").style.display = "block";
+    document.getElementById("statusLine").innerText = "> SCANNING HISTORICAL SETS... MATCHING SHAPES...";
 
-    let topFam = Object.keys(famFreq).sort((a,b) => famFreq[b] - famFreq[a])[0] || "12";
+    // 2. Search whole history for a similar "Shape Set"
+    let historyScores = {};
+    for(let i = 0; i < records.length - 3; i++) {
+        if(i === r - pattern[0]?.dr) continue; // Skip current area
+        
+        let score = 0;
+        pattern.forEach(p => {
+            let checkR = i + p.dr + 2; // Relative search
+            let checkC = c + p.dc;
+            if(checkR >= 0 && checkR < records.length && checkC >= 0 && checkC < 6) {
+                if(getFam(records[checkR][checkC]) === p.fam) score++;
+            }
+        });
 
-    // 3. Mathematical Offset (Har cell ke liye unique calculation)
-    // Row index (r) aur column index (c) ka use karke result badlega
-    let pool = families[topFam] || ["00", "55", "05", "50"];
-    let v1 = pool[(r + c) % pool.length];
-    let v2 = pool[(r * c + 1) % pool.length];
-    let v3 = pool[(r + 5) % pool.length];
+        if(score > 0 && records[i+2] && records[i+2][c] !== "**") {
+            let potentialVal = records[i+2][c];
+            historyScores[potentialVal] = (historyScores[potentialVal] || 0) + score;
+        }
+    }
 
-    // Update UI
-    document.getElementById("predictionView").style.display = "block";
-    document.getElementById("cellInfo").innerText = `Row ${r+1}, Day ${c+1}`;
-    document.getElementById("v1").innerText = v1;
-    document.getElementById("v2").innerText = v2;
-    document.getElementById("v3").innerText = v3;
-    document.getElementById("debug").innerText = `Logic: Contextual Scan of ${trend.length} records. Frequency Match: Fam ${topFam}`;
+    // 3. Final Brain Decision
+    let sortedResults = Object.keys(historyScores).sort((a,b) => historyScores[b] - historyScores[a]);
     
-    // Highlight active cell
-    document.querySelectorAll('td').forEach(td => td.classList.remove('active-predict'));
-    event.target.classList.add('active-predict');
+    let best = sortedResults[0] || "??";
+    let hist = sortedResults[1] || (best !== "??" ? families[getFam(best)][1] : "??");
+    let famS = best !== "??" ? families[getFam(best)][2] : "??";
+
+    document.getElementById("p1").innerText = best;
+    document.getElementById("p2").innerText = hist;
+    document.getElementById("p3").innerText = famS;
+    
+    document.getElementById("logicDesc").innerText = `AI Analysis: Pattern found in ${Object.keys(historyScores).length} old records. Matching score: ${historyScores[best] || 0}. This jodi is based on "Ghost Shape" replication.`;
 }
 
 function importCSV(input) {
     let reader = new FileReader();
     reader.onload = () => {
-        data = reader.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => v.trim()));
+        records = reader.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => v.trim()));
         draw();
     };
     reader.readAsText(input.files[0]);
 }
+function addRow(){ records.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem("deep_ai_v6", JSON.stringify(records)); alert("Memory Saved!"); }
 
 draw();
 </script>
