@@ -3,32 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI Master - 01 Formatted</title>
+<title>Kalyan AI Master V10 - Pattern View</title>
 <style>
-    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #0a0a0a; --panel: #161616; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #0d0d0d; --panel: #1a1a1a; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
     
-    .toolbar { background: var(--panel); padding: 12px; border-radius: 8px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; }
-    button { padding: 10px 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .toolbar { background: var(--panel); padding: 15px; border-radius: 8px; display: flex; gap: 10px; justify-content: center; border-bottom: 3px solid var(--gold); margin-bottom: 15px; }
+    button { padding: 12px 18px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
     
-    .table-container { background: #fff; padding: 8px; border-radius: 4px; display: inline-block; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-    table { border-collapse: collapse; color: #000; font-size: 15px; }
-    td, th { border: 1px solid #333; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: cell; position: relative; }
-    th { background: #800000; color: #fff; font-size: 11px; }
+    .table-container { background: #fff; padding: 10px; border-radius: 4px; display: inline-block; position: relative; }
+    table { border-collapse: collapse; color: #000; font-size: 16px; width: 100%; position: relative; z-index: 2; }
+    td, th { border: 1px solid #333; width: 48px; height: 48px; text-align: center; font-weight: bold; position: relative; }
+    th { background: #800000; color: #fff; }
     
-    .blank { background: #f0f0f0 !important; color: #ccc; }
-    .mark-pair { border: 3px solid var(--blue) !important; background: rgba(0,123,255,0.1); }
+    .blank { background: #eee !important; cursor: pointer; }
     
-    /* AI Brain Layout */
-    .ai-card { background: var(--panel); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-top: 15px; }
-    .prediction-grid { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-    .pred-box { background: #222; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; width: 90px; text-align: center; }
-    .pred-box b { font-size: 28px; color: var(--gold); display: block; }
-    
-    .check-line { margin-top: 15px; padding: 10px; background: #28a745; color: #fff; border-radius: 5px; cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; }
-    
-    #popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 20px; border-radius: 10px; z-index: 100; display: none; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
+    /* DPBoss Style Marks [cite: 2026-02-03] */
+    .circle-mark::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; box-sizing: border-box; pointer-events: none; }
+    .base-mark { border: 4px solid var(--red) !important; background: rgba(255, 0, 0, 0.1); }
+
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+
+    .ai-panel { background: var(--panel); padding: 20px; border-radius: 12px; margin-top: 20px; border-top: 4px solid var(--gold); }
+    .pred-box { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+    .card { background: #262626; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #444; width: 100px; }
+    .card b { font-size: 28px; color: var(--gold); display: block; }
+
+    .check-line-btn { background: #28a745; color: white; padding: 15px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -36,112 +37,120 @@
 <div class="toolbar">
     <button style="background:var(--gold)" onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
     <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-    <button style="background:var(--blue); color:#fff" onclick="addRow()">➕ ROW</button>
-    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SAVE</button>
+    <button style="background:var(--blue); color:#fff" onclick="addRow()">➕ ADD WEEK</button>
+    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SAVE LOCAL</button>
 </div>
 
 <center>
-    <div class="table-container">
-        <table id="tbl"></table>
+    <div class="table-container" id="captureArea">
+        <canvas id="lineCanvas"></canvas>
+        <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="ai-card" id="aiPanel" style="display:none">
-    <h3 style="margin:0; color:var(--gold); font-size: 16px;">🤖 Deep Memory AI Prediction</h3>
-    <div class="prediction-grid">
-        <div class="pred-box"><small>BEST</small><b id="b1">--</b></div>
-        <div class="pred-box"><small>SEC</small><b id="b2">--</b></div>
-        <div class="pred-box"><small>FAM</small><b id="b3">--</b></div>
+<div class="ai-panel" id="aiView" style="display:none">
+    <h3 style="margin:0; color:var(--gold); text-align:center">🔮 Deep Vision Pattern AI</h3>
+    <div class="pred-box">
+        <div class="card"><span>TOP</span><b id="p1">--</b></div>
+        <div class="card"><span>GHOST</span><b id="p2">--</b></div>
+        <div class="card"><span>FAMILY</span><b id="p3">--</b></div>
     </div>
-    <div class="check-line" id="checkLineBtn">🔍 CLICK TO CHECK HISTORY PATTERN</div>
-</div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <h3 style="margin-top:0">Historical Proof Found!</h3>
-    <p id="proofText"></p>
-    <button onclick="closePopup()" style="background:#800000; color:#fff; width:100%">CLOSE</button>
+    <div class="check-line-btn" id="viewBtn">🔍 VIEW PATTERN CONNECTION</div>
+    <p id="log" style="font-size: 11px; color: #888; text-align: center; margin-top: 10px;"></p>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let db = JSON.parse(localStorage.getItem("master_v8")) || Array(20).fill(["**","**","**","**","**","**"]);
+let db = JSON.parse(localStorage.getItem("v10_data")) || Array(20).fill(["**","**","**","**","**","**"]);
+let activePattern = null;
 
-// Auto format to 01, 02
-function fmt(v){ 
-    if(v === "**" || v === "") return "**";
-    let s = v.replace(/[^0-9]/g, '');
-    return s.length === 1 ? "0" + s : s.substring(0,2);
-}
-
+function fmt(v){ v = String(v).replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
 function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
-        h += "<tr>";
+        html += "<tr>";
         r.forEach((c, ci) => {
             let cls = c === "**" ? "blank" : "";
-            h += `<td class="${cls}" contenteditable="true" onblur="updateVal(${ri},${ci},this.innerText)" onclick="aiScan(${ri},${ci})">${c}</td>`;
+            // Apply visual marks if pattern is active [cite: 2026-02-03]
+            if(activePattern) {
+                if(ri === activePattern.histR && ci === activePattern.targetC) cls += " base-mark";
+                activePattern.pts.forEach(p => {
+                    if(ri === activePattern.histStart + p.dr && ci === p.dc) cls += " circle-mark";
+                });
+            }
+            html += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="scan(${ri},${ci})">${c}</td>`;
         });
-        h += "</tr>";
+        html += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
+    document.getElementById("mainTbl").innerHTML = html;
+    if(activePattern) setTimeout(drawLines, 100);
 }
 
-function updateVal(r,c,v){ db[r][c] = fmt(v); draw(); }
+function scan(r, c) {
+    if(db[r][c] !== "**") { activePattern = null; draw(); return; }
+    document.getElementById("aiView").style.display = "block";
+    
+    // 1. Identify Context (Upar ke 5 hafton ka shape) [cite: 2026-02-03]
+    let pts = [];
+    for(let i=1; i<=5; i++) {
+        if(db[r-i]) db[r-i].forEach((v, ci) => { if(v!=="**") pts.push({dr: -i, dc: ci, val: v, f: getF(v)}); });
+    }
 
-let lastMatchProof = "";
-
-function aiScan(r, c) {
-    if(db[r][c] !== "**") return;
-    
-    document.getElementById("aiPanel").style.display = "block";
-    
-    // Capture DNA of surrounding pairs (3-point scan) [cite: 2026-02-03]
-    let neighbors = [];
-    if(r > 0) neighbors.push({dr: -1, dc: 0, val: db[r-1][c]}); // Upar wala
-    if(c > 0) neighbors.push({dr: 0, dc: -1, val: db[r][c-1]}); // Side wala
-    
+    // 2. Search History
+    let bestMatch = null;
     let scores = {};
-    let proofFound = "No exact history match. Analysis based on column frequency.";
 
-    // DEEP HISTORY SEARCH [cite: 2026-02-03]
-    for(let i=0; i < db.length - 1; i++) {
-        if(i === r) continue;
-        let matchCount = 0;
-        neighbors.forEach(n => {
-            if(db[i+n.dr] && db[i+n.dr][c+n.dc] === n.val && n.val !== "**") matchCount++;
+    for(let i=0; i < db.length - 6; i++) {
+        if(i >= r-5) continue;
+        let score = 0;
+        pts.forEach(p => {
+            if(db[i+p.dr] && getF(db[i+p.dr][p.dc]) === p.f) score++;
         });
 
-        if(matchCount > 0 && db[i][c] !== "**") {
+        if(score > 2 && db[i][c] !== "**") {
             let v = db[i][c];
-            scores[v] = (scores[v] || 0) + matchCount;
-            proofFound = `Found similar pattern at Week ${i+1}. In that record, when neighbors were same, the result was ${v}.`;
+            scores[v] = (scores[v] || 0) + score;
+            if(!bestMatch || score > bestMatch.score) {
+                bestMatch = { histStart: i, histR: i, targetC: c, score, pts };
+            }
         }
     }
 
-    let results = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
-    let final1 = results[0] || "08"; // Fallback
-    let final2 = results[1] || families[getF(final1)][1];
-    let final3 = results[2] || families[getF(final1)][2];
+    let res = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+    document.getElementById("p1").innerText = res[0] || "??";
+    document.getElementById("p2").innerText = res[1] || "??";
+    document.getElementById("p3").innerText = res[2] || "??";
+    document.getElementById("log").innerText = bestMatch ? `Pattern match found in History (Score: ${bestMatch.score})` : "Low data. Patterns not clear.";
 
-    document.getElementById("b1").innerText = fmt(final1);
-    document.getElementById("b2").innerText = fmt(final2);
-    document.getElementById("b3").innerText = fmt(final3);
-    lastMatchProof = proofFound;
-
-    document.getElementById("checkLineBtn").onclick = () => {
-        document.getElementById("proofText").innerText = lastMatchProof;
-        document.getElementById("popup").style.display = "block";
-        document.getElementById("overlay").style.display = "block";
+    document.getElementById("viewBtn").onclick = () => {
+        activePattern = bestMatch;
+        draw();
     };
 }
 
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("master_v8", JSON.stringify(db)); alert("Saved!"); }
+function drawLines() {
+    const cvs = document.getElementById("lineCanvas");
+    const ctx = cvs.getContext("2d");
+    const tbl = document.getElementById("mainTbl");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    
+    const rect = tbl.getBoundingClientRect();
+    const marks = Array.from(tbl.querySelectorAll(".circle-mark, .base-mark"));
+    
+    if(marks.length < 2) return;
+    ctx.strokeStyle = "blue"; ctx.lineWidth = 2; ctx.beginPath();
+    marks.forEach((m, i) => {
+        let r = m.getBoundingClientRect();
+        let x = r.left - rect.left + r.width/2;
+        let y = r.top - rect.top + r.height/2;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+}
 
 function importCSV(input) {
     let reader = new FileReader();
@@ -151,6 +160,8 @@ function importCSV(input) {
     };
     reader.readAsText(input.files[0]);
 }
+function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem("v10_data", JSON.stringify(db)); alert("Memory Saved!"); }
 
 draw();
 </script>
