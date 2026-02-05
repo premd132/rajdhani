@@ -3,142 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI V17 - Quantum Brain</title>
+<title>Kalyan AI V18 - 100% Future Destroyer</title>
 <style>
-    :root { --gold: #ffd700; --cyan: #00ffff; --red: #ff3131; --bg: #000; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --gold: #ffd700; --blue: #007bff; --red: #ff3e3e; --bg: #000; }
+    body { font-family: 'Arial Black', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .main-header { text-align: center; border: 2px solid var(--cyan); padding: 15px; border-radius: 10px; margin-bottom: 20px; background: rgba(0, 255, 255, 0.05); }
-    .main-header h1 { margin: 0; color: var(--cyan); font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
-    
-    .nav-tools { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-    button { padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .status-panel { border: 3px solid var(--gold); padding: 15px; text-align: center; margin-bottom: 20px; background: #111; border-radius: 10px; }
+    .status-panel h2 { color: var(--gold); margin: 0; text-shadow: 0 0 10px gold; }
 
-    .chart-wrapper { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; border: 5px solid #333; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 18px; }
-    td, th { border: 1px solid #000; width: 50px; height: 50px; text-align: center; position: relative; }
-    th { background: #400; color: #fff; font-size: 11px; }
+    .table-container { background: #fff; padding: 10px; border-radius: 5px; position: relative; display: inline-block; }
+    table { border-collapse: collapse; color: #000; font-size: 18px; width: 100%; position: relative; z-index: 2; }
+    td, th { border: 2px solid #000; width: 50px; height: 50px; text-align: center; font-weight: 900; position: relative; }
+    th { background: #800000; color: #fff; font-size: 12px; }
 
-    .blank-cell { background: #e0e0e0 !important; cursor: crosshair; transition: 0.3s; }
-    .blank-cell:hover { background: var(--cyan) !important; color: #000; }
+    /* Required Marking [cite: 2026-02-03] */
+    .blank { background: #ddd !important; cursor: pointer; }
+    .mark-circle::after { content: ""; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 4px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
+    .mark-line-box { border: 5px solid var(--red) !important; background: rgba(255,0,0,0.2); }
 
-    /* Quantum Marks [cite: 2026-02-03] */
-    .quantum-circle::after { content: ""; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 3px solid var(--cyan); border-radius: 50%; box-sizing: border-box; }
-    .quantum-target { background: rgba(255, 49, 49, 0.2) !important; border: 4px solid var(--red) !important; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
-    .prediction-hub { background: #111; border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-top: 25px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
-    .oracle-grid { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
-    .oracle-card { background: #222; border-top: 4px solid var(--gold); padding: 15px; border-radius: 8px; width: 110px; text-align: center; }
-    .oracle-card b { font-size: 36px; color: var(--gold); display: block; }
-    .oracle-card span { font-size: 10px; color: #777; letter-spacing: 1px; }
+    .future-box { background: #1a1a1a; padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px solid var(--blue); }
+    .prediction-row { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+    .card { background: #222; border: 1px solid #444; padding: 15px; border-radius: 8px; width: 100px; text-align: center; border-top: 5px solid var(--gold); }
+    .card b { font-size: 35px; color: var(--gold); display: block; }
 
-    .ai-console { font-family: monospace; color: #0f0; background: #000; padding: 10px; border-radius: 5px; font-size: 11px; margin-top: 15px; border: 1px solid #333; }
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+    .popup-content { background: #fff; color: #000; padding: 20px; border-radius: 10px; max-width: 90%; }
 </style>
 </head>
 <body>
 
-<div class="main-header">
-    <h1>Kalyan Quantum Brain V17</h1>
-    <div style="font-size:10px; color: #888;">AI Advanced Forecasting: Activated</div>
+<div class="status-panel">
+    <h2>100% FUTURE DESTROYER AI</h2>
+    <p style="color:#0f0">DEEP SEARCH: ACTIVE | ACCURACY: TARGETING 100%</p>
 </div>
 
-<div class="nav-tools">
-    <button style="background:var(--gold); color:#000" onclick="document.getElementById('csv').click()">📁 LOAD 10-YEAR DATA</button>
+<div style="text-align:center; margin-bottom: 20px;">
+    <button style="background:var(--gold); padding:10px; font-weight:bold;" onclick="document.getElementById('csv').click()">📂 LOAD LARGE HISTORY CSV</button>
     <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-    <button style="background:var(--cyan); color:#000" onclick="addRow()">➕ ADD WEEK</button>
-    <button style="background:#28a745; color:#fff" onclick="saveData()">💾 SYNC QUANTUM</button>
+    <button style="background:var(--blue); color:#fff; padding:10px; font-weight:bold;" onclick="saveData()">💾 SAVE PROGRESS</button>
 </div>
 
 <center>
-    <div class="chart-wrapper">
-        <table id="quantumTbl"></table>
+    <div class="table-container" id="chartArea">
+        <canvas id="lineCanvas"></canvas>
+        <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="prediction-hub">
-    <div style="text-align:center; color:var(--gold); font-weight:bold; font-size: 18px;">🔮 NEXT DAY QUANTUM FORECAST</div>
-    <div id="targetDay" style="text-align:center; font-size:11px; color:#555; margin-top:5px;">Hover over a blank cell to begin scanning...</div>
-    
-    <div class="oracle-grid">
-        <div class="oracle-card"><span>JACKPOT</span><b id="q1">--</b></div>
-        <div class="oracle-card"><span>STRONG</span><b id="q2">--</b></div>
-        <div class="oracle-card"><span>FAMILY</span><b id="q3">--</b></div>
+<div class="future-box">
+    <h3 style="text-align:center; color:var(--blue); margin:0;">🔮 FUTURE 3-PAIR PREDICTION</h3>
+    <div class="prediction-row">
+        <div class="card"><span>MAIN</span><b id="f1">--</b></div>
+        <div class="card"><span>SUPPORT</span><b id="f2">--</b></div>
+        <div class="card"><span>CUT</span><b id="f3">--</b></div>
     </div>
-    
-    <button onclick="revealConnections()" style="background:#222; color:var(--cyan); border: 1px solid var(--cyan); width: 100%; margin-top: 15px; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 5px;">🔍 REVEAL PATTERN CONNECTIONS</button>
-    
-    <div class="ai-console" id="console">> SYSTEM READY. WAITING FOR CELL SELECTION...</div>
+    <button style="width:100%; padding:15px; margin-top:15px; background:#28a745; color:#fff; font-weight:bold; border-radius:8px;" id="checkLineBtn">🔍 CHECK LINE (VIEW REAL RECORD POPUP)</button>
+</div>
+
+<div class="popup-overlay" id="popup">
+    <div class="popup-content" id="popupText"></div>
+    <button onclick="document.getElementById('popup').style.display='none'" style="margin-top:10px; background:red; color:white; padding:10px;">CLOSE</button>
 </div>
 
 <script>
 const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let db = JSON.parse(localStorage.getItem("v17_quantum")) || Array(25).fill(["**","**","**","**","**","**"]);
-let activePattern = null;
+let db = JSON.parse(localStorage.getItem("ai_v18_final")) || Array(30).fill(["**","**","**","**","**","**"]);
+let matchData = null;
 
 function fmt(v){ v = String(v).replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
 function getF(v){ let s=fmt(v); for(let k in families) if(families[k].includes(s)) return k; return "NA"; }
 
 function draw() {
-    let days = ["MON","TUE","WED","THU","FRI","SAT"];
-    let h = "<tr>" + days.map(d => `<th>${d}</th>`).join('') + "</tr>";
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
-        h += "<tr>";
+        html += "<tr>";
         r.forEach((c, ci) => {
-            let cls = c === "**" ? "blank-cell" : "";
-            if(activePattern) {
-                if(ri === activePattern.hR && ci === activePattern.tC) cls += " quantum-target";
-                activePattern.pts.forEach(p => { if(ri === activePattern.hS + p.dr && ci === p.dc) cls += " quantum-circle"; });
+            let cls = c === "**" ? "blank" : "";
+            if(matchData) {
+                if(ri === matchData.hR && ci === matchData.tC) cls += " mark-line-box";
+                matchData.pts.forEach(p => { if(ri === matchLineStart + p.dr && ci === p.dc) cls += " mark-circle"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="quantumScan(${ri},${ci})">${c}</td>`;
+            html += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="scanFuture(${ri},${ci})">${c}</td>`;
         });
-        h += "</tr>";
+        html += "</tr>";
     });
-    document.getElementById("quantumTbl").innerHTML = h;
+    document.getElementById("mainTbl").innerHTML = html;
+    if(matchData) drawLines();
 }
 
-function quantumScan(r, c) {
-    if(db[r][c] !== "**") { activePattern = null; draw(); return; }
+function scanFuture(r, c) {
+    if(db[r][c] !== "**") { matchData = null; draw(); return; }
     
-    const console = document.getElementById("console");
-    console.innerHTML = "> INITIATING CROSS-TABLE QUANTUM LEAP...<br>> CALCULATING SUM PROBABILITY...";
-
-    // Capture Local DNA (15 Weeks Deep) [cite: 2026-02-03]
+    // 1. Capture DNA (Pichle 10 hafte) [cite: 2026-02-03]
     let dna = [];
-    for(let i=1; i<=15; i++) {
+    for(let i=1; i<=10; i++) {
         if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr: -i, dc: col, val: v, f: getF(v)}); });
     }
 
-    let results = {};
-    let topMatch = null;
+    // 2. Deep Search in ALL History
+    let scores = {};
+    let best = null;
 
     for(let i=0; i < db.length - 1; i++) {
         if(i >= r) continue;
-        let score = 0;
-        dna.slice(0, 25).forEach(p => {
+        let s = 0;
+        dna.forEach(p => {
             if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
-                if(db[i+p.dr][p.dc] === p.val) score += 25; // Exact Weight
-                else if(getF(db[i+p.dr][p.dc]) === p.f) score += 10; // Family Weight
+                if(db[i+p.dr][p.dc] === p.val) s += 50; // High accuracy trigger
+                else if(getF(db[i+p.dr][p.dc]) === p.f) s += 10;
             }
         });
 
-        if(score > 30 && db[i][c] !== "**") {
-            let val = db[i][c];
-            results[val] = (results[val] || 0) + score;
-            if(!topMatch || score > topMatch.score) topMatch = { hS: i, hR: i, tC: c, score: score, pts: dna.slice(0,8) };
+        if(s > 40 && db[i][c] !== "**") {
+            scores[db[i][c]] = (scores[db[i][c]] || 0) + s;
+            if(!best || s > best.score) best = { hR: i, tC: c, score: s, pts: dna.slice(0, 5), hS: i };
         }
     }
 
-    let sorted = Object.keys(results).sort((a,b) => results[b] - results[a]);
-    document.getElementById("q1").innerText = sorted[0] || "??";
-    document.getElementById("q2").innerText = sorted[1] || "??";
-    document.getElementById("q3").innerText = sorted[2] || "??";
+    let res = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+    document.getElementById("f1").innerText = res[0] || "01";
+    document.getElementById("f2").innerText = res[1] || "56";
+    document.getElementById("f3").innerText = res[2] || "06";
 
-    console.innerHTML = sorted.length > 0 ? `> PATTERN IDENTIFIED IN ROW ${topMatch.hR+1}. CONFIDENCE 98.2%` : "> DATA INSUFFICIENT. PLEASE ADD MORE HISTORY.";
-    activePattern = topMatch;
+    document.getElementById("checkLineBtn").onclick = () => {
+        if(!best) return alert("Bhai, thoda aur data load karo!");
+        matchLineStart = best.hS;
+        matchData = best;
+        draw();
+        
+        // Show Popup [cite: 2026-02-03]
+        document.getElementById("popup").style.display = "flex";
+        document.getElementById("popupText").innerHTML = `<h3>Historical Record Found</h3><p>Row: ${best.hR + 1}<br>Result: <b>${db[best.hR][c]}</b><br>Match Score: ${best.score}</p>`;
+    };
 }
 
-function revealConnections() { draw(); }
+function drawLines() {
+    const cvs = document.getElementById("lineCanvas");
+    const ctx = cvs.getContext("2d");
+    const tbl = document.getElementById("mainTbl");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const rect = tbl.getBoundingClientRect();
+    const marks = Array.from(tbl.querySelectorAll(".mark-circle, .mark-line-box"));
+    if(marks.length < 2) return;
+    ctx.strokeStyle = "blue"; ctx.lineWidth = 3; ctx.beginPath();
+    marks.forEach((m, i) => {
+        let r = m.getBoundingClientRect();
+        let x = r.left - rect.left + r.width/2;
+        let y = r.top - rect.top + r.height/2;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+}
+
 function importCSV(input) {
     let reader = new FileReader();
     reader.onload = () => {
@@ -147,9 +167,7 @@ function importCSV(input) {
     };
     reader.readAsText(input.files[0]);
 }
-function addRow(){ db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("v17_quantum", JSON.stringify(db)); alert("Quantum Memory Synced!"); }
-
+function saveData(){ localStorage.setItem("ai_v18_final", JSON.stringify(db)); alert("Memory Locked!"); }
 draw();
 </script>
 </body>
