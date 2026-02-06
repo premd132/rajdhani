@@ -2,184 +2,149 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V28 - Neural Oracle</title>
+<title>Kalyan AI V29 - Logic Total</title>
 <style>
-    :root { --gold: #ffd700; --neon-blue: #00f2ff; --neon-red: #ff0055; --bg: #030303; }
-    body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
+    :root { --gold: #ffd700; --blue: #00d2ff; --red: #ff3131; --bg: #050505; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    /* Advanced Dashboard */
-    .ai-brain-header { border: 2px solid var(--gold); background: linear-gradient(145deg, #111, #222); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); }
-    .status-bar { font-family: monospace; color: #0f0; font-size: 12px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+    .dashboard { border: 2px solid var(--gold); background: #111; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .nav-btn { background: #333; color: white; border: 1px solid #555; padding: 10px 18px; border-radius: 6px; cursor: pointer; margin: 5px; font-weight: bold; }
+    .nav-btn:hover { background: var(--gold); color: #000; }
+
+    .matrix-wrapper { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; position: relative; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 20px; }
+    td, th { border: 1.5px solid #222; width: 55px; height: 55px; text-align: center; position: relative; }
+    th { background: #800000; color: #fff; font-size: 11px; }
+
+    /* Logic Visuals [cite: 2026-02-03] */
+    .editable { cursor: text; outline: none; }
+    .blank { background: #eee !important; color: #aaa; }
+    .source-cell { background: #ffff00 !important; border: 3px solid var(--red) !important; color: #000; }
+    .target-cell { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
+    .pattern-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
     
-    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .neon-btn { background: transparent; color: #fff; border: 1px solid var(--gold); padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-    .neon-btn:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); }
+    .total-indicator { position: absolute; bottom: 2px; right: 2px; font-size: 10px; color: #00f; font-weight: bold; }
 
-    /* The Matrix [cite: 2026-02-03] */
-    .matrix-container { background: #fff; padding: 15px; border-radius: 10px; display: inline-block; position: relative; margin: 20px 0; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 22px; }
-    td, th { border: 2px solid #222; width: 60px; height: 60px; text-align: center; position: relative; }
-    th { background: #500; color: #fff; font-size: 12px; height: 35px; }
-
-    /* AI Visual Markers [cite: 2026-02-03] */
-    .editable-cell { cursor: text; transition: 0.2s; }
-    .editable-cell:focus { background: #eefbff; outline: none; }
-    .ai-source { background: #ffff00 !important; border: 3px solid var(--neon-red) !important; animation: pulse 2s infinite; }
-    .ai-target { border: 5px solid var(--neon-red) !important; background: rgba(255, 0, 85, 0.1); }
-    .ai-ghost-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--neon-blue); border-radius: 50%; }
-
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-
-    /* Neural Prediction Panel */
-    .neural-panel { background: #111; border: 2px solid var(--neon-blue); padding: 25px; border-radius: 20px; text-align: center; max-width: 600px; margin: 0 auto; }
-    .prediction-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-    .ai-card { background: #1a1a1a; padding: 15px; border-radius: 10px; border-bottom: 4px solid var(--neon-blue); }
-    .ai-card span { font-size: 10px; color: #aaa; letter-spacing: 1px; }
-    .ai-card b { font-size: 32px; color: var(--gold); display: block; margin-top: 5px; }
-
-    /* Popup [cite: 2026-02-03] */
-    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; backdrop-filter: blur(5px); }
-    .popup-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 30px; border-radius: 20px; z-index: 1001; width: 320px; border: 6px solid var(--neon-blue); }
+    .prediction-panel { background: #111; border: 2px solid var(--blue); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; }
+    .logic-grid { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+    .logic-card { background: #222; border-top: 4px solid var(--gold); padding: 15px; border-radius: 10px; width: 100px; }
+    .logic-card b { font-size: 30px; color: var(--gold); display: block; }
 </style>
 </head>
 <body>
 
-<div class="ai-brain-header">
-    <div class="status-bar" id="status">Neural Matrix Active | 10-Year History Loaded</div>
-    <h2 style="margin:0; color:var(--gold);">ORACLE NEURAL ENGINE V28</h2>
-    <div class="btn-group">
-        <button class="neon-btn" onclick="document.getElementById('csv').click()">📂 LOAD BIG DATA CSV</button>
+<div class="dashboard">
+    <h2 style="color:var(--gold); margin:0;">🧠 NEURAL LOGIC TOTAL V29</h2>
+    <div style="margin-top:15px;">
+        <button class="nav-btn" onclick="document.getElementById('csv').click()">📂 LOAD RECORD</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-        <button class="neon-btn" onclick="addRow()">➕ EXTEND WEEK</button>
-        <button class="neon-btn" style="border-color:#0f0;" onclick="saveData()">💾 SYNC BRAIN</button>
+        <button class="nav-btn" onclick="addRow()">➕ ADD NEW WEEK</button>
+        <button class="nav-btn" onclick="saveData()" style="background:#28a745; border:none;">💾 SYNC LOCAL STORAGE</button>
     </div>
 </div>
 
 <center>
-    <div class="matrix-container">
-        <table id="aiTable"></table>
+    <div class="matrix-wrapper">
+        <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="neural-panel">
-    <h3 style="margin:0; color:var(--neon-blue);">🔮 AI NEURAL PREDICTION (SUM + MIRROR)</h3>
-    <div class="prediction-grid">
-        <div class="ai-card"><span>JACKPOT</span><b id="res1">--</b></div>
-        <div class="ai-card"><span>RESERVE</span><b id="res2">--</b></div>
-        <div class="ai-card"><span>GHOST</span><b id="res3">--</b></div>
+<div class="prediction-panel">
+    <h3 style="margin:0; color:var(--blue);">🔮 LOGIC PREDICTION (NEXT PAIR)</h3>
+    <div class="logic-grid">
+        <div class="logic-card"><span>JACKPOT</span><b id="p1">--</b></div>
+        <div class="logic-card"><span>SUPPORT</span><b id="p2">--</b></div>
+        <div class="logic-card"><span>TOTAL</span><b id="pT">--</b></div>
     </div>
-    <div style="background:#222; padding:10px; border-radius:10px; font-size:14px; color:#0f0; margin-bottom:15px;">
-        AI Confidence: <span id="confidence">0%</span> | Logic: <span id="logicType">Waiting...</span>
-    </div>
-    <button onclick="revealPopup()" style="width:100%; padding:18px; background:var(--neon-blue); color:#000; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:16px; text-transform:uppercase;">🔍 CHECK LINE & BRAIN LOGIC</button>
+    <button onclick="showCheckLine()" style="width:100%; padding:15px; margin-top:15px; background:var(--blue); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">🔍 CHECK LOGIC LINE (POPUP)</button>
 </div>
 
-<div class="popup-overlay" id="overlay" onclick="closePopup()"></div>
-<div class="popup-box" id="popup" style="display:none;">
-    <h3 style="margin-top:0; color:#800000;">AI Logic Evidence</h3>
-    <div id="popBody" style="font-family:monospace; font-size:14px; text-align:left; background:#f0f0f0; padding:15px; border-radius:10px; color:#333;"></div>
-    <button onclick="closePopup()" style="margin-top:20px; width:100%; padding:12px; background:var(--neon-red); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">DISMISS</button>
+<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:100;"></div>
+<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; color:black; padding:25px; border-radius:15px; z-index:101; width:280px; text-align:center; border:5px solid var(--blue);">
+    <h3 style="margin-top:0">Historical Logic Found</h3>
+    <div id="popContent" style="font-size:24px; font-weight:bold; margin:20px 0; color:red;"></div>
+    <p style="font-size:12px; color:#666;">This prediction is based on the 10-week 'Total Sequence' mirror pattern.</p>
+    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-const families = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-
-let db = JSON.parse(localStorage.getItem("v28_brain")) || Array(15).fill(["**","**","**","**","**","**"]);
-let aiMeta = null;
+let db = JSON.parse(localStorage.getItem("v29_logic")) || Array(15).fill(["**","**","**","**","**","**"]);
+let meta = null;
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getCut(n){ return (parseInt(n) + 5) % 10; }
+function getT(v){ if(v==="**") return null; let s = (parseInt(v[0])||0) + (parseInt(v[1])||0); return s % 10; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = "editable-cell";
+            let cls = "editable";
             if(c === "**") cls += " blank";
-            if(aiMeta) {
-                if(ri === aiMeta.tR && ci === aiMeta.tC) cls += " ai-target";
-                if(aiMeta.sourceRows.includes(ri) && ci === aiMeta.tC) cls += " ai-source";
-                aiMeta.ghostRows.forEach(gr => { if(ri === gr.r && ci === gr.c) cls += " ai-ghost-circle"; });
+            if(meta) {
+                if(ri === meta.tR && ci === meta.tC) cls += " target-cell";
+                if(ri === meta.sR && ci === meta.tC) cls += " source-cell";
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " pattern-circle"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)">${c}</td>`;
+            let t = getT(c);
+            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="logicScan(${ri},${ci})">${c}${t!==null?`<span class="total-indicator">${t}</span>`:''}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById("aiTable").innerHTML = h;
+    document.getElementById("mainTbl").innerHTML = h;
 }
 
-function updateCell(r, c, v) {
-    db[r][c] = fmt(v);
-    neuralThink(r, c);
+function logicScan(r, c) {
+    if(db[r][c] !== "**") { meta = null; draw(); return; }
+    
+    // Capture 10-week 'Total Logic' DNA [cite: 2026-02-03]
+    let dna = [];
+    for(let i=1; i<=10; i++) {
+        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v, t:getT(v)}); });
+    }
+
+    let matches = {};
+    let best = null;
+
+    for(let i=0; i < db.length - 1; i++) {
+        if(i >= r-1) continue;
+        let score = 0;
+        dna.forEach(p => {
+            if(db[i+p.dr] && db[i+p.dr][p.dc] !== "**") {
+                if(getT(db[i+p.dr][p.dc]) === p.t) score += 100; // Logic Total Match
+                if(db[i+p.dr][p.dc] === p.val) score += 50; // Pair Match
+            }
+        });
+
+        if(score > 100 && db[i][c] !== "**") {
+            matches[db[i][c]] = (matches[db[i][c]] || 0) + score;
+            if(!best || score > best.score) best = { sR: i, tR: r, tC: c, score: score, pts: dna.slice(0,6) };
+        }
+    }
+
+    let sorted = Object.keys(matches).sort((a,b) => matches[b] - matches[a]);
+    document.getElementById("p1").innerText = sorted[0] || "??";
+    document.getElementById("p2").innerText = sorted[1] || "??";
+    document.getElementById("pT").innerText = getT(sorted[0]) ?? "--";
+    meta = best;
     draw();
 }
 
-function neuralThink(r, c) {
-    if(db[r][c] !== "**") { aiMeta = null; draw(); return; }
-
-    // 1. ADVANCED SUM LOGIC (Based on user's Example)
-    let openSum = 0, closeSum = 0, sourceRows = [], logStr = "VERTICAL SUM CALC:\n";
-    let count = 0;
-    for(let i = r-1; i >= 0 && count < 5; i--) {
-        if(db[i][c] !== "**") {
-            let o = parseInt(db[i][c][0]);
-            let cl = parseInt(db[i][c][1]);
-            openSum += o; closeSum += cl;
-            sourceRows.push(i);
-            logStr += `Row ${i+1}: ${o}+${cl}\n`;
-            count++;
-        }
-    }
-
-    let pOpen = openSum % 10;
-    let pClose = closeSum % 10;
-    let jodi1 = `${pOpen}${pClose}`;
-    let jodi2 = `${getCut(pOpen)}${getCut(pClose)}`;
-
-    // 2. GHOST PATTERN SCAN (AI's Own Brain) [cite: 2026-02-03]
-    let ghostPoints = [];
-    for(let i = 0; i < db.length - 5; i++) {
-        if(i >= r-5) continue;
-        if(db[i][c] === jodi1 || db[i][c] === jodi2) {
-            ghostPoints.push({r: i, c: c});
-        }
-    }
-
-    aiMeta = {
-        tR: r, tC: c,
-        sourceRows: sourceRows,
-        ghostRows: ghostPoints,
-        log: logStr + `Total Open: ${openSum} -> ${pOpen}\nTotal Close: ${closeSum} -> ${pClose}`,
-        res: [jodi1, jodi2, `${pOpen}${getCut(pClose)}`]
-    };
-
-    document.getElementById("res1").innerText = aiMeta.res[0];
-    document.getElementById("res2").innerText = aiMeta.res[1];
-    document.getElementById("res3").innerText = aiMeta.res[2];
-    document.getElementById("confidence").innerText = count === 5 ? "98%" : (count*20) + "%";
-    document.getElementById("logicType").innerText = count === 5 ? "Mirror Cumulative Sum" : "Partial Scan";
-}
-
-function revealPopup() {
-    if(!aiMeta) return alert("Pehle kisi blank cell par click karein!");
+function showCheckLine() {
+    if(!meta) return alert("Pehle khali cell pe click karein!");
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
-    document.getElementById("popBody").innerText = aiMeta.log;
+    document.getElementById("popContent").innerText = "Logic Pair: " + db[meta.sR][meta.tC];
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem("v28_brain", JSON.stringify(db)); alert("Neural Data Synced!"); }
-function importCSV(input) {
-    let reader = new FileReader();
-    reader.onload = () => {
-        db = reader.result.split('\n').filter(l => l.trim()).map(l => l.split(',').map(v => fmt(v.trim())));
-        draw();
-    };
-    reader.readAsText(input.files[0]);
+function saveData() { localStorage.setItem("v29_logic", JSON.stringify(db)); alert("Logic Synced!"); }
+function importCSV(i) {
+    let r = new FileReader();
+    r.onload = () => { db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); draw(); };
+    r.readAsText(i.files[0]);
 }
-
 draw();
 </script>
 </body>
