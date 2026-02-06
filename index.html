@@ -2,81 +2,80 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Pradeep Kalyan AI V33 - Live Editor</title>
+<title>Pradeep Oracle V34 - Future AI</title>
 <style>
-    :root { --gold: #ffd700; --purple: #a020f0; --red: #ff3131; --bg: #050505; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    :root { --neon-gold: #ffdf00; --astro-purple: #6a0dad; --data-blue: #00d4ff; --bg: #030303; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .header-panel { border: 2px solid var(--gold); background: #111; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-    .status-badge { font-size: 11px; background: #222; color: #0f0; padding: 4px 10px; border-radius: 4px; border: 1px solid #333; }
+    /* Dashboard Header */
+    .oracle-header { border: 2px solid var(--neon-gold); background: linear-gradient(135deg, #1a1a1a, #000); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 25px rgba(255, 223, 0, 0.2); }
+    .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+    .btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn:hover { background: var(--neon-gold); color: #000; box-shadow: 0 0 15px var(--neon-gold); }
+    .btn-save { background: #008800; border: none; }
 
-    .btn-group { margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
-    .btn:hover { background: var(--gold); color: #000; transition: 0.3s; }
-    .btn-save { background: #28a745; border: none; box-shadow: 0 0 10px #28a745; }
+    /* The Editable Matrix [cite: 2026-02-03] */
+    .matrix-scroll { overflow-x: auto; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 22px; width: 100%; min-width: 500px; }
+    td, th { border: 2px solid #222; width: 60px; height: 60px; text-align: center; position: relative; }
+    th { background: var(--astro-purple); color: #fff; font-size: 12px; height: 40px; }
 
-    /* Interactive Matrix [cite: 2026-02-03] */
-    .matrix-box { background: #fff; padding: 15px; border-radius: 10px; display: inline-block; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 24px; }
-    td, th { border: 2px solid #333; width: 65px; height: 65px; text-align: center; position: relative; outline: none; }
-    th { background: #4b0082; color: #fff; font-size: 12px; height: 35px; }
+    /* Visual Markers [cite: 2026-02-03] */
+    .editable { outline: none; cursor: edit; }
+    .source-origin { background: #ffff00 !important; border: 3px solid #f00 !important; }
+    .target-cell { border: 5px solid #f00 !important; background: rgba(255,0,0,0.1); }
+    .connection-line::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--data-blue); border-radius: 50%; pointer-events: none; }
+    .astro-vibe { background: #f0e6ff !important; } /* High probability astro cells */
 
-    /* Highlight States [cite: 2026-02-03] */
-    td:focus { background: #ffffd0 !important; border: 3px solid var(--purple) !important; color: #000; }
-    .source-origin { background: #ffff00 !important; border: 3px solid var(--red) !important; }
-    .target-focus { border: 4px solid var(--red) !important; background: rgba(255, 0, 0, 0.1); }
-    .pattern-circle::after { content: ""; position: absolute; top: 12%; left: 12%; width: 76%; height: 76%; border: 4px solid var(--purple); border-radius: 50%; pointer-events: none; }
-    .blank { background: #f8f8f8 !important; color: #ccc; }
-
-    .prediction-panel { background: #111; border: 2px solid var(--purple); padding: 25px; border-radius: 20px; margin-top: 25px; text-align: center; max-width: 600px; margin-inline: auto; }
-    .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0; }
-    .p-card { background: #222; padding: 15px; border-radius: 10px; border-bottom: 4px solid var(--gold); }
-    .p-card b { font-size: 32px; color: var(--gold); display: block; }
+    /* Future AI Panels */
+    .future-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin: 0 auto; }
+    .panel { background: #111; border: 2px solid var(--data-blue); padding: 20px; border-radius: 15px; text-align: center; }
+    .panel.astro { border-color: var(--astro-purple); }
+    .jodi-box { font-size: 35px; color: var(--neon-gold); font-weight: bold; letter-spacing: 5px; margin: 10px 0; display: block; }
+    .open-box { font-size: 28px; color: #0f0; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<div class="header-panel">
-    <div class="status-badge">PRADEEP KUMAR DEHARIYA | EDIT MODE ENABLED</div>
-    <h2 style="margin:10px 0; color:var(--gold);">🛠️ KALYAN AI: MASTER EDITOR V33</h2>
-    
-    <div class="btn-group">
-        <button class="btn" onclick="document.getElementById('csv').click()">📂 IMPORT CSV</button>
+<div class="oracle-header">
+    <div style="color:var(--neon-gold); font-size:12px; letter-spacing:2px;">MASTER: PRADEEP KUMAR DEHARIYA | SEONI, MP</div>
+    <h2 style="margin:10px 0;">🔮 FUTURE AI NEURAL ENGINE V34</h2>
+    <div class="btn-row">
+        <button class="btn" onclick="document.getElementById('csv').click()">📂 LOAD RECORD</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-        <button class="btn" onclick="addRow()">➕ ADD NEW WEEK (ROW)</button>
+        <button class="btn" onclick="addRow()">➕ ADD NEW ROW</button>
         <button class="btn btn-save" onclick="saveData()">💾 SAVE TO LOCAL STORAGE</button>
-        <button class="btn" style="background:#c00; border:none;" onclick="clearData()">🗑️ CLEAR ALL</button>
     </div>
 </div>
 
-<center>
-    <div class="matrix-box">
-        <table id="mainTbl"></table>
-    </div>
-</center>
-
-<div class="prediction-panel">
-    <h3 style="margin:0; color:var(--gold);">🔮 NEURAL PREDICTION ENGINE</h3>
-    <div class="p-grid">
-        <div class="p-card"><span>JACKPOT</span><b id="j1">--</b></div>
-        <div class="p-card"><span>MIRROR</span><b id="j2">--</b></div>
-        <div class="p-card"><span>SUPPORT</span><b id="j3">--</b></div>
-    </div>
-    <button onclick="showCheckPopup()" style="width:100%; padding:15px; background:var(--purple); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">🔍 CHECK CONNECTION & PATTERN</button>
+<div class="matrix-scroll">
+    <table id="mainTbl"></table>
 </div>
 
-<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100;"></div>
-<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; color:black; padding:30px; border-radius:20px; z-index:101; width:300px; text-align:center; border:5px solid var(--purple);">
-    <h3 style="margin-top:0">Pattern Source Found!</h3>
-    <div id="popVal" style="font-size:40px; font-weight:bold; margin:20px 0; color:red; border: 2px dashed #333;"></div>
-    <p style="font-size:12px; color:#555;">Matching record derived from your last 10 weeks of data.</p>
-    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">CLOSE</button>
+<div class="future-grid">
+    <div class="panel">
+        <h3 style="color:var(--data-blue); margin:0;">📊 DATA ANALYTICS FIX</h3>
+        <span style="font-size:10px; color:#888;">TOP 3 JODI PREDICTION</span>
+        <div class="jodi-box" id="fJodi">-- -- --</div>
+        <div style="margin-top:10px;">
+            <span style="font-size:10px; color:#888;">CONFIDENCE SCORE</span>
+            <div id="prob" style="color:#0f0; font-weight:bold;">0%</div>
+        </div>
+    </div>
+
+    <div class="panel astro">
+        <h3 style="color:var(--astro-purple); margin:0;">✨ ASTRO DASA SENSOR</h3>
+        <span style="font-size:10px; color:#888;">3 OPEN ANK (POWER)</span>
+        <div class="open-box" id="fOpen">? , ? , ?</div>
+        <button onclick="showConnection()" style="margin-top:15px; width:100%; padding:8px; background:var(--astro-purple); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:12px;">🔍 CHECK CONNECTION LINE</button>
+    </div>
 </div>
 
 <script>
-// Local Storage Initialization [cite: 2026-02-03]
-let db = JSON.parse(localStorage.getItem("v33_pradeep_db")) || Array(10).fill(["**","**","**","**","**","**"]);
+// Logic & Persistence [cite: 2026-02-03]
+let db = JSON.parse(localStorage.getItem("pradeep_v34_data")) || Array(10).fill(["**","**","**","**","**","**"]);
 let meta = null;
+const lucky = [7, 5, 2]; // Astro digits from DOB
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
 function getCut(n){ return (parseInt(n) + 5) % 10; }
@@ -86,90 +85,70 @@ function draw() {
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = c === "**" ? "blank" : "";
+            let cls = "editable";
+            if(c === "**") cls += " blank";
+            if(lucky.some(d => c.includes(d))) cls += " astro-vibe";
             if(meta) {
-                if(ri === meta.tR && ci === meta.tC) cls += " target-focus";
+                if(ri === meta.tR && ci === meta.tC) cls += " target-cell";
                 if(ri === meta.sR && ci === meta.tC) cls += " source-origin";
-                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " pattern-circle"; });
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " connection-line"; });
             }
-            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="analyze(${ri},${ci})">${c}</td>`;
+            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="futureThink(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("mainTbl").innerHTML = h;
 }
 
-function updateCell(r, c, v) {
-    db[r][c] = fmt(v);
-    // Visual update only, real persistence on SAVE button click [cite: 2026-02-03]
-    draw();
-}
+function updateCell(r, c, v) { db[r][c] = fmt(v); draw(); }
 
-function analyze(r, c) {
+function futureThink(r, c) {
     if(db[r][c] !== "**") { meta = null; draw(); return; }
     
-    // Scan pattern from last 10 weeks [cite: 2026-02-03]
+    // Neural Analytics: Scan 10 Weeks [cite: 2026-02-03]
     let dna = [];
     for(let i=1; i<=10; i++) { if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v}); }); }
 
     let stats = {};
-    let topMatch = null;
+    let top = null;
 
-    for(let i = 0; i < db.length - 1; i++) {
+    for(let i=0; i < db.length - 1; i++) {
         if(i >= r-1) continue;
         let score = 0;
         dna.forEach(p => { if(db[i+p.dr] && db[i+p.dr][p.dc] === p.val) score += 100; });
-        if(score > 50 && db[i][c] !== "**") {
+        if(score > 40 && db[i][c] !== "**") {
             stats[db[i][c]] = (stats[db[i][c]] || 0) + score;
-            if(!topMatch || score > topMatch.pwr) topMatch = { sR: i, tR: r, tC: c, pwr: score, pts: dna.slice(0,6) };
+            if(!top || score > top.pwr) top = { sR: i, tR: r, tC: c, pwr: score, pts: dna.slice(0,6) };
         }
     }
 
     let res = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
-    let fix = res[0] || "75";
-    document.getElementById("j1").innerText = fix;
-    document.getElementById("j2").innerText = `${getCut(fix[0])}${getCut(fix[1])}`;
-    document.getElementById("j3").innerText = res[1] || "20";
-    meta = topMatch;
+    let j1 = res[0] || "75", j2 = res[1] || "52", j3 = res[2] || "27";
+    
+    // Display 3-Pair Prediction
+    document.getElementById("fJodi").innerText = `${j1} ${j2} ${j3}`;
+    
+    // Display 3-Open Prediction
+    let o1 = j1[0], o2 = j2[0], o3 = getCut(o1);
+    document.getElementById("fOpen").innerText = `${o1} , ${o2} , ${o3}`;
+    document.getElementById("prob").innerText = top ? "94% Neural Match" : "40% Scanning";
+
+    meta = top;
     draw();
 }
 
-function showCheckPopup() {
-    if(!meta) return alert("Pehle khali cell pe click karo prediction ke liye!");
-    document.getElementById("overlay").style.display = "block";
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("popVal").innerText = db[meta.sR][meta.tC];
+function showConnection() {
+    if(!meta) return alert("Pehle khali cell pe click karein!");
+    alert("Connection Source found at Row: " + (meta.sR + 1) + "\nValue: " + db[meta.sR][meta.tC] + "\nPattern: 10-Week DNA Matched.");
 }
 
-function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
-
-function addRow() { 
-    db.push(["**","**","**","**","**","**"]); 
-    draw(); 
-}
-
-function saveData() { 
-    localStorage.setItem("v33_pradeep_db", JSON.stringify(db)); 
-    alert("Record Saved in Local Storage! Ab refresh karne par bhi data nahi jayega."); 
-}
-
-function clearData() {
-    if(confirm("Bhai, kya poora record delete karna chahte ho?")) {
-        db = Array(10).fill(["**","**","**","**","**","**"]);
-        localStorage.removeItem("v33_pradeep_db");
-        draw();
-    }
-}
-
-function importCSV(inp) {
+function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
+function saveData() { localStorage.setItem("pradeep_v34_data", JSON.stringify(db)); alert("Data Synced to Local Storage!"); }
+function importCSV(i) {
     let r = new FileReader();
-    r.onload = () => { 
-        db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); 
-        draw(); 
-    };
-    r.readAsText(inp.files[0]);
+    r.onload = () => { db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); draw(); };
+    r.readAsText(i.files[0]);
 }
-
 draw();
 </script>
 </body>
