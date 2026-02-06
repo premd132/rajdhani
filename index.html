@@ -2,48 +2,42 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V31 - Astro-Neural Oracle</title>
+<title>Kalyan AI V32 - Storage & Edit Master</title>
 <style>
     :root { --gold: #ffd700; --purple: #a020f0; --red: #ff3131; --bg: #050505; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
-    .astro-header { border: 2px solid var(--purple); background: linear-gradient(45deg, #1a0033, #000); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(160, 32, 240, 0.3); }
-    .user-tag { font-size: 12px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
-    
-    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
-    .btn:hover { background: var(--purple); border-color: var(--gold); }
+    .header-panel { border: 2px solid var(--gold); background: #111; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
+    .btn:hover { background: var(--gold); color: #000; }
+    .btn-save { background: #28a745; border: none; box-shadow: 0 0 10px #28a745; }
 
-    /* The Matrix */
+    /* The Matrix with EDIT Support [cite: 2026-02-03] */
     .matrix-box { background: #fff; padding: 10px; border-radius: 10px; display: inline-block; position: relative; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 20px; }
-    td, th { border: 2px solid #333; width: 55px; height: 55px; text-align: center; position: relative; }
-    th { background: #300066; color: #fff; font-size: 11px; }
+    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 22px; }
+    td, th { border: 2px solid #333; width: 60px; height: 60px; text-align: center; position: relative; outline: none; }
+    th { background: #4b0082; color: #fff; font-size: 11px; height: 35px; }
 
-    /* Astro Marking */
-    .editable { cursor: text; outline: none; }
-    .source-cell { background: #ffff00 !important; border: 3px solid var(--red) !important; box-shadow: 0 0 10px red; }
-    .astro-vibration::before { content: "✨"; position: absolute; top: -5px; right: -5px; font-size: 12px; z-index: 5; }
-    .connection-line::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid #a020f0; border-radius: 50%; pointer-events: none; }
-    .blank { background: #eee !important; color: #aaa; }
+    /* Visual Feedback [cite: 2026-02-03] */
+    td:focus { background: #eefbff; border: 3px solid var(--purple) !important; }
+    .source-origin { background: #ffff00 !important; border: 3px solid var(--red) !important; }
+    .target-focus { border: 4px solid var(--red) !important; background: rgba(255, 0, 0, 0.1); }
+    .connection-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--purple); border-radius: 50%; pointer-events: none; }
+    .blank { background: #f2f2f2 !important; color: #999; }
 
-    /* Astro Panel */
-    .astro-panel { background: #111; border: 2px solid var(--gold); padding: 25px; border-radius: 20px; margin-top: 25px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: center; }
-    .astro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-    .astro-card { background: #1a1a1a; border-top: 4px solid var(--purple); padding: 15px; border-radius: 12px; position: relative; }
-    .astro-card b { font-size: 32px; color: var(--gold); display: block; }
+    .control-footer { background: #111; border: 2px solid var(--purple); padding: 25px; border-radius: 20px; margin-top: 25px; text-align: center; max-width: 600px; margin-left: auto; margin-right: auto; }
 </style>
 </head>
 <body>
 
-<div class="astro-header">
-    <div class="user-tag">Master User: Pradeep Kumar Dehariya</div>
-    <h2 style="margin:5px 0; color:var(--gold);">🌌 ASTRO-NEURAL ORACLE V31</h2>
-    <div style="font-size: 10px; color:#aaa;">Luck Vibration: 7 (Moolank) | Destiny: 5 (Bhagyank)</div>
-    <div style="margin-top:15px;">
-        <button class="btn" onclick="document.getElementById('csv').click()">📂 LOAD 10-YEAR CSV</button>
-        <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-        <button class="btn" onclick="addRow()">➕ ADD NEW WEEK</button>
-        <button class="btn" style="background:#28a745; border:none;" onclick="saveData()">💾 SYNC DATA</button>
+<div class="header-panel">
+    <div style="font-size: 12px; color:var(--gold);">User: Pradeep Kumar Dehariya | Astro: 7-5-2</div>
+    <h2 style="margin:5px 0;">🛠️ EDIT & LOCAL STORAGE MASTER V32</h2>
+    <div style="margin-top:10px;">
+        <button class="btn" onclick="document.getElementById('csvIn').click()">📂 IMPORT CSV</button>
+        <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
+        <button class="btn" onclick="addRow()">➕ ADD ROW</button>
+        <button class="btn btn-save" onclick="saveData()">💾 SAVE TO LOCAL STORAGE</button>
     </div>
 </div>
 
@@ -53,60 +47,59 @@
     </div>
 </center>
 
-<div class="astro-panel">
-    <h3 style="margin:0; color:var(--gold);">🌟 PERSONALIZED ASTRO-FIX JODI</h3>
-    <div class="astro-grid">
-        <div class="astro-card"><span>ASTRO-FIX</span><b id="a1">--</b></div>
-        <div class="astro-card"><span>LUCKY CUT</span><b id="a2">--</b></div>
-        <div class="astro-card"><span>VIBRATION</span><b id="a3">--</b></div>
+<div class="control-footer">
+    <h3 style="margin:0; color:var(--gold);">🔮 ASTRO-NEURAL PREDICTION</h3>
+    <div style="display:flex; justify-content:center; gap:15px; margin:15px 0;">
+        <div style="background:#222; padding:15px; border-radius:10px; width:100px;"><span>FIX</span><b id="res1" style="display:block; font-size:30px; color:var(--gold);">--</b></div>
+        <div style="background:#222; padding:15px; border-radius:10px; width:100px;"><span>CUT</span><b id="res2" style="display:block; font-size:30px; color:var(--gold);">--</b></div>
     </div>
-    <button onclick="revealAstro()" style="width:100%; padding:15px; background:var(--purple); color:#fff; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:16px;">🔍 CHECK ASTRO-CONNECTION (POPUP)</button>
+    <button onclick="checkLine()" style="width:100%; padding:15px; background:var(--purple); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">🔍 CHECK CONNECTION LINE</button>
 </div>
 
-<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100;"></div>
-<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; color:black; padding:30px; border-radius:20px; z-index:101; width:300px; text-align:center; border:6px solid var(--gold);">
-    <h3 style="margin-top:0; color:#4b0082;">Astro-Logic Evidence</h3>
-    <div id="popVal" style="font-size:35px; font-weight:bold; margin:15px 0; color:#d4af37; text-shadow: 1px 1px #000;"></div>
-    <p id="popText" style="font-size:12px; color:#444;"></p>
-    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">CLOSE</button>
+<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100;"></div>
+<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; color:black; padding:25px; border-radius:15px; z-index:101; text-align:center; width:280px; border:5px solid var(--purple);">
+    <h3 style="margin-top:0">Logic Found!</h3>
+    <div id="popVal" style="font-size:35px; font-weight:bold; margin:15px 0; color:red;"></div>
+    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem("v31_astro")) || Array(15).fill(["**","**","**","**","**","**"]);
+// Data persistence with Local Storage [cite: 2026-02-03]
+let db = JSON.parse(localStorage.getItem("v32_pradeep_storage")) || Array(10).fill(["**","**","**","**","**","**"]);
 let meta = null;
-const luckyDigits = [7, 5, 2]; // Derived from Pradeep's DOB
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getCut(n){ return (parseInt(n) + 5) % 10; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     db.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = "editable";
-            if(c === "**") cls += " blank";
-            let isLucky = luckyDigits.some(d => c.includes(d.toString()));
-            if(isLucky && c !== "**") cls += " astro-vibration";
+            let cls = c === "**" ? "blank" : "";
             if(meta) {
-                if(ri === meta.tR && ci === meta.tC) cls += " target-cell";
-                if(ri === meta.sR && ci === meta.tC) cls += " source-cell";
-                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " connection-line"; });
+                if(ri === meta.tR && ci === meta.tC) cls += " target-focus";
+                if(ri === meta.sR && ci === meta.tC) cls += " source-origin";
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " connection-circle"; });
             }
-            h += `<td class="${cls}" contenteditable="true" onblur="db[${ri}][${ci}]=fmt(this.innerText);draw();" onclick="astroScan(${ri},${ci})">${c}</td>`;
+            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="scan(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("mainTbl").innerHTML = h;
 }
 
-function astroScan(r, c) {
+function updateCell(r, c, v) {
+    db[r][c] = fmt(v);
+    // Auto-save on edit is possible, but we'll use the button for explicit Local Storage [cite: 2026-02-03]
+    draw();
+}
+
+function scan(r, c) {
     if(db[r][c] !== "**") { meta = null; draw(); return; }
     
+    // 10-week scanning logic [cite: 2026-02-03]
     let dna = [];
-    for(let i=1; i<=10; i++) {
-        if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v}); });
-    }
+    for(let i=1; i<=10; i++) { if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v}); }); }
 
     let stats = {};
     let top = null;
@@ -115,42 +108,40 @@ function astroScan(r, c) {
         if(i >= r-1) continue;
         let pwr = 0;
         dna.forEach(p => { if(db[i+p.dr] && db[i+p.dr][p.dc] === p.val) pwr += 100; });
-        
-        // Astro Weightage: Boosting numbers containing 7, 5, 2
-        let jodi = db[i][c];
-        if(jodi !== "**") {
-            if(jodi.includes('7') || jodi.includes('5')) pwr += 40;
-            stats[jodi] = (stats[jodi] || 0) + pwr;
+        if(pwr > 50 && db[i][c] !== "**") {
+            stats[db[i][c]] = (stats[db[i][c]] || 0) + pwr;
             if(!top || pwr > top.pwr) top = { sR: i, tR: r, tC: c, pwr: pwr, pts: dna.slice(0,6) };
         }
     }
 
     let results = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
-    let fix = results[0] || "75";
-    document.getElementById("a1").innerText = fix;
-    document.getElementById("a2").innerText = `${getCut(fix[0])}${getCut(fix[1])}`;
-    document.getElementById("a3").innerText = results[1] || "27";
-    
+    document.getElementById("res1").innerText = results[0] || "75";
+    document.getElementById("res2").innerText = results[1] || "20";
     meta = top;
     draw();
 }
 
-function revealAstro() {
-    if(!meta) return alert("Pehle table ke khali cell par click karein!");
+function checkLine() {
+    if(!meta) return alert("Click a blank cell first!");
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
     document.getElementById("popVal").innerText = db[meta.sR][meta.tC];
-    document.getElementById("popText").innerText = "Historical match found. Astro-vibration (7/5) is strong for this pair.";
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem("v31_astro", JSON.stringify(db)); alert("Astro-Neural Data Synced!"); }
+
+function saveData() { 
+    localStorage.setItem("v32_pradeep_storage", JSON.stringify(db)); 
+    alert("Data saved to Local Storage! Refresh karne par bhi nahi jayega."); 
+}
+
 function importCSV(inp) {
     let r = new FileReader();
     r.onload = () => { db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); draw(); };
     r.readAsText(inp.files[0]);
 }
+
 draw();
 </script>
 </body>
