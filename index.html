@@ -1,155 +1,141 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Pradeep Oracle V34 - Future AI</title>
-<style>
-    :root { --neon-gold: #ffdf00; --astro-purple: #6a0dad; --data-blue: #00d4ff; --bg: #030303; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    
-    /* Dashboard Header */
-    .oracle-header { border: 2px solid var(--neon-gold); background: linear-gradient(135deg, #1a1a1a, #000); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 25px rgba(255, 223, 0, 0.2); }
-    .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
-    .btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-    .btn:hover { background: var(--neon-gold); color: #000; box-shadow: 0 0 15px var(--neon-gold); }
-    .btn-save { background: #008800; border: none; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalyan Pro – AI Pattern System</title>
+    <style>
+        :root { --gold: #ffd700; --blue: #3e86ff; --red: #ff3e3e; --bg: #0a0a0a; --panel: #1a1a1a; }
+        body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
+        
+        /* LOGIN PAGE STYLING */
+        #login-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .login-card {
+            background: var(--panel); padding: 30px; border-radius: 15px;
+            border: 1px solid var(--gold); text-align: center; width: 85%; max-width: 350px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+        .login-card h1 { color: var(--gold); margin-bottom: 20px; font-size: 24px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+        .login-input {
+            width: 100%; padding: 12px; background: #000; border: 1px solid #333;
+            color: #fff; border-radius: 8px; box-sizing: border-box; outline: none;
+        }
+        .btn-primary { 
+            background: var(--gold); color: #000; width: 100%; padding: 12px; 
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;
+        }
 
-    /* The Editable Matrix [cite: 2026-02-03] */
-    .matrix-scroll { overflow-x: auto; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 22px; width: 100%; min-width: 500px; }
-    td, th { border: 2px solid #222; width: 60px; height: 60px; text-align: center; position: relative; }
-    th { background: var(--astro-purple); color: #fff; font-size: 12px; height: 40px; }
-
-    /* Visual Markers [cite: 2026-02-03] */
-    .editable { outline: none; cursor: edit; }
-    .source-origin { background: #ffff00 !important; border: 3px solid #f00 !important; }
-    .target-cell { border: 5px solid #f00 !important; background: rgba(255,0,0,0.1); }
-    .connection-line::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--data-blue); border-radius: 50%; pointer-events: none; }
-    .astro-vibe { background: #f0e6ff !important; } /* High probability astro cells */
-
-    /* Future AI Panels */
-    .future-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin: 0 auto; }
-    .panel { background: #111; border: 2px solid var(--data-blue); padding: 20px; border-radius: 15px; text-align: center; }
-    .panel.astro { border-color: var(--astro-purple); }
-    .jodi-box { font-size: 35px; color: var(--neon-gold); font-weight: bold; letter-spacing: 5px; margin: 10px 0; display: block; }
-    .open-box { font-size: 28px; color: #0f0; font-weight: bold; }
-</style>
+        /* MAIN APP STYLING */
+        .app-header { background: #111; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .user-tag { color: var(--gold); font-size: 12px; font-weight: bold; }
+        .logout-btn { background: #333; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 10px; }
+        
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; overflow: hidden; max-width: 95%; }
+        table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; width: 100%; }
+        td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 35px; height: 35px; }
+        th { background: #800000; color: white; }
+        td[contenteditable] { background: #fffbe6; outline: none; }
+        .circle { border: 2.5px solid var(--red); border-radius: 100%; background: rgba(255, 0, 0, 0.15); z-index: 5; }
+        .hidden { display: none !important; }
+        .card { background: var(--panel); padding: 12px; border-radius: 8px; border-left: 4px solid var(--gold); margin: 10px; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+    </style>
 </head>
 <body>
 
-<div class="oracle-header">
-    <div style="color:var(--neon-gold); font-size:12px; letter-spacing:2px;">MASTER: PRADEEP KUMAR DEHARIYA | SEONI, MP</div>
-    <h2 style="margin:10px 0;">🔮 FUTURE AI NEURAL ENGINE V34</h2>
-    <div class="btn-row">
-        <button class="btn" onclick="document.getElementById('csv').click()">📂 LOAD RECORD</button>
-        <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
-        <button class="btn" onclick="addRow()">➕ ADD NEW ROW</button>
-        <button class="btn btn-save" onclick="saveData()">💾 SAVE TO LOCAL STORAGE</button>
-    </div>
-</div>
-
-<div class="matrix-scroll">
-    <table id="mainTbl"></table>
-</div>
-
-<div class="future-grid">
-    <div class="panel">
-        <h3 style="color:var(--data-blue); margin:0;">📊 DATA ANALYTICS FIX</h3>
-        <span style="font-size:10px; color:#888;">TOP 3 JODI PREDICTION</span>
-        <div class="jodi-box" id="fJodi">-- -- --</div>
-        <div style="margin-top:10px;">
-            <span style="font-size:10px; color:#888;">CONFIDENCE SCORE</span>
-            <div id="prob" style="color:#0f0; font-weight:bold;">0%</div>
+<div id="login-page">
+    <div class="login-card">
+        <h1>🏆 KALYAN PRO AI</h1>
+        <div class="input-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="user-mobile" class="login-input" placeholder="Enter Mobile" maxlength="10">
         </div>
+        <div class="input-group">
+            <label>Access PIN</label>
+            <input type="password" id="user-pin" class="login-input" placeholder="Any PIN to signup">
+        </div>
+        <button class="btn-primary" onclick="attemptLogin()">ENTER SYSTEM</button>
+    </div>
+</div>
+
+<div id="main-app" class="hidden">
+    <div class="app-header">
+        <span class="user-tag" id="display-user"></span>
+        <button class="logout-btn" onclick="logout()">LOGOUT</button>
     </div>
 
-    <div class="panel astro">
-        <h3 style="color:var(--astro-purple); margin:0;">✨ ASTRO DASA SENSOR</h3>
-        <span style="font-size:10px; color:#888;">3 OPEN ANK (POWER)</span>
-        <div class="open-box" id="fOpen">? , ? , ?</div>
-        <button onclick="showConnection()" style="margin-top:15px; width:100%; padding:8px; background:var(--astro-purple); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:12px;">🔍 CHECK CONNECTION LINE</button>
+    <h2 style="text-align:center; color:var(--gold);">KALYAN PATTERN AI</h2>
+
+    <div class="toolbar">
+        <button onclick="addRow()" style="background:#444; color:#fff; border:none; padding:8px; border-radius:4px;">➕ Add Row</button>
+        <span id="admin-tools" class="hidden">
+            <button onclick="saveData()" style="background:#28a745; color:white; border:none; padding:8px; border-radius:4px;">💾 Save Data</button>
+            <button onclick="clearData()" style="background:#dc3545; color:white; border:none; padding:8px; border-radius:4px;">🗑️ Reset</button>
+        </span>
+    </div>
+
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
+
+    <div class="card">
+        <h3 style="color:var(--gold); margin:0 0 10px 0;">🤖 AI Prediction</h3>
+        <div id="ai">Pattern select karein...</div>
     </div>
 </div>
 
 <script>
-// Logic & Persistence [cite: 2026-02-03]
-let db = JSON.parse(localStorage.getItem("pradeep_v34_data")) || Array(10).fill(["**","**","**","**","**","**"]);
-let meta = null;
-const lucky = [7, 5, 2]; // Astro digits from DOB
+const STORAGE_KEY = "pdata_kalyan_v2";
+const ADMIN_NUMBER = "1234567890"; // 👈 Yahan apna mobile number likhein admin banne ke liye
 
-function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
-function getCut(n){ return (parseInt(n) + 5) % 10; }
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["**","**","**","**","**","**"]];
 
-function draw() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    db.forEach((r, ri) => {
-        h += "<tr>";
-        r.forEach((c, ci) => {
-            let cls = "editable";
-            if(c === "**") cls += " blank";
-            if(lucky.some(d => c.includes(d))) cls += " astro-vibe";
-            if(meta) {
-                if(ri === meta.tR && ci === meta.tC) cls += " target-cell";
-                if(ri === meta.sR && ci === meta.tC) cls += " source-origin";
-                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " connection-line"; });
-            }
-            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="futureThink(${ri},${ci})">${c}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById("mainTbl").innerHTML = h;
+function attemptLogin() {
+    const mobile = document.getElementById('user-mobile').value;
+    if(mobile.length < 10) { alert("Mobile number sahi nahi hai!"); return; }
+    localStorage.setItem("session_mobile", mobile);
+    enterApp(mobile);
 }
 
-function updateCell(r, c, v) { db[r][c] = fmt(v); draw(); }
-
-function futureThink(r, c) {
-    if(db[r][c] !== "**") { meta = null; draw(); return; }
-    
-    // Neural Analytics: Scan 10 Weeks [cite: 2026-02-03]
-    let dna = [];
-    for(let i=1; i<=10; i++) { if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v}); }); }
-
-    let stats = {};
-    let top = null;
-
-    for(let i=0; i < db.length - 1; i++) {
-        if(i >= r-1) continue;
-        let score = 0;
-        dna.forEach(p => { if(db[i+p.dr] && db[i+p.dr][p.dc] === p.val) score += 100; });
-        if(score > 40 && db[i][c] !== "**") {
-            stats[db[i][c]] = (stats[db[i][c]] || 0) + score;
-            if(!top || score > top.pwr) top = { sR: i, tR: r, tC: c, pwr: score, pts: dna.slice(0,6) };
-        }
-    }
-
-    let res = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
-    let j1 = res[0] || "75", j2 = res[1] || "52", j3 = res[2] || "27";
-    
-    // Display 3-Pair Prediction
-    document.getElementById("fJodi").innerText = `${j1} ${j2} ${j3}`;
-    
-    // Display 3-Open Prediction
-    let o1 = j1[0], o2 = j2[0], o3 = getCut(o1);
-    document.getElementById("fOpen").innerText = `${o1} , ${o2} , ${o3}`;
-    document.getElementById("prob").innerText = top ? "94% Neural Match" : "40% Scanning";
-
-    meta = top;
+function enterApp(mobile) {
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    document.getElementById('display-user').innerText = "User: " + mobile;
+    if(mobile === ADMIN_NUMBER) document.getElementById('admin-tools').classList.remove('hidden');
     draw();
 }
 
-function showConnection() {
-    if(!meta) return alert("Pehle khali cell pe click karein!");
-    alert("Connection Source found at Row: " + (meta.sR + 1) + "\nValue: " + db[meta.sR][meta.tC] + "\nPattern: 10-Week DNA Matched.");
+function logout() { localStorage.removeItem("session_mobile"); location.reload(); }
+
+function draw() {
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((r,ri)=>{
+        h+="<tr>";
+        r.forEach((c,ci)=>{ h+=`<td contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`; });
+        h+="</tr>";
+    });
+    document.getElementById("tbl").innerHTML=h;
 }
 
-function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem("pradeep_v34_data", JSON.stringify(db)); alert("Data Synced to Local Storage!"); }
-function importCSV(i) {
-    let r = new FileReader();
-    r.onload = () => { db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); draw(); };
-    r.readAsText(i.files[0]);
-}
-draw();
+function edit(r,c,el){ data[r][c]=el.innerText; }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function clearData(){ if(confirm("Sab delete karein?")){ localStorage.clear(); location.reload(); }}
+
+window.onload = () => {
+    const savedUser = localStorage.getItem("session_mobile");
+    if(savedUser) enterApp(savedUser);
+};
 </script>
 </body>
 </html>
