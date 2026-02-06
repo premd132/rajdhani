@@ -2,42 +2,50 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan AI V32 - Storage & Edit Master</title>
+<title>Pradeep Kalyan AI V33 - Live Editor</title>
 <style>
     :root { --gold: #ffd700; --purple: #a020f0; --red: #ff3131; --bg: #050505; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
     
     .header-panel { border: 2px solid var(--gold); background: #111; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
-    .btn:hover { background: var(--gold); color: #000; }
+    .status-badge { font-size: 11px; background: #222; color: #0f0; padding: 4px 10px; border-radius: 4px; border: 1px solid #333; }
+
+    .btn-group { margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .btn { background: #333; color: #fff; border: 1px solid #555; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn:hover { background: var(--gold); color: #000; transition: 0.3s; }
     .btn-save { background: #28a745; border: none; box-shadow: 0 0 10px #28a745; }
 
-    /* The Matrix with EDIT Support [cite: 2026-02-03] */
-    .matrix-box { background: #fff; padding: 10px; border-radius: 10px; display: inline-block; position: relative; }
-    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 22px; }
-    td, th { border: 2px solid #333; width: 60px; height: 60px; text-align: center; position: relative; outline: none; }
-    th { background: #4b0082; color: #fff; font-size: 11px; height: 35px; }
+    /* Interactive Matrix [cite: 2026-02-03] */
+    .matrix-box { background: #fff; padding: 15px; border-radius: 10px; display: inline-block; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    table { border-collapse: collapse; color: #000; font-weight: 900; font-size: 24px; }
+    td, th { border: 2px solid #333; width: 65px; height: 65px; text-align: center; position: relative; outline: none; }
+    th { background: #4b0082; color: #fff; font-size: 12px; height: 35px; }
 
-    /* Visual Feedback [cite: 2026-02-03] */
-    td:focus { background: #eefbff; border: 3px solid var(--purple) !important; }
+    /* Highlight States [cite: 2026-02-03] */
+    td:focus { background: #ffffd0 !important; border: 3px solid var(--purple) !important; color: #000; }
     .source-origin { background: #ffff00 !important; border: 3px solid var(--red) !important; }
     .target-focus { border: 4px solid var(--red) !important; background: rgba(255, 0, 0, 0.1); }
-    .connection-circle::after { content: ""; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--purple); border-radius: 50%; pointer-events: none; }
-    .blank { background: #f2f2f2 !important; color: #999; }
+    .pattern-circle::after { content: ""; position: absolute; top: 12%; left: 12%; width: 76%; height: 76%; border: 4px solid var(--purple); border-radius: 50%; pointer-events: none; }
+    .blank { background: #f8f8f8 !important; color: #ccc; }
 
-    .control-footer { background: #111; border: 2px solid var(--purple); padding: 25px; border-radius: 20px; margin-top: 25px; text-align: center; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .prediction-panel { background: #111; border: 2px solid var(--purple); padding: 25px; border-radius: 20px; margin-top: 25px; text-align: center; max-width: 600px; margin-inline: auto; }
+    .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0; }
+    .p-card { background: #222; padding: 15px; border-radius: 10px; border-bottom: 4px solid var(--gold); }
+    .p-card b { font-size: 32px; color: var(--gold); display: block; }
 </style>
 </head>
 <body>
 
 <div class="header-panel">
-    <div style="font-size: 12px; color:var(--gold);">User: Pradeep Kumar Dehariya | Astro: 7-5-2</div>
-    <h2 style="margin:5px 0;">🛠️ EDIT & LOCAL STORAGE MASTER V32</h2>
-    <div style="margin-top:10px;">
-        <button class="btn" onclick="document.getElementById('csvIn').click()">📂 IMPORT CSV</button>
-        <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
-        <button class="btn" onclick="addRow()">➕ ADD ROW</button>
+    <div class="status-badge">PRADEEP KUMAR DEHARIYA | EDIT MODE ENABLED</div>
+    <h2 style="margin:10px 0; color:var(--gold);">🛠️ KALYAN AI: MASTER EDITOR V33</h2>
+    
+    <div class="btn-group">
+        <button class="btn" onclick="document.getElementById('csv').click()">📂 IMPORT CSV</button>
+        <input type="file" id="csv" style="display:none" onchange="importCSV(this)">
+        <button class="btn" onclick="addRow()">➕ ADD NEW WEEK (ROW)</button>
         <button class="btn btn-save" onclick="saveData()">💾 SAVE TO LOCAL STORAGE</button>
+        <button class="btn" style="background:#c00; border:none;" onclick="clearData()">🗑️ CLEAR ALL</button>
     </div>
 </div>
 
@@ -47,28 +55,31 @@
     </div>
 </center>
 
-<div class="control-footer">
-    <h3 style="margin:0; color:var(--gold);">🔮 ASTRO-NEURAL PREDICTION</h3>
-    <div style="display:flex; justify-content:center; gap:15px; margin:15px 0;">
-        <div style="background:#222; padding:15px; border-radius:10px; width:100px;"><span>FIX</span><b id="res1" style="display:block; font-size:30px; color:var(--gold);">--</b></div>
-        <div style="background:#222; padding:15px; border-radius:10px; width:100px;"><span>CUT</span><b id="res2" style="display:block; font-size:30px; color:var(--gold);">--</b></div>
+<div class="prediction-panel">
+    <h3 style="margin:0; color:var(--gold);">🔮 NEURAL PREDICTION ENGINE</h3>
+    <div class="p-grid">
+        <div class="p-card"><span>JACKPOT</span><b id="j1">--</b></div>
+        <div class="p-card"><span>MIRROR</span><b id="j2">--</b></div>
+        <div class="p-card"><span>SUPPORT</span><b id="j3">--</b></div>
     </div>
-    <button onclick="checkLine()" style="width:100%; padding:15px; background:var(--purple); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">🔍 CHECK CONNECTION LINE</button>
+    <button onclick="showCheckPopup()" style="width:100%; padding:15px; background:var(--purple); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">🔍 CHECK CONNECTION & PATTERN</button>
 </div>
 
-<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100;"></div>
-<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; color:black; padding:25px; border-radius:15px; z-index:101; text-align:center; width:280px; border:5px solid var(--purple);">
-    <h3 style="margin-top:0">Logic Found!</h3>
-    <div id="popVal" style="font-size:35px; font-weight:bold; margin:15px 0; color:red;"></div>
-    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CLOSE</button>
+<div id="overlay" onclick="closePopup()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100;"></div>
+<div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; color:black; padding:30px; border-radius:20px; z-index:101; width:300px; text-align:center; border:5px solid var(--purple);">
+    <h3 style="margin-top:0">Pattern Source Found!</h3>
+    <div id="popVal" style="font-size:40px; font-weight:bold; margin:20px 0; color:red; border: 2px dashed #333;"></div>
+    <p style="font-size:12px; color:#555;">Matching record derived from your last 10 weeks of data.</p>
+    <button onclick="closePopup()" style="background:red; color:white; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold;">CLOSE</button>
 </div>
 
 <script>
-// Data persistence with Local Storage [cite: 2026-02-03]
-let db = JSON.parse(localStorage.getItem("v32_pradeep_storage")) || Array(10).fill(["**","**","**","**","**","**"]);
+// Local Storage Initialization [cite: 2026-02-03]
+let db = JSON.parse(localStorage.getItem("v33_pradeep_db")) || Array(10).fill(["**","**","**","**","**","**"]);
 let meta = null;
 
 function fmt(v){ v = v.replace(/[^0-9]/g, ''); return v.length === 1 ? "0"+v : (v || "**"); }
+function getCut(n){ return (parseInt(n) + 5) % 10; }
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -79,9 +90,9 @@ function draw() {
             if(meta) {
                 if(ri === meta.tR && ci === meta.tC) cls += " target-focus";
                 if(ri === meta.sR && ci === meta.tC) cls += " source-origin";
-                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " connection-circle"; });
+                meta.pts.forEach(p => { if(ri === meta.sR + p.dr && ci === p.dc) cls += " pattern-circle"; });
             }
-            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="scan(${ri},${ci})">${c}</td>`;
+            h += `<td contenteditable="true" class="${cls}" onblur="updateCell(${ri},${ci},this.innerText)" onclick="analyze(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
@@ -90,55 +101,72 @@ function draw() {
 
 function updateCell(r, c, v) {
     db[r][c] = fmt(v);
-    // Auto-save on edit is possible, but we'll use the button for explicit Local Storage [cite: 2026-02-03]
+    // Visual update only, real persistence on SAVE button click [cite: 2026-02-03]
     draw();
 }
 
-function scan(r, c) {
+function analyze(r, c) {
     if(db[r][c] !== "**") { meta = null; draw(); return; }
     
-    // 10-week scanning logic [cite: 2026-02-03]
+    // Scan pattern from last 10 weeks [cite: 2026-02-03]
     let dna = [];
     for(let i=1; i<=10; i++) { if(db[r-i]) db[r-i].forEach((v, col) => { if(v!=="**") dna.push({dr:-i, dc:col, val:v}); }); }
 
     let stats = {};
-    let top = null;
+    let topMatch = null;
 
-    for(let i=0; i < db.length - 1; i++) {
+    for(let i = 0; i < db.length - 1; i++) {
         if(i >= r-1) continue;
-        let pwr = 0;
-        dna.forEach(p => { if(db[i+p.dr] && db[i+p.dr][p.dc] === p.val) pwr += 100; });
-        if(pwr > 50 && db[i][c] !== "**") {
-            stats[db[i][c]] = (stats[db[i][c]] || 0) + pwr;
-            if(!top || pwr > top.pwr) top = { sR: i, tR: r, tC: c, pwr: pwr, pts: dna.slice(0,6) };
+        let score = 0;
+        dna.forEach(p => { if(db[i+p.dr] && db[i+p.dr][p.dc] === p.val) score += 100; });
+        if(score > 50 && db[i][c] !== "**") {
+            stats[db[i][c]] = (stats[db[i][c]] || 0) + score;
+            if(!topMatch || score > topMatch.pwr) topMatch = { sR: i, tR: r, tC: c, pwr: score, pts: dna.slice(0,6) };
         }
     }
 
-    let results = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
-    document.getElementById("res1").innerText = results[0] || "75";
-    document.getElementById("res2").innerText = results[1] || "20";
-    meta = top;
+    let res = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
+    let fix = res[0] || "75";
+    document.getElementById("j1").innerText = fix;
+    document.getElementById("j2").innerText = `${getCut(fix[0])}${getCut(fix[1])}`;
+    document.getElementById("j3").innerText = res[1] || "20";
+    meta = topMatch;
     draw();
 }
 
-function checkLine() {
-    if(!meta) return alert("Click a blank cell first!");
+function showCheckPopup() {
+    if(!meta) return alert("Pehle khali cell pe click karo prediction ke liye!");
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
     document.getElementById("popVal").innerText = db[meta.sR][meta.tC];
 }
 
 function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
-function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
+
+function addRow() { 
+    db.push(["**","**","**","**","**","**"]); 
+    draw(); 
+}
 
 function saveData() { 
-    localStorage.setItem("v32_pradeep_storage", JSON.stringify(db)); 
-    alert("Data saved to Local Storage! Refresh karne par bhi nahi jayega."); 
+    localStorage.setItem("v33_pradeep_db", JSON.stringify(db)); 
+    alert("Record Saved in Local Storage! Ab refresh karne par bhi data nahi jayega."); 
+}
+
+function clearData() {
+    if(confirm("Bhai, kya poora record delete karna chahte ho?")) {
+        db = Array(10).fill(["**","**","**","**","**","**"]);
+        localStorage.removeItem("v33_pradeep_db");
+        draw();
+    }
 }
 
 function importCSV(inp) {
     let r = new FileReader();
-    r.onload = () => { db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); draw(); };
+    r.onload = () => { 
+        db = r.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>fmt(v.trim()))); 
+        draw(); 
+    };
     r.readAsText(inp.files[0]);
 }
 
