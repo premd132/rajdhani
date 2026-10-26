@@ -42,8 +42,6 @@
         .btn-scroll { background: #f59e0b; color: #000; font-weight: bold; border-radius: 6px; border: none; padding: 6px 10px; font-size: 10px; cursor: pointer; }
         .scroll-bottom-container { display: flex; justify-content: center; margin: 15px 0 25px 0; }
         .btn-go-top { background: linear-gradient(135deg, #0284c7, #0084ff); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 100; padding: 10px; color: #000; width: 95%; max-width: 360px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
         button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 6px 8px; font-size: 10px; }
     </style>
 </head>
@@ -71,10 +69,15 @@
         </div>
     </div>
     <div class="toolbar">
+        <input type="file" id="csv" accept=".csv" style="display:none">
+        <input type="file" id="importJson" accept=".json" style="display:none">
         <button onclick="scrollToBottom()" class="btn-scroll">👇 Bottom</button>
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
         <button onclick="addRow()" style="background:#0284c7; color:white;">➕ ADD</button>
         <button onclick="autoScanPatterns()" style="background:var(--purple); color:white;">🔍 SCAN</button>
         <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
+        <button onclick="exportData()" style="background:#eab308; color:#000;">📥 EXPORT</button>
+        <button onclick="document.getElementById('importJson').click()" style="background:#06b6d4; color:white;">📤 IMPORT</button>
         <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
     <div class="chart-wrapper">
@@ -92,23 +95,14 @@
             <h3 style="color: #38bdf8;">📊 Top 4 Open to Close Ank</h3>
             <div id="otc-ank-prediction"><i style="color:#94a3b8; font-size:11px;">ब्लैंक सेल पर क्लिक करें...</i></div>
         </div>
-        <div class="card">
-            <h3>✔ Matches</h3>
-            <div id="checks" style="font-size:11px;">Click cell...</div>
-        </div>
-        <div class="card">
-            <h3>🤖 Pattern</h3>
-            <div id="ai" style="font-size:11px;">Ready...</div>
-        </div>
-        <div class="card">
-            <h3>🔮 Future</h3>
-            <div id="future" style="font-size:11px;">Ready...</div>
-        </div>
+        <div class="card"><h3>✔ Matches</h3><div id="checks" style="font-size:11px;">Click cell...</div></div>
+        <div class="card"><h3>🤖 Pattern</h3><div id="ai" style="font-size:11px;">Ready...</div></div>
+        <div class="card"><h3>🔮 Future</h3><div id="future" style="font-size:11px;">Ready...</div></div>
     </div>
     <div class="scroll-bottom-container"><button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btn-go-top">👆 Top</button></div>
 </div>
 <script>
-const STORAGE_KEY = "rajdhani_day_v10";
+const STORAGE_KEY = "rajdhani_day_v11";
 let targetCol = null, activeMark = null, highlightedFam = null, userMulank = 2, userBhagyank = 2;
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 const DAY_PLANETS = {0:[2,7], 1:[1,9], 2:[5,0], 3:[3,8], 4:[6,1], 5:[8,4]};
@@ -140,11 +134,48 @@ function draw(){
     if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-function updateCell(r,c,el){ data[r][c]=norm(el.innerText); el.innerText=data[r][c]; localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-function deleteRow(r){ data.splice(r,1); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); draw(); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){ localStorage.removeItem(STORAGE_KEY); data=[["**","**","**","**","**","**"]]; draw(); } }
+function updateCell(r,c,el){ data[r][c]=norm(el.innerText); el.innerText=data[r][c]; saveDataSilent(); }
+function deleteRow(r){ data.splice(r,1); saveDataSilent(); draw(); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); saveDataSilent(); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved Successfully!"); }
+function saveDataSilent(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function exportData() {
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    let downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "rajdhani_day_backup.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
+document.getElementById("importJson").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        try { data = JSON.parse(fr.result); saveDataSilent(); draw(); alert("JSON Imported!"); }
+        catch (err) { alert("Invalid File!"); }
+    };
+    fr.readAsText(e.target.files[0]);
+};
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => {
+            let row = l.split(',').map(v => norm(v.trim()));
+            while(row.length < 6) row.push("**"); 
+            return row.slice(0,6);
+        });
+        saveDataSilent();
+        draw();
+        alert("CSV Imported!");
+    };
+    fr.readAsText(e.target.files[0]);
+};
+
+function clearData(){ if(confirm("Clear All?")){ localStorage.removeItem(STORAGE_KEY); data=[["**","**","**","**","**","**"]]; draw(); } }
 function scrollToBottom(){ window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }
 
 function handleCellClick(r,c,val){
@@ -152,12 +183,9 @@ function handleCellClick(r,c,val){
     else { runMultiLayerEngine(r, c); }
 }
 
-// 4-Layer Consensus Engine (85% Passing Target)
 function runMultiLayerEngine(targetRow, targetCol) {
     let scores = {};
     for(let i=0; i<100; i++) scores[i < 10 ? "0"+i : ""+i] = 0;
-
-    // Layer 1: Historical Proximity & Family (60% Weight)
     let start = Math.max(0, targetRow - 15);
     for(let r=start; r<targetRow; r++){
         let jodi = data[r] ? data[r][targetCol] : "**";
@@ -168,15 +196,10 @@ function runMultiLayerEngine(targetRow, targetCol) {
             famGroup.forEach(f => scores[f] = (scores[f]||0) + w);
         }
     }
-
-    // Layer 2: Planetary & DOB Astro (20% Weight)
     let dayAnks = DAY_PLANETS[targetCol] || [2,7];
-    dayAnks.forEach(a => {
-        for(let k in scores) if(k.includes(a)) scores[k] += 25;
-    });
+    dayAnks.forEach(a => { for(let k in scores) if(k.includes(a)) scores[k] += 25; });
     if(scores["0"+userMulank]) scores["0"+userMulank] += 30;
 
-    // Layer 3: Immediate Row Above Matrix (10% Weight)
     if(targetRow > 0) {
         let prev = data[targetRow - 1][targetCol];
         if(prev !== "**" && prev.length === 2) {
@@ -184,22 +207,16 @@ function runMultiLayerEngine(targetRow, targetCol) {
             scores[palti(prev)] = (scores[palti(prev)] || 0) + 25;
         }
     }
-
     let sorted = Object.keys(scores).sort((a,b)=>scores[b]-scores[a]);
     let topStrong = sorted.slice(0, 2);
-
     let a1 = dayAnks[0], a2 = userMulank, a3 = dayAnks[1];
-    let subh1 = `${a1}${a2}`, subh2 = `${a2}${a3}`, subh3 = `${a3}${a1}`;
-
     document.getElementById("blank-4jodi-prediction").innerHTML = `
         <span class="strong-jodi-btn">🔥 Strong 1: ${topStrong[0]}</span>
         <span class="strong-jodi-btn">🔥 Strong 2: ${topStrong[1]}</span><br>
-        <span class="astro-badge">✨ Subh: ${subh1}</span>
-        <span class="astro-badge">✨ Subh: ${subh2}</span>
-        <span class="astro-badge">✨ Subh: ${subh3}</span>
+        <span class="astro-badge">✨ Subh: ${a1}${a2}</span>
+        <span class="astro-badge">✨ Subh: ${a2}${a3}</span>
+        <span class="astro-badge">✨ Subh: ${a3}${a1}</span>
     `;
-
-    // OTC Ank Calculation
     let ankCount = {};
     data.forEach(row => {
         let v = row[targetCol];
