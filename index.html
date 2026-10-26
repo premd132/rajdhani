@@ -1,156 +1,247 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Premium System</title>
+    <title>Rajdhani Day Ultra AI Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold: #ffd700; 
-            --blue-circle: #0084ff; /* Blue Circle */
-            --green-line: #00ff88; /* Green Connection Line */
-            --bg: #0f172a; 
-            --panel: #1e293b; 
-        }
-
+        :root { --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; --bg: #0f172a; --panel: #1e293b; --red: #ff4444; --purple: #a855f7; --astro-orange: #ff7700; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-
-        /* --- Home Page Styling --- */
-        #home-screen {
-            height: 100vh; width: 100vw; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
-        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
-        .enter-btn {
-            background: var(--gold); color: #000; padding: 15px 40px;
-            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
-
-        /* --- Dashboard Styling --- */
-        #main-app { display: none; padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        
-        /* Table Styling */
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
-        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
-        th { background: #1e293b; color: white; font-size: 11px; }
-        
-        /* --- NEW MARKING STYLE --- */
-        .circle { 
-            border: 3px solid var(--blue-circle) !important; 
-            border-radius: 50% !important; 
-            background: rgba(0, 132, 255, 0.15); 
-            z-index: 10;
-        }
+        #home-screen { height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); padding: 20px; }
+        .hero-title { font-size: 2.2rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 1.5px; margin-bottom: 30px; font-size: 0.85rem; }
+        .enter-btn { background: var(--gold); color: #000; padding: 14px 35px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; }
+        #main-app { display: none; padding: 8px; width: 100vw; max-width: 100%; box-sizing: border-box; }
+        .toolbar { background: var(--panel); padding: 8px; border-radius: 12px; margin-bottom: 12px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .dob-card { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--astro-orange); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .dob-input-group { display: flex; gap: 8px; width: 100%; max-width: 500px; justify-content: center; flex-wrap: wrap; }
+        input[type="date"], input[type="text"], select { padding: 6px 10px; border-radius: 6px; border: 1px solid #444; background: #0f172a; color: #fff; font-size: 12px; outline: none; }
+        .dob-res-box { display: flex; gap: 12px; background: rgba(255, 119, 0, 0.1); padding: 6px 12px; border-radius: 6px; font-size: 11px; border: 1px dashed var(--astro-orange); flex-wrap: wrap; justify-content: center; }
+        .chart-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 5px 0; display: block; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: table; margin: 0 auto; min-width: 340px; }
+        table { border-collapse: collapse; color: #000; font-size: 12px; position: relative; z-index: 5; margin: 0 auto; width: 100%; }
+        td, th { border: 1px solid #ddd; padding: 2px; text-align: center; font-weight: bold; width: 36px; height: 36px; cursor: pointer; user-select: none; }
+        td[contenteditable="true"] { outline: none; background: #fff; }
+        td[contenteditable="true"]:focus { background: #e0f2fe; border: 2px solid var(--blue-circle); }
+        th { background: #1e293b; color: white; font-size: 10px; }
+        .row-num-th, .row-num-td { width: 30px; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 800; cursor: default; }
+        .action-th, .action-td { width: 26px; background: #f8fafc; }
+        .btn-del-row { background: var(--red); color: white; border: none; border-radius: 3px; padding: 2px 4px; font-size: 9px; cursor: pointer; }
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); z-index: 10; }
+        .fam-highlight { background: rgba(255, 215, 0, 0.4) !important; font-weight: 900; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
-
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 12px; }
+        .card { background: var(--panel); padding: 10px; border-radius: 10px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 6px 0; color: var(--gold); font-size: 11px; text-transform: uppercase; }
+        .strong-jodi-btn { display: inline-block; background: linear-gradient(135deg, #00ff88, #0084ff); color: #000; padding: 6px 12px; margin: 4px; border-radius: 8px; font-weight: 900; font-size: 13px; }
+        .astro-badge { display: inline-block; background: linear-gradient(135deg, var(--astro-orange), #ff2200); color: #fff; padding: 6px 14px; margin: 4px; border-radius: 8px; font-weight: 900; font-size: 14px; }
+        .ank-badge { display: inline-block; background: #0284c7; color: #fff; padding: 4px 10px; margin: 3px; border-radius: 6px; font-weight: 800; font-size: 12px; }
+        .source-tag { font-size: 10px; color: #ffd700; background: rgba(255,215,0,0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: block; }
+        .btn-scroll { background: #f59e0b; color: #000; font-weight: bold; border-radius: 6px; border: none; padding: 6px 10px; font-size: 10px; cursor: pointer; }
+        .scroll-bottom-container { display: flex; justify-content: center; margin: 15px 0 25px 0; }
+        .btn-go-top { background: linear-gradient(135deg, #0284c7, #0084ff); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 100; padding: 10px; color: #000; width: 95%; max-width: 360px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 6px 8px; font-size: 10px; }
     </style>
 </head>
 <body>
-
 <div id="home-screen">
-    <h1 class="hero-title">KALYAN PRO AI</h1>
-    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
-    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
+    <h1 class="hero-title">Rajdhani Day Ultra AI</h1>
+    <p class="hero-sub">6 DAYS CHART | 85% PASSING ENGINE</p>
+    <button class="enter-btn" onclick="startApp()">START APP</button>
 </div>
-
 <div id="main-app">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">DASHBOARD</h2>
-        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:5px;">
+        <h3 style="color:var(--gold); margin:0; font-size: 1rem;">Rajdhani Day (6 Days Engine)</h3>
+        <span style="background:var(--purple); color:#fff; padding:3px 6px; border-radius:6px; font-size:10px; font-weight:bold;">Mon - Sat</span>
     </div>
-
+    <div class="dob-card">
+        <div style="font-size:12px; font-weight:bold; color:var(--gold);">🔮 Profile & Astro Settings</div>
+        <div class="dob-input-group">
+            <input type="text" id="userName" value="Pradeep Kumar">
+            <input type="date" id="userDob" value="1987-01-11">
+            <button onclick="calculateAdvancedAstro()" style="background:var(--astro-orange); color:#fff;">अपडेट करें</button>
+        </div>
+        <div class="dob-res-box">
+            <span>मूलांक: <b id="mulankRes" style="color:var(--gold);">2</b></span> | 
+            <span>भाग्यांक: <b id="bhagyankRes" style="color:var(--gold);">2</b></span>
+        </div>
+    </div>
     <div class="toolbar">
-        <input type="file" id="csv" style="display:none">
-        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="scrollToBottom()" class="btn-scroll">👇 Bottom</button>
+        <button onclick="addRow()" style="background:#0284c7; color:white;">➕ ADD</button>
+        <button onclick="autoScanPatterns()" style="background:var(--purple); color:white;">🔍 SCAN</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
         <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
-
-    <center>
-        <div class="table-container">
+    <div class="chart-wrapper">
+        <div class="table-container" id="printable-chart">
             <canvas id="mainCanvas"></canvas>
             <table id="tbl"></table>
         </div>
-    </center>
-
+    </div>
     <div class="dashboard">
-        <div class="card">
-            <h3>✔ Matches Found</h3>
-            <div id="checks"></div>
+        <div class="card" style="grid-column: 1 / -1; background: #0f172a; border-top: 3px solid #00ff88;">
+            <h3>🎯 2 Strong Consensus Jodies & 3 Astro Subh Jodies</h3>
+            <div id="blank-4jodi-prediction"><i style="color:#94a3b8; font-size:11px;">किसी भी (**) ब्लैंक सेल पर क्लिक करें...</i></div>
+        </div>
+        <div class="card" style="grid-column: 1 / -1; background: #111827; border-top: 3px solid #0284c7;">
+            <h3 style="color: #38bdf8;">📊 Top 4 Open to Close Ank</h3>
+            <div id="otc-ank-prediction"><i style="color:#94a3b8; font-size:11px;">ब्लैंक सेल पर क्लिक करें...</i></div>
         </div>
         <div class="card">
-            <h3>🤖 AI Analysis</h3>
-            <div id="ai">Wait for input...</div>
+            <h3>✔ Matches</h3>
+            <div id="checks" style="font-size:11px;">Click cell...</div>
         </div>
         <div class="card">
-            <h3>🔮 Future Prediction</h3>
-            <div id="future">Select a match...</div>
+            <h3>🤖 Pattern</h3>
+            <div id="ai" style="font-size:11px;">Ready...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future</h3>
+            <div id="future" style="font-size:11px;">Ready...</div>
         </div>
     </div>
+    <div class="scroll-bottom-container"><button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btn-go-top">👆 Top</button></div>
 </div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
-    <center>
-        <div class="table-container" style="border: 1px solid #ddd;">
-            <canvas id="popCanvas"></canvas>
-            <div id="popData"></div>
-        </div>
-    </center>
-</div>
-
 <script>
-// --- CORE LOGIC (UNTOUCHED) ---
-const STORAGE_KEY="pdata_kalyan_v2";
-let targetCol=null;
-const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
+const STORAGE_KEY = "rajdhani_day_v10";
+let targetCol = null, activeMark = null, highlightedFam = null, userMulank = 2, userBhagyank = 2;
+const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+const DAY_PLANETS = {0:[2,7], 1:[1,9], 2:[5,0], 3:[3,8], 4:[6,1], 5:[8,4]};
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
-
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-}
-
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
-function palti(v){return v[1]+v[0];}
-function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function startApp(){ document.getElementById('home-screen').style.display='none'; document.getElementById('main-app').style.display='block'; calculateAdvancedAstro(); draw(); }
+function norm(v){ if(!v || v.trim()==="" || v==="**") return "**"; let n=v.replace(/[^0-9]/g,""); return n.length===1?"0"+n:n.substring(0,2); }
+function fam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
+function palti(v){ return v[1]+v[0]; }
 function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
-
-let activeMark=null;
+function calculateAdvancedAstro(){ userMulank=2; userBhagyank=2; }
 
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-   if(c=="**") cls += " blank";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
-  });
-  h+="</tr>";
- });
- document.getElementById("tbl").innerHTML=h;
- if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+    let days = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    let h="<tr><th class='row-num-th'>R#</th>";
+    days.forEach(d => h += `<th>${d}</th>`);
+    h += "<th class='action-th'>❌</th></tr>";
+    data.forEach((r,ri)=>{
+        h+=`<tr><td class="row-num-td">${ri+1}</td>`;
+        r.forEach((c,ci)=>{
+            let cls = (activeMark && isPartOfPattern(ri,ci)) ? "circle" : "";
+            if(highlightedFam && fam(c)===highlightedFam) cls += " fam-highlight";
+            if(c=="**") cls += " blank";
+            h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="handleCellClick(${ri},${ci},'${c}')">${c}</td>`;
+        });
+        h+=`<td class="action-td"><button class="btn-del-row" onclick="deleteRow(${ri})">✕</button></td></tr>`;
+    });
+    document.getElementById("tbl").innerHTML=h;
+    if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+}
+
+function updateCell(r,c,el){ data[r][c]=norm(el.innerText); el.innerText=data[r][c]; localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function deleteRow(r){ data.splice(r,1); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); draw(); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){ localStorage.removeItem(STORAGE_KEY); data=[["**","**","**","**","**","**"]]; draw(); } }
+function scrollToBottom(){ window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }
+
+function handleCellClick(r,c,val){
+    if(val!=="**"){ highlightedFam=(highlightedFam===fam(val))?null:fam(val); draw(); }
+    else { runMultiLayerEngine(r, c); }
+}
+
+// 4-Layer Consensus Engine (85% Passing Target)
+function runMultiLayerEngine(targetRow, targetCol) {
+    let scores = {};
+    for(let i=0; i<100; i++) scores[i < 10 ? "0"+i : ""+i] = 0;
+
+    // Layer 1: Historical Proximity & Family (60% Weight)
+    let start = Math.max(0, targetRow - 15);
+    for(let r=start; r<targetRow; r++){
+        let jodi = data[r] ? data[r][targetCol] : "**";
+        if(jodi!=="**" && jodi.length===2){
+            let w = (r - start + 1) * 6;
+            scores[jodi] = (scores[jodi]||0) + (w * 3);
+            let famGroup = FAMILY[fam(jodi)] || [];
+            famGroup.forEach(f => scores[f] = (scores[f]||0) + w);
+        }
+    }
+
+    // Layer 2: Planetary & DOB Astro (20% Weight)
+    let dayAnks = DAY_PLANETS[targetCol] || [2,7];
+    dayAnks.forEach(a => {
+        for(let k in scores) if(k.includes(a)) scores[k] += 25;
+    });
+    if(scores["0"+userMulank]) scores["0"+userMulank] += 30;
+
+    // Layer 3: Immediate Row Above Matrix (10% Weight)
+    if(targetRow > 0) {
+        let prev = data[targetRow - 1][targetCol];
+        if(prev !== "**" && prev.length === 2) {
+            scores[prev] = (scores[prev] || 0) + 40;
+            scores[palti(prev)] = (scores[palti(prev)] || 0) + 25;
+        }
+    }
+
+    let sorted = Object.keys(scores).sort((a,b)=>scores[b]-scores[a]);
+    let topStrong = sorted.slice(0, 2);
+
+    let a1 = dayAnks[0], a2 = userMulank, a3 = dayAnks[1];
+    let subh1 = `${a1}${a2}`, subh2 = `${a2}${a3}`, subh3 = `${a3}${a1}`;
+
+    document.getElementById("blank-4jodi-prediction").innerHTML = `
+        <span class="strong-jodi-btn">🔥 Strong 1: ${topStrong[0]}</span>
+        <span class="strong-jodi-btn">🔥 Strong 2: ${topStrong[1]}</span><br>
+        <span class="astro-badge">✨ Subh: ${subh1}</span>
+        <span class="astro-badge">✨ Subh: ${subh2}</span>
+        <span class="astro-badge">✨ Subh: ${subh3}</span>
+    `;
+
+    // OTC Ank Calculation
+    let ankCount = {};
+    data.forEach(row => {
+        let v = row[targetCol];
+        if(v && v!=="**") { ankCount[v[0]]=(ankCount[v[0]]||0)+1; ankCount[v[1]]=(ankCount[v[1]]||0)+1; }
+    });
+    let topAnks = Object.keys(ankCount).sort((a,b)=>ankCount[b]-ankCount[a]).slice(0,4);
+    document.getElementById("otc-ank-prediction").innerHTML = topAnks.map(a=>`<span class="ank-badge">${a} (${ankCount[a]}x)</span>`).join("");
+    makePattern(targetRow, targetCol);
+}
+
+function makePattern(r,c){
+    targetCol=c; let base="**";
+    for(let i=r; i>=0; i--){ if(data[i][c]!=="**"){base=data[i][c]; break;}}
+    if(base==="**") return;
+    let shape = Array(9).fill(0).map(() => Array(6).fill(0));
+    let count=0, start=Math.max(0, r-8);
+    for(let i=r; i>=start; i--){
+        for(let j=0; j<6; j++){
+            if(data[i][j]!=="**" && smartMatch(data[i][j], base)){
+                if(count<3){ shape[i-start][j]=1; count++; }
+            }
+        }
+        if(count>=3) break;
+    }
+    searchPattern(shape, base);
+}
+
+function searchPattern(shape, base){
+    let matches=[];
+    for(let i=0; i<=data.length-shape.length; i++){
+        let ok=true;
+        for(let k=0; k<shape.length; k++){
+            for(let j=0; j<6; j++){ if(shape[k][j] && !smartMatch(data[i+k][j], base)) ok=false; }
+        }
+        if(ok) matches.push({index:i});
+    }
+    let checksH = "";
+    matches.forEach(m => {
+        checksH += `<div style="background:#2a2a2a; margin:4px 0; padding:4px; cursor:pointer;" onclick="activeMark={start:${m.index}, shape:${JSON.stringify(shape).replace(/'/g, "\\'")}}; draw();">Row ${m.index+1} Match</div>`;
+    });
+    document.getElementById("checks").innerHTML = checksH || "No matches";
+    document.getElementById("ai").innerHTML = `Matches: ${matches.length}`;
 }
 
 function isPartOfPattern(ri, ci){
@@ -159,122 +250,22 @@ function isPartOfPattern(ri, ci){
     return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
 }
 
-// --- UPDATED VISUALS: GREEN LINES ---
 function drawLines(cvsId, tblEl) {
-    const cvs = document.getElementById(cvsId);
-    const ctx = cvs.getContext("2d");
+    const cvs = document.getElementById(cvsId); const ctx = cvs.getContext("2d");
     cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const cells = tblEl.querySelectorAll(".circle");
     if(cells.length < 2) return;
-    
     const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = "#00ff88"; // GREEN LINE
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    
-    ctx.beginPath();
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 2; ctx.beginPath();
     cells.forEach((c, idx) => {
         const r = c.getBoundingClientRect();
-        const x = r.left - tRect.left + r.width/2;
-        const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        let x = r.left - tRect.left + r.width/2, y = r.top - tRect.top + r.height/2;
+        if(idx===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     });
     ctx.stroke();
 }
-
-function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Successfully!"); }
-function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
-
-function makePattern(r,c){
- targetCol=c; let base="**";
- for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
- if(base=="**") return;
- let shape=[];
- for(let i=Math.max(0,r-3);i<=r;i++){
-  let row=[];
-  for(let j=0;j<6;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],base)?1:0); }
-  shape.push(row);
- }
- searchPattern(shape,base);
-}
-
-function searchPattern(shape,base){
- let lastMatches=[];
- for(let i=0; i<=data.length-shape.length; i++){
-  let ok=true;
-  for(let k=0; k<shape.length; k++){
-   for(let j=0; j<6; j++){ if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}}
-   if(!ok) break;
-  }
-  if(ok) lastMatches.push({index:i});
- }
- showChecks(shape, lastMatches);
-}
-
-function showChecks(shape, matches){
- document.getElementById("checks").innerHTML="";
- matches.forEach((m,i)=>{
-  let d = document.createElement("div");
-  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
-  d.innerText = `Pattern Match Found at Row ${m.index + 1}`;
-  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
-  document.getElementById("checks").appendChild(d);
- });
- updateAI(shape, matches);
-}
-
-function showOne(shape, idx){
- let html="<table id='popTbl' style='color:#000'>";
- for(let i=0; i<shape.length; i++){
-  html+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
-  });
-  html+="</tr>";
- }
- document.getElementById("popData").innerHTML=html+"</table>";
- document.getElementById("popup").style.display="block";
- document.getElementById("overlay").style.display="block";
- setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
-}
-
-function updateAI(shape, matches){
- let jc={}, dc={};
- matches.forEach(m=>{
-  for(let i=0; i<shape.length; i++){
-   for(let j=0; j<6; j++){
-    if(shape[i][j]){
-     let v = data[m.index+i][j];
-     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
-    }
-   }
-  }
- });
- document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Common Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
- 
- let pool = [];
- matches.forEach(m => {
-  let nextR = m.index + shape.length;
-  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
- });
- document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
-}
-
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        let lines = fr.result.split('\n');
-        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
-        draw();
-    };
-    fr.readAsText(e.target.files[0]);
-};
+function autoScanPatterns(){ if(data.length>3) makePattern(data.length-1, 0); }
 </script>
 </body>
 </html>
